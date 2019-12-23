@@ -1,4 +1,4 @@
-package dbdownload
+package platform
 
 // IncorrectPlatformError is thrown when incorrect platform is set.
 type IncorrectPlatformError struct {
