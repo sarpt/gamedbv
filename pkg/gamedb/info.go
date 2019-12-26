@@ -9,6 +9,7 @@ import (
 
 // Info groups information used for games database handling
 type Info struct {
+	DatabaseType      string
 	ArchiveFileName   string
 	ContentFileName   string
 	URL               string

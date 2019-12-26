@@ -1,4 +1,4 @@
-package dbdl
+package dl
 
 import (
 	"fmt"
@@ -6,33 +6,34 @@ import (
 
 	"github.com/sarpt/gamedbv/pkg/gamedb"
 	"github.com/sarpt/gamedbv/pkg/platform"
+	"github.com/sarpt/gamedbv/pkg/progress"
 )
 
 // DownloadPlatformDatabase downloads neccessary database files related to provided platform
-func DownloadPlatformDatabase(dbPlatform platform.Variant, progress chan<- string, errors chan<- error) {
-	platformDbInfo := gamedb.GetDbInfo(dbPlatform)
+func DownloadPlatformDatabase(platformDb platform.Variant, printer progress.Notifier) {
+	platformDbInfo := gamedb.GetDbInfo(platformDb)
 
 	databaseFilesStatuses, err := getFilesStatuses(platformDbInfo)
 	if err != nil {
-		errors <- err
+		printer.NextError(err)
 		return
 	}
 
 	if databaseFilesStatuses.DoesDatabaseExist && !platformDbInfo.ForceDbDownload {
-		progress <- fmt.Sprintf(archiveFileAlreadyPresent, dbPlatform.String())
+		printer.NextProgress(fmt.Sprintf(archiveFileAlreadyPresent, platformDb.String()))
 		return
 	}
 
 	err = prepareDatabaseDirectory(platformDbInfo)
 	if err != nil {
-		errors <- err
+		printer.NextError(err)
 		return
 	}
 
-	progress <- fmt.Sprintf(downloadingInProgress, dbPlatform.String())
+	printer.NextProgress(fmt.Sprintf(downloadingInProgress, platformDb.String()))
 	err = downloadDatabaseFile(platformDbInfo)
 	if err != nil {
-		errors <- err
+		printer.NextError(err)
 	}
 }
 

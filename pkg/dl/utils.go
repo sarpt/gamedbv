@@ -1,4 +1,4 @@
-package dbdl
+package dl
 
 import (
 	"io"

@@ -8,21 +8,22 @@ import (
 
 	"github.com/sarpt/gamedbv/pkg/gamedb"
 	"github.com/sarpt/gamedbv/pkg/platform"
+	"github.com/sarpt/gamedbv/pkg/progress"
 )
 
-// UnzipPlatformDatabase perfoms decopresion of platform's database archive file
-func UnzipPlatformDatabase(platformDb platform.Variant, progress chan<- string, errors chan<- error) {
+// UnzipPlatformDatabase perfoms decompression of platform's database archive file
+func UnzipPlatformDatabase(platformDb platform.Variant, printer progress.Notifier) {
 	dbInfo := gamedb.GetDbInfo(platformDb)
 
 	dbArchivePath, err := dbInfo.GetDatabaseArchiveFilePath()
 	if err != nil {
-		errors <- err
+		printer.NextError(err)
 		return
 	}
 
 	zipFileReader, err := zip.OpenReader(dbArchivePath)
 	if err != nil {
-		errors <- err
+		printer.NextError(err)
 		return
 	}
 	defer zipFileReader.Close()
@@ -35,28 +36,28 @@ func UnzipPlatformDatabase(platformDb platform.Variant, progress chan<- string, 
 	}
 
 	if contentFileReader == nil {
-		progress <- fmt.Sprintf(noDatabaseContentFile, dbInfo.ContentFileName, platformDb.String())
+		printer.NextProgress(fmt.Sprintf(noDatabaseContentFile, dbInfo.ContentFileName, platformDb.String()))
 		return
 	} else if err != nil {
-		errors <- err
+		printer.NextError(err)
 		return
 	}
 
 	contentFilePath, err := dbInfo.GetDatabaseContentFilePath()
 	if err != nil {
-		errors <- err
+		printer.NextError(err)
 		return
 	}
 
 	contentFileWriter, err := os.Create(contentFilePath)
 	if err != nil {
-		errors <- err
+		printer.NextError(err)
 		return
 	}
 
-	progress <- fmt.Sprintf(extractingInProgress, dbInfo.ContentFileName, platformDb.String())
+	printer.NextProgress(fmt.Sprintf(extractingInProgress, dbInfo.ContentFileName, platformDb.String()))
 	_, err = io.Copy(contentFileWriter, contentFileReader)
 	if err != nil {
-		errors <- err
+		printer.NextError(err)
 	}
 }

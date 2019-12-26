@@ -1,4 +1,4 @@
-package dbdl
+package dl
 
 const (
 	archiveFileAlreadyPresent = "%s database will not be downloaded since its already present"

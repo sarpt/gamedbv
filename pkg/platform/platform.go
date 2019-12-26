@@ -45,7 +45,7 @@ func (variant Variant) IsSet() bool {
 	return len(variant.value) > 0
 }
 
-// GetAllPlatforms returns all possible variants of GameTDB platform databases that could be downloaded
+// GetAllPlatforms returns all possible variants of platform databases that could be downloaded
 func GetAllPlatforms() []Variant {
 	var allPlatforms []Variant
 
