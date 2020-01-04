@@ -19,9 +19,7 @@ func crateFileGetRequest(url string) (*http.Request, error) {
 
 func doesFileExist(filePath string) bool {
 	_, err := os.Stat(filePath)
-	if os.IsNotExist(err) {
-		return false
-	} else if err != nil {
+	if err != nil {
 		return false
 	}
 

@@ -4,41 +4,45 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sarpt/gamedbv/pkg/gamedb"
 	"github.com/sarpt/gamedbv/pkg/platform"
 	"github.com/sarpt/gamedbv/pkg/progress"
 )
 
+// FilesStatus groups information about existence of specific platform's database files
+type FilesStatus struct {
+	DoesDatabaseExist bool
+}
+
 // DownloadPlatformDatabase downloads neccessary database files related to provided platform
-func DownloadPlatformDatabase(platformDb platform.Variant, printer progress.Notifier) {
-	platformDbInfo := gamedb.GetDbInfo(platformDb)
+func DownloadPlatformDatabase(variant platform.Variant, printer progress.Notifier) {
+	config := platform.GetConfig(variant)
 
-	databaseFilesStatuses, err := getFilesStatuses(platformDbInfo)
+	databaseFilesStatuses, err := getFilesStatuses(config)
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
-	if databaseFilesStatuses.DoesDatabaseExist && !platformDbInfo.ForceDbDownload {
-		printer.NextProgress(fmt.Sprintf(archiveFileAlreadyPresent, platformDb.String()))
+	if databaseFilesStatuses.DoesDatabaseExist && !config.ForceDbDownload {
+		printer.NextProgress(fmt.Sprintf(archiveFileAlreadyPresent, variant.String()))
 		return
 	}
 
-	err = prepareDatabaseDirectory(platformDbInfo)
+	err = prepareDatabaseDirectory(config)
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
-	printer.NextProgress(fmt.Sprintf(downloadingInProgress, platformDb.String()))
-	err = downloadDatabaseFile(platformDbInfo)
+	printer.NextProgress(fmt.Sprintf(downloadingInProgress, variant.String()))
+	err = downloadDatabaseFile(config)
 	if err != nil {
 		printer.NextError(err)
 	}
 }
 
-func downloadDatabaseFile(platformDbInfo gamedb.Info) error {
-	filePath, err := platformDbInfo.GetDatabaseArchiveFilePath()
+func downloadDatabaseFile(config platform.Config) error {
+	filePath, err := config.GetPlatformArchiveFilePath()
 	if err != nil {
 		return err
 	}
@@ -49,14 +53,14 @@ func downloadDatabaseFile(platformDbInfo gamedb.Info) error {
 	}
 	defer outputFile.Close()
 
-	err = downloadFile(platformDbInfo.URL, outputFile)
+	err = downloadFile(config.URL, outputFile)
 	return err
 }
 
-func getFilesStatuses(platformDbInfo gamedb.Info) (gamedb.FilesStatus, error) {
-	var filesStatus gamedb.FilesStatus
+func getFilesStatuses(config platform.Config) (FilesStatus, error) {
+	var filesStatus FilesStatus
 
-	filePath, err := platformDbInfo.GetDatabaseArchiveFilePath()
+	filePath, err := config.GetPlatformArchiveFilePath()
 	if err != nil {
 		return filesStatus, err
 	}
@@ -66,8 +70,8 @@ func getFilesStatuses(platformDbInfo gamedb.Info) (gamedb.FilesStatus, error) {
 	return filesStatus, nil
 }
 
-func prepareDatabaseDirectory(platformDbInfo gamedb.Info) error {
-	directory, err := platformDbInfo.GetDatabaseDirectory()
+func prepareDatabaseDirectory(config platform.Config) error {
+	directory, err := config.GetPlatformDirectory()
 	if err != nil {
 		return err
 	}

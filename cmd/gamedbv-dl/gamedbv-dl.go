@@ -20,7 +20,7 @@ func init() {
 func main() {
 	var platformsToDownload []platform.Variant
 
-	printer := cli.NewPrinter()
+	printer := cli.New()
 	defer printer.Close()
 
 	if *shouldDownloadAllPlatforms {

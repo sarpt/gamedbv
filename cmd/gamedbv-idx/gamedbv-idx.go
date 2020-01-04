@@ -4,7 +4,7 @@ import (
 	"flag"
 
 	"github.com/sarpt/gamedbv/pkg/cli"
-	"github.com/sarpt/gamedbv/pkg/dbunzip"
+	"github.com/sarpt/gamedbv/pkg/idx"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
@@ -20,7 +20,7 @@ func init() {
 func main() {
 	var platformsToParse []platform.Variant
 
-	printer := cli.NewPrinter()
+	printer := cli.New()
 	defer printer.Close()
 
 	if *shouldParseAllPlatforms {
@@ -34,6 +34,6 @@ func main() {
 	}
 
 	for _, platformToParse := range platformsToParse {
-		dbunzip.UnzipPlatformDatabase(platformToParse, printer)
+		idx.IndexPlatform(platformToParse, printer)
 	}
 }

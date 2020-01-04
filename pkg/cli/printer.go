@@ -24,8 +24,8 @@ func (printer Printer) Close() {
 	close(printer.errors)
 }
 
-// NewPrinter initializes printer that will call progressHandler and errorsHandler when respective methods will be invoked
-func NewPrinter() Printer {
+// New initializes printer that will call progressHandler and errorsHandler when respective methods will be invoked
+func New() Printer {
 	printer := Printer{
 		progress: make(chan string),
 		errors:   make(chan error),

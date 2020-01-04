@@ -6,58 +6,49 @@ import (
 	"io"
 	"os"
 
-	"github.com/sarpt/gamedbv/pkg/gamedb"
 	"github.com/sarpt/gamedbv/pkg/platform"
-	"github.com/sarpt/gamedbv/pkg/progress"
 )
 
-// UnzipPlatformDatabase perfoms decompression of platform's database archive file
-func UnzipPlatformDatabase(platformDb platform.Variant, printer progress.Notifier) {
-	dbInfo := gamedb.GetDbInfo(platformDb)
+// UnzipPlatformDatabase perfoms decompression of platform's database archive file. Returns string with extracted filename, or error
+func UnzipPlatformDatabase(variant platform.Variant) error {
+	config := platform.GetConfig(variant)
 
-	dbArchivePath, err := dbInfo.GetDatabaseArchiveFilePath()
+	dbArchivePath, err := config.GetPlatformArchiveFilePath()
 	if err != nil {
-		printer.NextError(err)
-		return
+		return err
 	}
 
 	zipFileReader, err := zip.OpenReader(dbArchivePath)
 	if err != nil {
-		printer.NextError(err)
-		return
+		return err
 	}
 	defer zipFileReader.Close()
 
 	var contentFileReader io.Reader
 	for _, file := range zipFileReader.File {
-		if file.Name == dbInfo.ContentFileName {
-			contentFileReader, err = file.Open()
+		if file.Name != config.ContentFileName {
+			continue
 		}
+
+		contentFileReader, err = file.Open()
 	}
 
 	if contentFileReader == nil {
-		printer.NextProgress(fmt.Sprintf(noDatabaseContentFile, dbInfo.ContentFileName, platformDb.String()))
-		return
+		return fmt.Errorf(fmt.Sprintf(noDatabaseContentFile, config.ContentFileName, variant.String()))
 	} else if err != nil {
-		printer.NextError(err)
-		return
+		return err
 	}
 
-	contentFilePath, err := dbInfo.GetDatabaseContentFilePath()
+	contentFilePath, err := config.GetDatabaseContentFilePath()
 	if err != nil {
-		printer.NextError(err)
-		return
+		return err
 	}
 
 	contentFileWriter, err := os.Create(contentFilePath)
 	if err != nil {
-		printer.NextError(err)
-		return
+		return err
 	}
 
-	printer.NextProgress(fmt.Sprintf(extractingInProgress, dbInfo.ContentFileName, platformDb.String()))
 	_, err = io.Copy(contentFileWriter, contentFileReader)
-	if err != nil {
-		printer.NextError(err)
-	}
+	return err
 }
