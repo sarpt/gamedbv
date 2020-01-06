@@ -2,7 +2,7 @@ package cli
 
 import "fmt"
 
-// Printer is responsible for presenting information to the CLI
+// Printer is responsible for presenting information to the CLI, implements Notifier
 type Printer struct {
 	progress chan string
 	errors   chan error

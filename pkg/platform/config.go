@@ -14,6 +14,7 @@ type Config struct {
 	ContentFileName   string
 	URL               string
 	ForceDbDownload   bool
+	IndexType         string
 	IndexDir          string
 	PlatformDirectory string
 }
