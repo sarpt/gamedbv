@@ -11,9 +11,11 @@ import (
 )
 
 var text *string
+var region *string
 
 func init() {
 	text = flag.String("text", "", "A text to be searched for in the index")
+	region = flag.String("region", "", "A region of the game")
 	flag.Parse()
 }
 
@@ -21,7 +23,11 @@ func main() {
 	printer := cli.New()
 	defer printer.Close()
 
-	var regions []string
+	// todo: add possibility to pass more than one region
+	regions := []string{}
+	if *region != "" {
+		regions = append(regions, *region)
+	}
 	params := shared.SearchParameters{
 		Text:    *text,
 		Regions: regions,

@@ -9,13 +9,16 @@ import (
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
+const maxNumberOfResults = 1000
+const nameField = "Name"
+
 // AggregatedIndex implements the interface of the same name for indexes created by bleve
 type AggregatedIndex struct {
 	indexAlias bleve.IndexAlias
 }
 
 // Add uses platform config to add another index to be used during searching
-func (aidx AggregatedIndex) Add(conf platform.Config) error {
+func (aIdx AggregatedIndex) Add(conf platform.Config) error {
 	indexPath, err := conf.GetIndexFilePath()
 	if err != nil {
 		return err
@@ -31,18 +34,33 @@ func (aidx AggregatedIndex) Add(conf platform.Config) error {
 		return err
 	}
 
-	aidx.indexAlias.Add(index)
+	aIdx.indexAlias.Add(index)
 	return nil
 }
 
 // Search returns aggregated results from indexes added to alias
-func (aidx AggregatedIndex) Search(params shared.SearchParameters) (string, error) {
-	query := bleve.NewMatchQuery(params.Text)
-	request := bleve.NewSearchRequest(query)
-	request.Fields = []string{"Name"}
-	request.Size = 1000
+func (aIdx AggregatedIndex) Search(params shared.SearchParameters) (string, error) {
+	query := bleve.NewConjunctionQuery()
 
-	result, err := aidx.indexAlias.Search(request)
+	textQuery := bleve.NewMatchQuery(params.Text)
+	query.AddQuery(textQuery)
+
+	if len(params.Regions) > 0 {
+		anyRegionQuery := bleve.NewDisjunctionQuery()
+
+		for _, region := range params.Regions {
+			regionQuery := bleve.NewTermQuery(region)
+			anyRegionQuery.AddQuery(regionQuery)
+		}
+
+		query.AddQuery(anyRegionQuery)
+	}
+
+	request := bleve.NewSearchRequest(query)
+	request.Fields = []string{nameField}
+	request.Size = maxNumberOfResults
+
+	result, err := aIdx.indexAlias.Search(request)
 	if err != nil {
 		return "", err
 	}
@@ -51,7 +69,7 @@ func (aidx AggregatedIndex) Search(params shared.SearchParameters) (string, erro
 	for _, hit := range result.Hits {
 		fields := hit.Fields
 		for key, value := range fields {
-			if key == "Name" {
+			if key == nameField {
 				hits = fmt.Sprintln(hits + value.(string))
 			}
 		}
