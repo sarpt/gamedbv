@@ -36,12 +36,12 @@ func PrepareIndex(variant platform.Variant, games []gametdb.Game) error {
 
 // Search takes platforms, find indexes which are available to execute query and executes the query on them, returning game results
 func Search(platforms []platform.Variant, searchParams shared.SearchParameters) (string, error) {
-	index := getAggregatedIndex(platforms)
-	return index.Search(searchParams)
+	searcher := getSearcher(platforms)
+	return searcher.Search(searchParams)
 }
 
-func getAggregatedIndex(platforms []platform.Variant) shared.AggregatedIndex {
-	bleveIndex := bleve.New()
+func getSearcher(platforms []platform.Variant) shared.Searcher {
+	bleveIndex := bleve.NewSearcher()
 
 	for _, plat := range platforms {
 		conf := platform.GetConfig(plat)

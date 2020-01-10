@@ -12,10 +12,12 @@ import (
 
 var text *string
 var region *string
+var platformVariant *platform.Variant
 
 func init() {
 	text = flag.String("text", "", "A text to be searched for in the index")
 	region = flag.String("region", "", "A region of the game")
+	flag.Var(platformVariant, "platform", "A platform for which the search should be executed")
 	flag.Parse()
 }
 
@@ -33,7 +35,13 @@ func main() {
 		Regions: regions,
 	}
 
-	result, err := dbindex.Search(platform.GetAllPlatforms(), params)
+	var platforms []platform.Variant
+	if platformVariant.IsSet() {
+		platforms = append(platforms, *platformVariant)
+	} else {
+		platforms = platform.GetAllPlatforms()
+	}
+	result, err := dbindex.Search(platforms, params)
 	if err != nil {
 		panic(err)
 	}

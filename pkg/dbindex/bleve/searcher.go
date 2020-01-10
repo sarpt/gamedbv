@@ -12,13 +12,13 @@ import (
 const maxNumberOfResults = 1000
 const nameField = "Name"
 
-// AggregatedIndex implements the interface of the same name for indexes created by bleve
-type AggregatedIndex struct {
+// Searcher implements the interface of the same name for indexes created by bleve
+type Searcher struct {
 	indexAlias bleve.IndexAlias
 }
 
 // Add uses platform config to add another index to be used during searching
-func (aIdx AggregatedIndex) Add(conf platform.Config) error {
+func (s Searcher) Add(conf platform.Config) error {
 	indexPath, err := conf.GetIndexFilePath()
 	if err != nil {
 		return err
@@ -34,12 +34,12 @@ func (aIdx AggregatedIndex) Add(conf platform.Config) error {
 		return err
 	}
 
-	aIdx.indexAlias.Add(index)
+	s.indexAlias.Add(index)
 	return nil
 }
 
 // Search returns aggregated results from indexes added to alias
-func (aIdx AggregatedIndex) Search(params shared.SearchParameters) (string, error) {
+func (s Searcher) Search(params shared.SearchParameters) (string, error) {
 	query := bleve.NewConjunctionQuery()
 
 	textQuery := bleve.NewMatchQuery(params.Text)
@@ -60,15 +60,14 @@ func (aIdx AggregatedIndex) Search(params shared.SearchParameters) (string, erro
 	request.Fields = []string{nameField}
 	request.Size = maxNumberOfResults
 
-	result, err := aIdx.indexAlias.Search(request)
+	result, err := s.indexAlias.Search(request)
 	if err != nil {
 		return "", err
 	}
 
 	var hits string
 	for _, hit := range result.Hits {
-		fields := hit.Fields
-		for key, value := range fields {
+		for key, value := range hit.Fields {
 			if key == nameField {
 				hits = fmt.Sprintln(hits + value.(string))
 			}
@@ -78,9 +77,9 @@ func (aIdx AggregatedIndex) Search(params shared.SearchParameters) (string, erro
 	return hits, nil
 }
 
-// New initializes bleve implementation of AggregatedIndex
-func New() AggregatedIndex {
-	return AggregatedIndex{
+// NewSearcher initializes bleve implementation of Searcher
+func NewSearcher() Searcher {
+	return Searcher{
 		indexAlias: bleve.NewIndexAlias(),
 	}
 }
