@@ -1,7 +1,7 @@
 package shared
 
 import (
-	"github.com/sarpt/gamedbv/platform"
+	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
 // SearchParameters provide information what criteria for results are expected
