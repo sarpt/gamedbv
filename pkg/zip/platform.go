@@ -1,4 +1,4 @@
-package dbunzip
+package zip
 
 import (
 	"archive/zip"

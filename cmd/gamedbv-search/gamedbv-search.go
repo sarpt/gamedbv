@@ -5,19 +5,19 @@ import (
 	"fmt"
 
 	"github.com/sarpt/gamedbv/pkg/cli"
-	"github.com/sarpt/gamedbv/pkg/dbindex"
-	"github.com/sarpt/gamedbv/pkg/dbindex/shared"
+	"github.com/sarpt/gamedbv/pkg/index"
+	"github.com/sarpt/gamedbv/pkg/index/shared"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
 var text *string
 var region *string
-var platformVariant *platform.Variant
+var platformVariant platform.Variant
 
 func init() {
 	text = flag.String("text", "", "A text to be searched for in the index")
 	region = flag.String("region", "", "A region of the game")
-	flag.Var(platformVariant, "platform", "A platform for which the search should be executed")
+	flag.Var(&platformVariant, "platform", "A platform for which the search should be executed")
 	flag.Parse()
 }
 
@@ -37,11 +37,11 @@ func main() {
 
 	var platforms []platform.Variant
 	if platformVariant.IsSet() {
-		platforms = append(platforms, *platformVariant)
+		platforms = append(platforms, platformVariant)
 	} else {
 		platforms = platform.GetAllPlatforms()
 	}
-	result, err := dbindex.Search(platforms, params)
+	result, err := index.Search(platforms, params)
 	if err != nil {
 		panic(err)
 	}

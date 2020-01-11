@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/blevesearch/bleve"
-	"github.com/sarpt/gamedbv/pkg/dbindex/shared"
+	"github.com/sarpt/gamedbv/pkg/index/shared"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 

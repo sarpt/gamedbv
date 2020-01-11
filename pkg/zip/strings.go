@@ -1,4 +1,4 @@
-package dbunzip
+package zip
 
 const (
 	noDatabaseContentFile = "No file %s found for the platform %s"

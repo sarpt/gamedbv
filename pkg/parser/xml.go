@@ -1,4 +1,4 @@
-package dbparse
+package parser
 
 import (
 	"encoding/xml"

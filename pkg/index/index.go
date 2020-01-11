@@ -1,10 +1,10 @@
-package dbindex
+package index
 
 import (
 	"os"
 
-	"github.com/sarpt/gamedbv/pkg/dbindex/bleve"
-	"github.com/sarpt/gamedbv/pkg/dbindex/shared"
+	"github.com/sarpt/gamedbv/pkg/index/bleve"
+	"github.com/sarpt/gamedbv/pkg/index/shared"
 	"github.com/sarpt/gamedbv/pkg/gametdb"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
