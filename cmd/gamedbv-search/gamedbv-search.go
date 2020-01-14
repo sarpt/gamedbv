@@ -6,8 +6,8 @@ import (
 
 	"github.com/sarpt/gamedbv/pkg/cli"
 	"github.com/sarpt/gamedbv/pkg/index"
-	"github.com/sarpt/gamedbv/pkg/index/shared"
 	"github.com/sarpt/gamedbv/pkg/platform"
+	"github.com/sarpt/gamedbv/pkg/search"
 )
 
 var text *string
@@ -30,7 +30,7 @@ func main() {
 	if *region != "" {
 		regions = append(regions, *region)
 	}
-	params := shared.SearchParameters{
+	params := index.SearchParameters{
 		Text:    *text,
 		Regions: regions,
 	}
@@ -41,7 +41,7 @@ func main() {
 	} else {
 		platforms = platform.GetAllPlatforms()
 	}
-	result, err := index.Search(platforms, params)
+	result, err := search.Execute(platforms, params)
 	if err != nil {
 		panic(err)
 	}

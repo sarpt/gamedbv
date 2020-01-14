@@ -11,8 +11,11 @@ import (
 
 const defaultBatchLength = 1000
 
+// Creator satisifies interface of the same name in index package. Hanldes creation of bleve index
+type Creator struct{}
+
 // CreateIndex saves parsed index on the disk. The function uses batching to speed up the indexing
-func CreateIndex(filepath string, games []gametdb.Game) error {
+func (c Creator) CreateIndex(filepath string, games []gametdb.Game) error {
 	mapping := createIndexMapping()
 
 	index, err := bleve.New(filepath, mapping)

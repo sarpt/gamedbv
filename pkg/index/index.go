@@ -1,19 +1,15 @@
 package index
 
 import (
+	"fmt"
 	"os"
 
-	"github.com/sarpt/gamedbv/pkg/index/bleve"
-	"github.com/sarpt/gamedbv/pkg/index/shared"
 	"github.com/sarpt/gamedbv/pkg/gametdb"
-	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
 // PrepareIndex handles creating index that will be used for searching purposes
-func PrepareIndex(variant platform.Variant, games []gametdb.Game) error {
-	platformConfig := platform.GetConfig(variant)
-
-	indexPath, err := platformConfig.GetIndexFilePath()
+func PrepareIndex(creators map[string]Creator, conf Config, games []gametdb.Game) error {
+	indexPath, err := conf.GetIndexFilePath()
 	if err != nil {
 		return err
 	}
@@ -30,26 +26,10 @@ func PrepareIndex(variant platform.Variant, games []gametdb.Game) error {
 		}
 	}
 
-	err = bleve.CreateIndex(indexPath, games)
-	return err
-}
-
-// Search takes platforms, find indexes which are available to execute query and executes the query on them, returning game results
-func Search(platforms []platform.Variant, searchParams shared.SearchParameters) (string, error) {
-	searcher := getSearcher(platforms)
-	return searcher.Search(searchParams)
-}
-
-func getSearcher(platforms []platform.Variant) shared.Searcher {
-	bleveIndex := bleve.NewSearcher()
-
-	for _, plat := range platforms {
-		conf := platform.GetConfig(plat)
-
-		if conf.IndexType == "bleve" {
-			bleveIndex.Add(conf)
-		}
+	if creator, ok := creators[conf.GetIndexType()]; ok {
+		err = creator.CreateIndex(indexPath, games)
+	} else {
+		err = fmt.Errorf("Creator not found for the config")
 	}
-
-	return bleveIndex
+	return err
 }

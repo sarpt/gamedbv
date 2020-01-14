@@ -52,3 +52,8 @@ func (conf Config) GetIndexFilePath() (string, error) {
 
 	return path.Join(databaseDirectory, conf.IndexDir), err
 }
+
+// GetIndexType returns index type (eg. bleve, solr etc.)
+func (conf Config) GetIndexType() string {
+	return conf.IndexType
+}

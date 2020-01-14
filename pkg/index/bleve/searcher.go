@@ -5,8 +5,7 @@ import (
 	"os"
 
 	"github.com/blevesearch/bleve"
-	"github.com/sarpt/gamedbv/pkg/index/shared"
-	"github.com/sarpt/gamedbv/pkg/platform"
+	"github.com/sarpt/gamedbv/pkg/index"
 )
 
 const maxNumberOfResults = 1000
@@ -18,7 +17,7 @@ type Searcher struct {
 }
 
 // Add uses platform config to add another index to be used during searching
-func (s Searcher) Add(conf platform.Config) error {
+func (s Searcher) Add(conf index.Config) error {
 	indexPath, err := conf.GetIndexFilePath()
 	if err != nil {
 		return err
@@ -39,7 +38,7 @@ func (s Searcher) Add(conf platform.Config) error {
 }
 
 // Search returns aggregated results from indexes added to alias
-func (s Searcher) Search(params shared.SearchParameters) (string, error) {
+func (s Searcher) Search(params index.SearchParameters) (string, error) {
 	query := bleve.NewConjunctionQuery()
 
 	textQuery := bleve.NewMatchQuery(params.Text)
