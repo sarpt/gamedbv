@@ -14,6 +14,7 @@ var DefaultConfigsPerPlatform = map[string]Config{
 		IndexType:         "bleve",
 		IndexDir:          "wii_bleve",
 		PlatformDirectory: "wii",
+		PlatformName:      Wii,
 	},
 	Ps3: Config{
 		AppConfig:         gamedbv.DefaultConfig,
@@ -25,6 +26,7 @@ var DefaultConfigsPerPlatform = map[string]Config{
 		IndexType:         "bleve",
 		IndexDir:          "ps3_bleve",
 		PlatformDirectory: "ps3",
+		PlatformName:      Ps3,
 	},
 	Wiiu: Config{
 		AppConfig:         gamedbv.DefaultConfig,
@@ -36,6 +38,7 @@ var DefaultConfigsPerPlatform = map[string]Config{
 		IndexType:         "bleve",
 		IndexDir:          "wiiu_bleve",
 		PlatformDirectory: "wiiu",
+		PlatformName:      Wiiu,
 	},
 	Nds: Config{
 		AppConfig:         gamedbv.DefaultConfig,
@@ -47,6 +50,7 @@ var DefaultConfigsPerPlatform = map[string]Config{
 		IndexType:         "bleve",
 		IndexDir:          "nds_bleve",
 		PlatformDirectory: "nds",
+		PlatformName:      Nds,
 	},
 	N3ds: Config{
 		AppConfig:         gamedbv.DefaultConfig,
@@ -58,6 +62,7 @@ var DefaultConfigsPerPlatform = map[string]Config{
 		IndexType:         "bleve",
 		IndexDir:          "3ds_bleve",
 		PlatformDirectory: "3ds",
+		PlatformName:      N3ds,
 	},
 	Switch: Config{
 		AppConfig:         gamedbv.DefaultConfig,
@@ -69,5 +74,6 @@ var DefaultConfigsPerPlatform = map[string]Config{
 		IndexType:         "bleve",
 		IndexDir:          "switch_bleve",
 		PlatformDirectory: "switch",
+		PlatformName:      Switch,
 	},
 }

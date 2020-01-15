@@ -6,12 +6,13 @@ import "github.com/sarpt/gamedbv/pkg/gametdb"
 type Config interface {
 	GetIndexFilePath() (string, error)
 	GetIndexType() string
+	GetPlatform() string
 }
 
 // Searcher is used for searching in the indexes of the same type, eg. all bleve indexes could be aggregated to return batch of results
 type Searcher interface {
 	Search(SearchParameters) (string, error)
-	Add(Config) error
+	AddIndex(Config) error
 }
 
 // Creator is responsible for new index creation

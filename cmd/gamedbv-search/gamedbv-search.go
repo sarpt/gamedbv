@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/sarpt/gamedbv/pkg/cli"
-	"github.com/sarpt/gamedbv/pkg/index"
 	"github.com/sarpt/gamedbv/pkg/platform"
 	"github.com/sarpt/gamedbv/pkg/search"
 )
@@ -30,10 +29,6 @@ func main() {
 	if *region != "" {
 		regions = append(regions, *region)
 	}
-	params := index.SearchParameters{
-		Text:    *text,
-		Regions: regions,
-	}
 
 	var platforms []platform.Variant
 	if platformVariant.IsSet() {
@@ -41,7 +36,14 @@ func main() {
 	} else {
 		platforms = platform.GetAllPlatforms()
 	}
-	result, err := search.Execute(platforms, params)
+
+	params := search.Settings{
+		Text:      *text,
+		Regions:   regions,
+		Platforms: platforms,
+	}
+
+	result, err := search.Execute(params)
 	if err != nil {
 		panic(err)
 	}
