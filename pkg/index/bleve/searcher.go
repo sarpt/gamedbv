@@ -38,14 +38,20 @@ func (s *Searcher) AddIndex(conf index.Config) error {
 }
 
 // Search returns aggregated results from indexes added to alias
-func (s Searcher) Search(params index.SearchParameters) (string, error) {
+func (s Searcher) Search(params index.SearchParameters) (index.Result, error) {
+	searchResult := index.Result{}
+
 	indexAlias := bleve.NewIndexAlias()
 	for _, plat := range params.Platforms {
 		if idx, ok := s.indexes[plat]; ok {
 			indexAlias.Add(idx)
 		} else {
-			return "", fmt.Errorf("Could not search for platform: " + plat)
+			searchResult.IgnoredPlatforms = append(searchResult.IgnoredPlatforms, plat)
 		}
+	}
+
+	if len(searchResult.IgnoredPlatforms) == len(params.Platforms) {
+		return searchResult, fmt.Errorf("Could not execute search due to lack of indexes for any of the provided platforms")
 	}
 
 	query := bleve.NewConjunctionQuery()
@@ -70,19 +76,22 @@ func (s Searcher) Search(params index.SearchParameters) (string, error) {
 
 	result, err := indexAlias.Search(request)
 	if err != nil {
-		return "", err
+		return searchResult, err
 	}
 
-	var hits string
 	for _, hit := range result.Hits {
 		for key, value := range hit.Fields {
 			if key == nameField {
-				hits = fmt.Sprintln(hits + value.(string))
+				gameHit := index.GameHit{
+					ID:   hit.ID,
+					Name: value.(string),
+				}
+				searchResult.Hits = append(searchResult.Hits, gameHit)
 			}
 		}
 	}
 
-	return hits, nil
+	return searchResult, nil
 }
 
 // NewSearcher initializes bleve implementation of Searcher

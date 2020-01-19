@@ -1,6 +1,8 @@
 package search
 
 import (
+	"fmt"
+
 	"github.com/sarpt/gamedbv/pkg/index"
 	"github.com/sarpt/gamedbv/pkg/index/bleve"
 	"github.com/sarpt/gamedbv/pkg/platform"
@@ -18,7 +20,12 @@ func Execute(settings Settings) (string, error) {
 	searcher := getSearcher(settings)
 	searchParams := mapToSearcherParameters(settings)
 
-	return searcher.Search(searchParams)
+	res, err := searcher.Search(searchParams)
+	if err != nil {
+		return "", err
+	}
+
+	return prepareOutput(res), nil
 }
 
 func getSearcher(settings Settings) index.Searcher {
@@ -43,4 +50,18 @@ func mapToSearcherParameters(settings Settings) index.SearchParameters {
 		Regions:   settings.Regions,
 		Platforms: platforms,
 	}
+}
+
+func prepareOutput(res index.Result) string {
+	var out string
+
+	for _, ignored := range res.IgnoredPlatforms {
+		out = out + fmt.Sprintf("Search could not be executed for platform %s\n", ignored)
+	}
+
+	for _, game := range res.Hits {
+		out = out + fmt.Sprintf("[%s] %s\n", game.ID, game.Name)
+	}
+
+	return out
 }
