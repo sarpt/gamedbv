@@ -23,7 +23,7 @@ func DownloadPlatformDatabase(variant platform.Variant, printer progress.Notifie
 		return
 	}
 
-	if databaseFilesStatuses.DoesDatabaseExist && !config.ForceDbDownload {
+	if databaseFilesStatuses.DoesDatabaseExist && !config.ForceDbDownload() {
 		printer.NextProgress(fmt.Sprintf(archiveFileAlreadyPresent, variant.String()))
 		return
 	}
@@ -34,7 +34,7 @@ func DownloadPlatformDatabase(variant platform.Variant, printer progress.Notifie
 		return
 	}
 
-	printer.NextProgress(fmt.Sprintf(downloadingInProgress, variant.String()))
+	printer.NextProgress(fmt.Sprintf(downloadingInProgress, config.Platform()))
 	err = downloadDatabaseFile(config)
 	if err != nil {
 		printer.NextError(err)
@@ -42,7 +42,7 @@ func DownloadPlatformDatabase(variant platform.Variant, printer progress.Notifie
 }
 
 func downloadDatabaseFile(config platform.Config) error {
-	filePath, err := config.GetPlatformArchiveFilePath()
+	filePath, err := config.PlatformArchiveFilePath()
 	if err != nil {
 		return err
 	}
@@ -53,14 +53,14 @@ func downloadDatabaseFile(config platform.Config) error {
 	}
 	defer outputFile.Close()
 
-	err = downloadFile(config.URL, outputFile)
+	err = downloadFile(config.URL(), outputFile)
 	return err
 }
 
 func getFilesStatuses(config platform.Config) (FilesStatus, error) {
 	var filesStatus FilesStatus
 
-	filePath, err := config.GetPlatformArchiveFilePath()
+	filePath, err := config.PlatformArchiveFilePath()
 	if err != nil {
 		return filesStatus, err
 	}
@@ -71,7 +71,7 @@ func getFilesStatuses(config platform.Config) (FilesStatus, error) {
 }
 
 func prepareDatabaseDirectory(config platform.Config) error {
-	directory, err := config.GetPlatformDirectory()
+	directory, err := config.PlatformDirectory()
 	if err != nil {
 		return err
 	}

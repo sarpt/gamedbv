@@ -18,7 +18,7 @@ type Searcher struct {
 
 // AddIndex uses platform config to add another index to be used during searching
 func (s *Searcher) AddIndex(conf index.Config) error {
-	indexPath, err := conf.GetIndexFilePath()
+	indexPath, err := conf.IndexFilePath()
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func (s *Searcher) AddIndex(conf index.Config) error {
 		return err
 	}
 
-	s.indexes[conf.GetPlatform()] = index
+	s.indexes[conf.Platform()] = index
 	return nil
 }
 

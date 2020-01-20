@@ -5,16 +5,18 @@ import (
 	"os"
 
 	"github.com/sarpt/gamedbv/pkg/gametdb"
-	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
+// Config provides information about files to be parsed by xml
+type Config interface {
+	DatabaseContentFilePath() (string, error)
+}
+
 // ParseDatabaseFile converts database file contents and returns gamedb game Entries from files
-func ParseDatabaseFile(variant platform.Variant) (*gametdb.Datafile, error) {
+func ParseDatabaseFile(platformConfig Config) (*gametdb.Datafile, error) {
 	var datafile gametdb.Datafile
 
-	platformConfig := platform.GetConfig(variant)
-
-	dbFilePath, err := platformConfig.GetDatabaseContentFilePath()
+	dbFilePath, err := platformConfig.DatabaseContentFilePath()
 	if err != nil {
 		return &datafile, err
 	}

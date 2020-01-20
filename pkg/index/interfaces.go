@@ -2,10 +2,10 @@ package index
 
 // Config provides index information and settings
 type Config interface {
-	GetIndexFilePath() (string, error)
-	GetIndexType() string
-	GetPlatform() string
-	GetDocType() string
+	IndexFilePath() (string, error)
+	IndexType() string
+	Platform() string
+	DocType() string
 }
 
 // Searcher is used for searching in the indexes of the same type, eg. all bleve indexes could be aggregated to return batch of results

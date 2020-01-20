@@ -13,20 +13,21 @@ import (
 
 // IndexPlatform creates Index related to the platfrom
 func IndexPlatform(platformVariant platform.Variant, printer progress.Notifier) {
+	platformConfig := platform.GetConfig(platformVariant)
+
 	printer.NextProgress(fmt.Sprintf("Unzipping platform %s", platformVariant.String()))
-	err := zip.UnzipPlatformDatabase(platformVariant)
+	err := zip.UnzipPlatformDatabase(platformConfig)
 	if err != nil {
 		printer.NextError(err)
 	}
 
 	printer.NextProgress(fmt.Sprintf("Parsing platform %s", platformVariant.String()))
-	datafile, err := parser.ParseDatabaseFile(platformVariant)
+	datafile, err := parser.ParseDatabaseFile(platformConfig)
 	if err != nil {
 		printer.NextError(err)
 	}
 
 	printer.NextProgress(fmt.Sprintf("Indexing platform %s", platformVariant.String()))
-	platformConfig := platform.GetConfig(platformVariant)
 	creators := map[string]index.Creator{
 		"bleve": bleve.Creator{},
 	}

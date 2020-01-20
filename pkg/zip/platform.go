@@ -5,15 +5,19 @@ import (
 	"fmt"
 	"io"
 	"os"
-
-	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
-// UnzipPlatformDatabase perfoms decompression of platform's database archive file. Returns string with extracted filename, or error
-func UnzipPlatformDatabase(variant platform.Variant) error {
-	config := platform.GetConfig(variant)
+// Config provides information neccessary for unzipping the platform files
+type Config interface {
+	PlatformArchiveFilePath() (string, error)
+	ContentFileName() string
+	Platform() string
+	DatabaseContentFilePath() (string, error)
+}
 
-	dbArchivePath, err := config.GetPlatformArchiveFilePath()
+// UnzipPlatformDatabase perfoms decompression of platform's database archive file. Returns string with extracted filename, or error
+func UnzipPlatformDatabase(config Config) error {
+	dbArchivePath, err := config.PlatformArchiveFilePath()
 	if err != nil {
 		return err
 	}
@@ -26,7 +30,7 @@ func UnzipPlatformDatabase(variant platform.Variant) error {
 
 	var contentFileReader io.Reader
 	for _, file := range zipFileReader.File {
-		if file.Name != config.ContentFileName {
+		if file.Name != config.ContentFileName() {
 			continue
 		}
 
@@ -34,12 +38,12 @@ func UnzipPlatformDatabase(variant platform.Variant) error {
 	}
 
 	if contentFileReader == nil {
-		return fmt.Errorf(fmt.Sprintf(noDatabaseContentFile, config.ContentFileName, variant.String()))
+		return fmt.Errorf(fmt.Sprintf(noDatabaseContentFile, config.ContentFileName(), config.Platform()))
 	} else if err != nil {
 		return err
 	}
 
-	contentFilePath, err := config.GetDatabaseContentFilePath()
+	contentFilePath, err := config.DatabaseContentFilePath()
 	if err != nil {
 		return err
 	}
