@@ -18,6 +18,7 @@ type Config struct {
 	IndexDir          string
 	PlatformDirectory string
 	PlatformName      string
+	DocType           string
 }
 
 // GetConfig returns final platform database information object taking into accounts default values and passed overrides of settings.
@@ -62,4 +63,9 @@ func (conf Config) GetIndexType() string {
 // GetPlatform returns platform name
 func (conf Config) GetPlatform() string {
 	return conf.PlatformName
+}
+
+// GetDocType returns document identifier used for indexes documents matching
+func (conf Config) GetDocType() string {
+	return conf.DocType
 }

@@ -6,17 +6,18 @@ import (
 	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/mapping"
 
-	"github.com/sarpt/gamedbv/pkg/gametdb"
+	"github.com/sarpt/gamedbv/pkg/index"
 )
 
 const defaultBatchLength = 1000
+const documentTypeField = "DocType"
 
 // Creator satisifies interface of the same name in index package. Hanldes creation of bleve index
 type Creator struct{}
 
 // CreateIndex saves parsed index on the disk. The function uses batching to speed up the indexing
-func (c Creator) CreateIndex(filepath string, games []gametdb.Game) error {
-	mapping := createIndexMapping()
+func (c Creator) CreateIndex(docType string, filepath string, games []index.GameSource) error {
+	mapping := createIndexMapping(docType)
 
 	index, err := bleve.New(filepath, mapping)
 	if err != nil {
@@ -35,7 +36,16 @@ func (c Creator) CreateIndex(filepath string, games []gametdb.Game) error {
 
 		gamesToBatch := games[firstIdxToBatch:lastIdxToBatch]
 		for _, game := range gamesToBatch {
-			err = batch.Index(game.ID, game)
+			idxSource := struct {
+				Name    string
+				Region  string
+				DocType string
+			}{
+				Name:    game.GetName(),
+				Region:  game.GetRegion(),
+				DocType: docType,
+			}
+			err = batch.Index(game.GetID(), idxSource)
 			if err != nil {
 				return err
 			}
@@ -50,31 +60,33 @@ func (c Creator) CreateIndex(filepath string, games []gametdb.Game) error {
 	return nil
 }
 
-func createIndexMapping() *mapping.IndexMappingImpl {
+func createIndexMapping(docType string) *mapping.IndexMappingImpl {
 	mapping := bleve.NewIndexMapping()
+	mapping.TypeField = documentTypeField
+
 	gametdbDocMapping := createGameTDBDocumentMapping()
 
-	mapping.AddDocumentMapping(gametdb.GameDoctype, gametdbDocMapping)
+	mapping.AddDocumentMapping(docType, gametdbDocMapping)
 
 	return mapping
 }
 
 func createGameTDBDocumentMapping() *mapping.DocumentMapping {
-	docmapping := bleve.NewDocumentMapping()
+	docMapping := bleve.NewDocumentMapping()
 
 	nameField := bleve.NewTextFieldMapping()
 	nameField.Store = true
 	nameField.IncludeInAll = false
 	nameField.Index = true
-	docmapping.AddFieldMappingsAt("Name", nameField)
+	docMapping.AddFieldMappingsAt("Name", nameField)
 
 	textField := bleve.NewTextFieldMapping()
 	textField.Store = false
 	textField.IncludeInAll = false
 	textField.Index = true
-	docmapping.AddFieldMappingsAt("Region", textField)
+	docMapping.AddFieldMappingsAt("Region", textField)
 
-	return docmapping
+	return docMapping
 }
 
 func getNumberOfBatches(batchLength int, collectionLength int) int {

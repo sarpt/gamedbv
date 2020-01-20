@@ -3,12 +3,10 @@ package index
 import (
 	"fmt"
 	"os"
-
-	"github.com/sarpt/gamedbv/pkg/gametdb"
 )
 
 // PrepareIndex handles creating index that will be used for searching purposes
-func PrepareIndex(creators map[string]Creator, conf Config, games []gametdb.Game) error {
+func PrepareIndex(creators map[string]Creator, conf Config, games []GameSource) error {
 	indexPath, err := conf.GetIndexFilePath()
 	if err != nil {
 		return err
@@ -27,7 +25,7 @@ func PrepareIndex(creators map[string]Creator, conf Config, games []gametdb.Game
 	}
 
 	if creator, ok := creators[conf.GetIndexType()]; ok {
-		err = creator.CreateIndex(indexPath, games)
+		err = creator.CreateIndex(conf.GetDocType(), indexPath, games)
 	} else {
 		err = fmt.Errorf("Creator not found for the config")
 	}

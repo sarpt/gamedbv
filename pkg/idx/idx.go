@@ -30,7 +30,12 @@ func IndexPlatform(platformVariant platform.Variant, printer progress.Notifier) 
 	creators := map[string]index.Creator{
 		"bleve": bleve.Creator{},
 	}
-	err = index.PrepareIndex(creators, platformConfig, datafile.Games)
+
+	var gameSources []index.GameSource
+	for _, game := range datafile.Games {
+		gameSources = append(gameSources, game)
+	}
+	err = index.PrepareIndex(creators, platformConfig, gameSources)
 
 	if err != nil {
 		printer.NextError(err)
