@@ -18,7 +18,7 @@ type Searcher struct {
 
 // AddIndex uses platform config to add another index to be used during searching
 func (s *Searcher) AddIndex(conf index.Config) error {
-	indexPath, err := conf.IndexFilePath()
+	indexPath, err := conf.IndexFilepath()
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func (s *Searcher) AddIndex(conf index.Config) error {
 		return err
 	}
 
-	s.indexes[conf.Platform()] = index
+	s.indexes[conf.PlatformName()] = index
 	return nil
 }
 
@@ -56,7 +56,7 @@ func (s Searcher) Search(params index.SearchParameters) (index.Result, error) {
 
 	query := bleve.NewConjunctionQuery()
 
-	textQuery := bleve.NewMatchQuery(params.Text)
+	textQuery := bleve.NewMatchPhraseQuery(params.Text)
 	query.AddQuery(textQuery)
 
 	if len(params.Regions) > 0 {

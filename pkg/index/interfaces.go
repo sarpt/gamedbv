@@ -2,9 +2,9 @@ package index
 
 // Config provides index information and settings
 type Config interface {
-	IndexFilePath() (string, error)
-	IndexType() string
-	Platform() string
+	IndexFilepath() (string, error)
+	IndexVariant() string
+	PlatformName() string
 	DocType() string
 }
 

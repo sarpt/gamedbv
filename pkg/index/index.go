@@ -7,7 +7,7 @@ import (
 
 // PrepareIndex handles creating index that will be used for searching purposes
 func PrepareIndex(creators map[string]Creator, conf Config, games []GameSource) error {
-	indexPath, err := conf.IndexFilePath()
+	indexPath, err := conf.IndexFilepath()
 	if err != nil {
 		return err
 	}
@@ -24,7 +24,7 @@ func PrepareIndex(creators map[string]Creator, conf Config, games []GameSource) 
 		}
 	}
 
-	if creator, ok := creators[conf.IndexType()]; ok {
+	if creator, ok := creators[conf.IndexVariant()]; ok {
 		err = creator.CreateIndex(conf.DocType(), indexPath, games)
 	} else {
 		err = fmt.Errorf("Creator not found for the config")

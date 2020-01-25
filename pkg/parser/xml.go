@@ -7,7 +7,7 @@ import (
 
 // ParseDatabaseFile converts database file contents and returns gamedb game Entries from files
 func ParseDatabaseFile(platformConfig Config, provider ModelProvider) error {
-	dbFilePath, err := platformConfig.DatabaseContentFilePath()
+	dbFilePath, err := platformConfig.Filepath()
 	if err != nil {
 		return err
 	}
