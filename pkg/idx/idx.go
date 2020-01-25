@@ -3,6 +3,7 @@ package idx
 import (
 	"fmt"
 
+	"github.com/sarpt/gamedbv/pkg/gametdb"
 	"github.com/sarpt/gamedbv/pkg/index"
 	"github.com/sarpt/gamedbv/pkg/index/bleve"
 	"github.com/sarpt/gamedbv/pkg/parser"
@@ -21,8 +22,9 @@ func IndexPlatform(platformVariant platform.Variant, printer progress.Notifier) 
 		printer.NextError(err)
 	}
 
+	gametdbModelProvider := gametdb.ModelProvider{}
 	printer.NextProgress(fmt.Sprintf("Parsing platform %s", platformVariant.String()))
-	datafile, err := parser.ParseDatabaseFile(platformConfig)
+	err = parser.ParseDatabaseFile(platformConfig, &gametdbModelProvider)
 	if err != nil {
 		printer.NextError(err)
 	}
@@ -33,7 +35,7 @@ func IndexPlatform(platformVariant platform.Variant, printer progress.Notifier) 
 	}
 
 	var gameSources []index.GameSource
-	for _, game := range datafile.Games {
+	for _, game := range gametdbModelProvider.Games() {
 		gameSources = append(gameSources, game)
 	}
 	err = index.PrepareIndex(creators, platformConfig, gameSources)

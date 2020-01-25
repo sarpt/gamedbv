@@ -10,7 +10,6 @@ import (
 )
 
 const defaultBatchLength = 1000
-const documentTypeField = "DocType"
 
 // Creator satisifies interface of the same name in index package. Hanldes creation of bleve index
 type Creator struct{}
@@ -36,14 +35,10 @@ func (c Creator) CreateIndex(docType string, filepath string, games []index.Game
 
 		gamesToBatch := games[firstIdxToBatch:lastIdxToBatch]
 		for _, game := range gamesToBatch {
-			idxSource := struct {
-				Name    string
-				Region  string
-				DocType string
-			}{
+			idxSource := Data{
 				Name:    game.GetName(),
 				Region:  game.GetRegion(),
-				DocType: docType,
+				docType: docType,
 			}
 			err = batch.Index(game.GetID(), idxSource)
 			if err != nil {
@@ -62,10 +57,8 @@ func (c Creator) CreateIndex(docType string, filepath string, games []index.Game
 
 func createIndexMapping(docType string) *mapping.IndexMappingImpl {
 	mapping := bleve.NewIndexMapping()
-	mapping.TypeField = documentTypeField
 
 	gametdbDocMapping := createGameTDBDocumentMapping()
-
 	mapping.AddDocumentMapping(docType, gametdbDocMapping)
 
 	return mapping
@@ -76,7 +69,7 @@ func createGameTDBDocumentMapping() *mapping.DocumentMapping {
 
 	nameField := bleve.NewTextFieldMapping()
 	nameField.Store = true
-	nameField.IncludeInAll = false
+	nameField.IncludeInAll = true
 	nameField.Index = true
 	docMapping.AddFieldMappingsAt("Name", nameField)
 
