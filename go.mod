@@ -17,6 +17,7 @@ require (
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/facebookgo/subset v0.0.0-20150612182917-8dac2c3c4870 // indirect
 	github.com/golang/protobuf v1.3.2 // indirect
+	github.com/jinzhu/gorm v1.9.12
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20190728182440-6a916e37a237 // indirect
 	github.com/steveyen/gtreap v0.0.0-20150807155958-0abe01ef9be2 // indirect
