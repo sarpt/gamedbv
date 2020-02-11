@@ -29,16 +29,14 @@ func IndexPlatform(platformVariant platform.Variant, printer progress.Notifier) 
 		printer.NextError(err)
 	}
 
+	platformProvider := NewGameTdbAdapter(platformVariant.String(), gametdbModelProvider)
+
 	printer.NextProgress(fmt.Sprintf("Indexing platform %s", platformVariant.String()))
 	creators := map[string]index.Creator{
 		"bleve": bleve.Creator{},
 	}
 
-	var gameSources []index.GameSource
-	for _, game := range gametdbModelProvider.Games() {
-		gameSources = append(gameSources, game)
-	}
-	err = index.PrepareIndex(creators, platformConfig, gameSources)
+	err = index.PrepareIndex(creators, platformConfig, platformProvider.GameSources())
 
 	if err != nil {
 		printer.NextError(err)

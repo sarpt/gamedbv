@@ -36,11 +36,11 @@ func (c Creator) CreateIndex(docType string, filepath string, games []index.Game
 		gamesToBatch := games[firstIdxToBatch:lastIdxToBatch]
 		for _, game := range gamesToBatch {
 			idxSource := Data{
-				Name:    game.GetName(),
-				Region:  game.GetRegion(),
+				Name:    game.Name,
+				Region:  game.Region,
 				docType: docType,
 			}
-			err = batch.Index(game.GetID(), idxSource)
+			err = batch.Index(game.ID, idxSource)
 			if err != nil {
 				return err
 			}

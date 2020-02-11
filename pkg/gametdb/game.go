@@ -18,18 +18,3 @@ type Game struct {
 	Rom          Rom      `xml:"rom"`
 	PlatformType string   `xml:"type"`
 }
-
-// GetID returns ID of the game - usually a unique serial number that differs in format depending of platform
-func (g Game) GetID() string {
-	return g.ID
-}
-
-// GetName returns a game name
-func (g Game) GetName() string {
-	return g.Name
-}
-
-// GetRegion returns a region in which game was released
-func (g Game) GetRegion() string {
-	return g.Region
-}

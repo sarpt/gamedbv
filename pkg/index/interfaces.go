@@ -18,10 +18,3 @@ type Searcher interface {
 type Creator interface {
 	CreateIndex(string, string, []GameSource) error
 }
-
-// GameSource implements methods returning information about Game neccessary for index construction
-type GameSource interface {
-	GetID() string
-	GetName() string
-	GetRegion() string
-}
