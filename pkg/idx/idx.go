@@ -3,6 +3,7 @@ package idx
 import (
 	"fmt"
 
+	"github.com/sarpt/gamedbv/pkg/db"
 	"github.com/sarpt/gamedbv/pkg/gametdb"
 	"github.com/sarpt/gamedbv/pkg/index"
 	"github.com/sarpt/gamedbv/pkg/index/bleve"
@@ -29,15 +30,26 @@ func IndexPlatform(platformVariant platform.Variant, printer progress.Notifier) 
 		printer.NextError(err)
 	}
 
-	platformProvider := NewGameTdbAdapter(platformVariant.String(), gametdbModelProvider)
+	gametdbAdapter := NewGameTDBAdapter(platformVariant.String(), gametdbModelProvider)
 
 	printer.NextProgress(fmt.Sprintf("Indexing platform %s", platformVariant.String()))
 	creators := map[string]index.Creator{
 		"bleve": bleve.Creator{},
 	}
 
-	err = index.PrepareIndex(creators, platformConfig, platformProvider.GameSources())
+	err = index.PrepareIndex(creators, platformConfig, gametdbAdapter.GameSources())
+	if err != nil {
+		printer.NextError(err)
+	}
 
+	printer.NextProgress(fmt.Sprintf("Populating database for platform %s", platformVariant.String()))
+	db, err := db.GetDatabase(platformConfig)
+	defer db.Close()
+	if err != nil {
+		printer.NextError(err)
+	}
+
+	err = db.Populate(gametdbAdapter.PlatformProvider())
 	if err != nil {
 		printer.NextError(err)
 	}

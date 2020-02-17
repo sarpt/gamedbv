@@ -13,6 +13,7 @@ type Config struct {
 	name      string
 	source    Source
 	index     Index
+	database  Database
 }
 
 // GetConfig returns final platform database information object taking into accounts default values and passed overrides of settings.
@@ -23,30 +24,30 @@ func GetConfig(dbPlatform Variant) Config {
 
 // PlatformDirectory returns the parent directory related to the platform
 func (conf Config) PlatformDirectory() (string, error) {
-	homePath, err := conf.appConfig.GetBaseDirectoryPath()
+	basePath, err := conf.appConfig.GetBaseDirectoryPath()
 
-	return path.Join(homePath, conf.directory), err
+	return path.Join(basePath, conf.directory), err
 }
 
 // ArchiveFilepath returns the absolute filepath related to the platform's database archive file
 func (conf Config) ArchiveFilepath() (string, error) {
-	databaseDirectory, err := conf.PlatformDirectory()
+	platformDirectory, err := conf.PlatformDirectory()
 
-	return path.Join(databaseDirectory, conf.source.archiveFilename), err
+	return path.Join(platformDirectory, conf.source.archiveFilename), err
 }
 
 // Filepath returns the absolute filepath related to the  platform's database content file
 func (conf Config) Filepath() (string, error) {
-	databaseDirectory, err := conf.PlatformDirectory()
+	platformDirectory, err := conf.PlatformDirectory()
 
-	return path.Join(databaseDirectory, conf.source.filename), err
+	return path.Join(platformDirectory, conf.source.filename), err
 }
 
 // IndexFilepath returns absolute path of Index file
 func (conf Config) IndexFilepath() (string, error) {
-	databaseDirectory, err := conf.PlatformDirectory()
+	platformDirectory, err := conf.PlatformDirectory()
 
-	return path.Join(databaseDirectory, conf.index.directory), err
+	return path.Join(platformDirectory, conf.index.directory), err
 }
 
 // ForceSourceDownload spcifies if the source should be redownloaded, even in the case of source already existing in the filesystem
@@ -77,4 +78,19 @@ func (conf Config) Filename() string {
 // PlatformName returns name of the platform whose information is presented in config
 func (conf Config) PlatformName() string {
 	return conf.source.name
+}
+
+// DatabasePath return path of the database which persists information about entries parsed from the source file
+func (conf Config) DatabasePath() string {
+	basePath, err := conf.appConfig.GetBaseDirectoryPath()
+	if err != nil {
+		return ""
+	}
+
+	return path.Join(basePath, conf.database.path)
+}
+
+// DatabaseVariant return path of the database which persists information about entries parsed from the source file
+func (conf Config) DatabaseVariant() string {
+	return conf.database.variant
 }

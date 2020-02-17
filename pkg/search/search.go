@@ -65,3 +65,7 @@ func prepareOutput(res index.Result) string {
 
 	return out
 }
+
+// func getGameDetails(hit index.GameHit) []models.Game {
+// database, err := db.GetDatabase()
+// }

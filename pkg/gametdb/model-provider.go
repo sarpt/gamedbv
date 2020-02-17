@@ -10,6 +10,11 @@ func (mp *ModelProvider) Model() interface{} {
 	return &mp.dataFile
 }
 
+// Root returns root xml element (Datafile)
+func (mp *ModelProvider) Root() Datafile {
+	return mp.dataFile
+}
+
 // Games returns games found in the source file
 func (mp ModelProvider) Games() []Game {
 	return mp.dataFile.Games

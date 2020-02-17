@@ -9,31 +9,49 @@ import (
 
 // Database is a wrapper around Gorm-handled SQLite3 database that exposes methods useful for GameDBV information handling
 type Database struct {
-	config Config
-	db     *gorm.DB
+	config   Config
+	database *gorm.DB
 }
 
 // Close closes the underlying open db handle
 func (db Database) Close() {
-	db.Close()
+	db.database.Close()
+}
+
+// Populate takes a provider of new data to be pushed to Database.
+// Missing information is being added, while existing information is being updated
+// No data is being removed from the database
+func (db Database) Populate(prov PlatformProvider) error {
+	for _, game := range prov.Games {
+		db.database.Create(&game)
+	}
+
+	return nil
 }
 
 // GetDatabase attempts to open the database, performing the auto-migration in the process
-// Remember to close the database
 func GetDatabase(conf Config) (Database, error) {
 	var db Database
 
-	handle, err := gorm.Open("sqlite", conf.Path())
+	handle, err := gorm.Open(conf.DatabaseVariant(), conf.DatabasePath())
 	if err != nil {
 		return db, err
 	}
 
-	handle.AutoMigrate(&models.Game{})
+	handle.AutoMigrate(
+		&models.Game{},
+		&models.GameLanguage{},
+		&models.GameDescription{},
+		&models.Rom{},
+		&models.Rating{},
+		&models.Checksum{},
+		&models.Language{},
+	)
 
 	db = Database{
-		config: conf,
-		db:     handle,
+		config:   conf,
+		database: handle,
 	}
 
-	return db, nil
+	return db, handle.Error
 }

@@ -18,7 +18,7 @@ func PrepareIndex(creators map[string]Creator, conf Config, games []GameSource) 
 	}
 
 	if indexFile != nil {
-		err = os.Remove(indexPath)
+		err = os.RemoveAll(indexPath)
 		if err != nil {
 			return err
 		}

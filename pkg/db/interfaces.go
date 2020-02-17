@@ -2,5 +2,6 @@ package db
 
 // Config contains information neccessary for db access
 type Config interface {
-	Path() string
+	DatabasePath() string
+	DatabaseVariant() string
 }

@@ -7,6 +7,6 @@ import (
 // Language includes information about short code of the language and its full name
 type Language struct {
 	gorm.Model
-	Code string
+	Code string `gorm:"unique;not null"`
 	Name string
 }

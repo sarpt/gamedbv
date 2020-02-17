@@ -22,6 +22,10 @@ var DefaultConfigsPerPlatform = map[string]Config{
 			name:            "GameTDB",
 			url:             "https://www.gametdb.com/wiitdb.zip",
 		},
+		database: Database{
+			path:    "/store.db",
+			variant: "sqlite3",
+		},
 	},
 	Ps3: Config{
 		appConfig: gamedbv.DefaultConfig,
@@ -40,6 +44,10 @@ var DefaultConfigsPerPlatform = map[string]Config{
 			format:          "xml",
 			archived:        true,
 			archiveFilename: "ps3db.zip",
+		},
+		database: Database{
+			path:    "/store.db",
+			variant: "sqlite3",
 		},
 	},
 	Wiiu: Config{
@@ -60,6 +68,10 @@ var DefaultConfigsPerPlatform = map[string]Config{
 			name:            "GameTDB",
 			url:             "https://www.gametdb.com/wiiutdb.zip",
 		},
+		database: Database{
+			path:    "/store.db",
+			variant: "sqlite3",
+		},
 	},
 	Nds: Config{
 		appConfig: gamedbv.DefaultConfig,
@@ -78,6 +90,10 @@ var DefaultConfigsPerPlatform = map[string]Config{
 			format:          "xml",
 			name:            "GameTDB",
 			url:             "https://www.gametdb.com/dstdb.zip",
+		},
+		database: Database{
+			path:    "/store.db",
+			variant: "sqlite3",
 		},
 	},
 	N3ds: Config{
@@ -98,6 +114,10 @@ var DefaultConfigsPerPlatform = map[string]Config{
 			name:            "GameTDB",
 			url:             "https://www.gametdb.com/3dstdb.zip",
 		},
+		database: Database{
+			path:    "/store.db",
+			variant: "sqlite3",
+		},
 	},
 	Switch: Config{
 		appConfig: gamedbv.DefaultConfig,
@@ -116,6 +136,10 @@ var DefaultConfigsPerPlatform = map[string]Config{
 			forceDownload:   false,
 			format:          "xml",
 			url:             "https://www.gametdb.com/switchtdb.zip",
+		},
+		database: Database{
+			path:    "/store.db",
+			variant: "sqlite3",
 		},
 	},
 }
