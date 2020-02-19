@@ -1,4 +1,4 @@
-package platform
+package config
 
 // Source includes information about platform source which should provide identifying data neccessary for
 // downloading, parsing, indexing etc.

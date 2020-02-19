@@ -3,6 +3,7 @@ package idx
 import (
 	"fmt"
 
+	"github.com/sarpt/gamedbv/pkg/config"
 	"github.com/sarpt/gamedbv/pkg/db"
 	"github.com/sarpt/gamedbv/pkg/gametdb"
 	"github.com/sarpt/gamedbv/pkg/index"
@@ -15,7 +16,7 @@ import (
 
 // IndexPlatform creates Index related to the platfrom
 func IndexPlatform(platformVariant platform.Variant, printer progress.Notifier) {
-	platformConfig := platform.GetConfig(platformVariant)
+	platformConfig := config.GetConfig(platformVariant)
 
 	printer.NextProgress(fmt.Sprintf("Unzipping platform %s", platformVariant.String()))
 	err := zip.UnzipPlatformDatabase(platformConfig)

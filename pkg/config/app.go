@@ -1,17 +1,17 @@
-package gamedbv
+package config
 
 import (
 	"os"
 	"path"
 )
 
-// Config groups configuration properties of the whole GameDBV project
-type Config struct {
+// App groups configuration properties of the whole GameDBV project
+type App struct {
 	BaseDirectory string
 }
 
 // GetBaseDirectoryPath returns absolute path of GameDBV directory
-func (conf Config) GetBaseDirectoryPath() (string, error) {
+func (conf App) GetBaseDirectoryPath() (string, error) {
 	homePath, err := os.UserConfigDir()
 
 	return path.Join(homePath, conf.BaseDirectory), err

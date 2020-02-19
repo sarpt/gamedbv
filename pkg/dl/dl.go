@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/sarpt/gamedbv/pkg/config"
 	"github.com/sarpt/gamedbv/pkg/platform"
 	"github.com/sarpt/gamedbv/pkg/progress"
 )
@@ -15,7 +16,7 @@ type FilesStatus struct {
 
 // DownloadPlatformDatabase downloads neccessary database files related to provided platform
 func DownloadPlatformDatabase(variant platform.Variant, printer progress.Notifier) {
-	config := platform.GetConfig(variant)
+	config := config.GetConfig(variant)
 
 	databaseFilesStatuses, err := getFilesStatuses(config)
 	if err != nil {
@@ -41,7 +42,7 @@ func DownloadPlatformDatabase(variant platform.Variant, printer progress.Notifie
 	}
 }
 
-func downloadDatabaseFile(config platform.Config) error {
+func downloadDatabaseFile(config config.Platform) error {
 	filePath, err := config.ArchiveFilepath()
 	if err != nil {
 		return err
@@ -57,7 +58,7 @@ func downloadDatabaseFile(config platform.Config) error {
 	return err
 }
 
-func getFilesStatuses(config platform.Config) (FilesStatus, error) {
+func getFilesStatuses(config config.Platform) (FilesStatus, error) {
 	var filesStatus FilesStatus
 
 	filePath, err := config.ArchiveFilepath()
@@ -70,7 +71,7 @@ func getFilesStatuses(config platform.Config) (FilesStatus, error) {
 	return filesStatus, nil
 }
 
-func prepareDatabaseDirectory(config platform.Config) error {
+func prepareDatabaseDirectory(config config.Platform) error {
 	directory, err := config.PlatformDirectory()
 	if err != nil {
 		return err

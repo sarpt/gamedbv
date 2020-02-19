@@ -1,4 +1,4 @@
-package platform
+package config
 
 // Index includes information about variant of index (bleve, solr etc), stored directory etc.
 type Index struct {

@@ -1,13 +1,18 @@
-package platform
+package config
 
-import "github.com/sarpt/gamedbv/pkg/gamedbv"
+import "github.com/sarpt/gamedbv/pkg/platform"
+
+// DefaultConfig is used when no overrides are present
+var DefaultConfig App = App{
+	BaseDirectory: "gamedbv",
+}
 
 // DefaultConfigsPerPlatform are default configuration values used for platforms database files when no overwrites are present
-var DefaultConfigsPerPlatform = map[string]Config{
-	Wii: Config{
-		appConfig: gamedbv.DefaultConfig,
+var DefaultConfigsPerPlatform = map[string]Platform{
+	platform.Wii: Platform{
+		appConfig: DefaultConfig,
 		directory: "wii",
-		name:      Wii,
+		name:      platform.Wii,
 		index: Index{
 			directory: "wii_bleve",
 			docType:   "gametdb/game",
@@ -27,10 +32,10 @@ var DefaultConfigsPerPlatform = map[string]Config{
 			variant: "sqlite3",
 		},
 	},
-	Ps3: Config{
-		appConfig: gamedbv.DefaultConfig,
+	platform.Ps3: Platform{
+		appConfig: DefaultConfig,
 		directory: "ps3",
-		name:      Ps3,
+		name:      platform.Ps3,
 		index: Index{
 			directory: "ps3_bleve",
 			docType:   "gametdb/game",
@@ -50,10 +55,10 @@ var DefaultConfigsPerPlatform = map[string]Config{
 			variant: "sqlite3",
 		},
 	},
-	Wiiu: Config{
-		appConfig: gamedbv.DefaultConfig,
+	platform.Wiiu: Platform{
+		appConfig: DefaultConfig,
 		directory: "wiiu",
-		name:      Wiiu,
+		name:      platform.Wiiu,
 		index: Index{
 			directory: "wiiu_bleve",
 			docType:   "gametdb/game",
@@ -73,10 +78,10 @@ var DefaultConfigsPerPlatform = map[string]Config{
 			variant: "sqlite3",
 		},
 	},
-	Nds: Config{
-		appConfig: gamedbv.DefaultConfig,
+	platform.Nds: Platform{
+		appConfig: DefaultConfig,
 		directory: "nds",
-		name:      Nds,
+		name:      platform.Nds,
 		index: Index{
 			directory: "nds_bleve",
 			docType:   "gametdb/game",
@@ -96,10 +101,10 @@ var DefaultConfigsPerPlatform = map[string]Config{
 			variant: "sqlite3",
 		},
 	},
-	N3ds: Config{
-		appConfig: gamedbv.DefaultConfig,
+	platform.N3ds: Platform{
+		appConfig: DefaultConfig,
 		directory: "3ds",
-		name:      N3ds,
+		name:      platform.N3ds,
 		index: Index{
 			directory: "3ds_bleve",
 			docType:   "gametdb/game",
@@ -119,10 +124,10 @@ var DefaultConfigsPerPlatform = map[string]Config{
 			variant: "sqlite3",
 		},
 	},
-	Switch: Config{
-		appConfig: gamedbv.DefaultConfig,
+	platform.Switch: Platform{
+		appConfig: DefaultConfig,
 		directory: "switch",
-		name:      Switch,
+		name:      platform.Switch,
 		index: Index{
 			directory: "switch_bleve",
 			docType:   "gametdb/game",

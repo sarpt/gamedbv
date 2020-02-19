@@ -3,17 +3,10 @@ package search
 import (
 	"fmt"
 
+	"github.com/sarpt/gamedbv/pkg/config"
 	"github.com/sarpt/gamedbv/pkg/index"
 	"github.com/sarpt/gamedbv/pkg/index/bleve"
-	"github.com/sarpt/gamedbv/pkg/platform"
 )
-
-// Settings allow to control search execution
-type Settings struct {
-	Platforms []platform.Variant
-	Text      string
-	Regions   []string
-}
 
 // Execute takes platforms, find indexes which are available to execute query and executes the query on them, returning game results
 func Execute(settings Settings) (string, error) {
@@ -31,7 +24,7 @@ func Execute(settings Settings) (string, error) {
 func getSearcher(settings Settings) index.Searcher {
 	var configs []index.Config
 	for _, plat := range settings.Platforms {
-		configs = append(configs, platform.GetConfig(plat))
+		configs = append(configs, config.GetConfig(plat))
 	}
 
 	bleveIndex, _ := bleve.NewSearcher(configs)
