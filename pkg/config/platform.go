@@ -15,7 +15,7 @@ func (conf Platform) ArchiveFilepath() string {
 
 // Filepath returns the absolute filepath related to the platform's database content file
 func (conf Platform) Filepath() string {
-	return conf.source.filename
+	return conf.source.filepath
 }
 
 // Filename returns filename of source file containing titles database
