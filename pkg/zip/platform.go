@@ -7,21 +7,17 @@ import (
 	"os"
 )
 
-// Config provides information neccessary for unzipping the platform files
-type Config interface {
-	ArchiveFilepath() (string, error)
+// PlatformConfig provides information neccessary for unzipping the platform files
+type PlatformConfig interface {
+	ArchiveFilepath() string
 	Filename() string
-	PlatformName() string
-	Filepath() (string, error)
+	Name() string
+	Filepath() string
 }
 
 // UnzipPlatformDatabase perfoms decompression of platform's database archive file. Returns string with extracted filename, or error
-func UnzipPlatformDatabase(config Config) error {
-	dbArchivePath, err := config.ArchiveFilepath()
-	if err != nil {
-		return err
-	}
-
+func UnzipPlatformDatabase(config PlatformConfig) error {
+	dbArchivePath := config.ArchiveFilepath()
 	zipFileReader, err := zip.OpenReader(dbArchivePath)
 	if err != nil {
 		return err
@@ -38,16 +34,12 @@ func UnzipPlatformDatabase(config Config) error {
 	}
 
 	if contentFileReader == nil {
-		return fmt.Errorf(fmt.Sprintf(noDatabaseContentFile, config.Filename(), config.PlatformName()))
+		return fmt.Errorf(fmt.Sprintf(noDatabaseContentFile, config.Filename(), config.Name()))
 	} else if err != nil {
 		return err
 	}
 
-	contentFilePath, err := config.Filepath()
-	if err != nil {
-		return err
-	}
-
+	contentFilePath := config.Filepath()
 	contentFileWriter, err := os.Create(contentFilePath)
 	if err != nil {
 		return err

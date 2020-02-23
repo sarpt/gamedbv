@@ -6,12 +6,8 @@ import (
 )
 
 // PrepareIndex handles creating index that will be used for searching purposes
-func PrepareIndex(creators map[string]Creator, conf Config, games []GameSource) error {
-	indexPath, err := conf.IndexFilepath()
-	if err != nil {
-		return err
-	}
-
+func PrepareIndex(creators map[string]Creator, conf PlatformConfig, games []GameSource) error {
+	indexPath := conf.IndexFilepath()
 	indexFile, err := os.Stat(indexPath)
 	if !os.IsNotExist(err) && err != nil {
 		return err

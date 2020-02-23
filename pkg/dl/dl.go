@@ -9,45 +9,40 @@ import (
 	"github.com/sarpt/gamedbv/pkg/progress"
 )
 
-// FilesStatus groups information about existence of specific platform's database files
+// FilesStatus groups information about existence of specific platform's source files
 type FilesStatus struct {
-	DoesDatabaseExist bool
+	DoesSourceExist bool
 }
 
-// DownloadPlatformDatabase downloads neccessary database files related to provided platform
-func DownloadPlatformDatabase(variant platform.Variant, printer progress.Notifier) {
-	config := config.GetConfig(variant)
-
-	databaseFilesStatuses, err := getFilesStatuses(config)
+// DownloadPlatformSource downloads neccessary source files related to provided platform
+func DownloadPlatformSource(appConf config.App, variant platform.Variant, printer progress.Notifier) {
+	platformConfig := appConf.Platform(variant)
+	sourcesFilesStatuses, err := getFilesStatuses(platformConfig)
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
-	if databaseFilesStatuses.DoesDatabaseExist && !config.ForceSourceDownload() {
+	if sourcesFilesStatuses.DoesSourceExist && !platformConfig.ForceSourceDownload() {
 		printer.NextProgress(fmt.Sprintf(archiveFileAlreadyPresent, variant.String()))
 		return
 	}
 
-	err = prepareDatabaseDirectory(config)
+	err = preparePlatformDirectory(platformConfig)
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
-	printer.NextProgress(fmt.Sprintf(downloadingInProgress, config.PlatformName()))
-	err = downloadDatabaseFile(config)
+	printer.NextProgress(fmt.Sprintf(downloadingInProgress, platformConfig.Name()))
+	err = downloadSourceFile(platformConfig)
 	if err != nil {
 		printer.NextError(err)
 	}
 }
 
-func downloadDatabaseFile(config config.Platform) error {
-	filePath, err := config.ArchiveFilepath()
-	if err != nil {
-		return err
-	}
-
+func downloadSourceFile(config config.Platform) error {
+	filePath := config.ArchiveFilepath()
 	outputFile, err := os.Create(filePath)
 	if err != nil {
 		return err
@@ -61,22 +56,15 @@ func downloadDatabaseFile(config config.Platform) error {
 func getFilesStatuses(config config.Platform) (FilesStatus, error) {
 	var filesStatus FilesStatus
 
-	filePath, err := config.ArchiveFilepath()
-	if err != nil {
-		return filesStatus, err
-	}
-
-	filesStatus.DoesDatabaseExist = doesFileExist(filePath)
+	filePath := config.ArchiveFilepath()
+	filesStatus.DoesSourceExist = doesFileExist(filePath)
 
 	return filesStatus, nil
 }
 
-func prepareDatabaseDirectory(config config.Platform) error {
-	directory, err := config.PlatformDirectory()
-	if err != nil {
-		return err
-	}
+func preparePlatformDirectory(config config.Platform) error {
+	directory := config.DirectoryPath()
 
-	err = os.MkdirAll(directory, 0700)
+	err := os.MkdirAll(directory, 0700)
 	return err
 }

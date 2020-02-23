@@ -1,8 +1,8 @@
-package config
+package json
 
 // Index includes information about variant of index (bleve, solr etc), stored directory etc.
 type Index struct {
-	variant string
-	path    string
-	docType string
+	Variant   string
+	Directory string
+	DocType   string
 }

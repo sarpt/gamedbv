@@ -15,9 +15,9 @@ import (
 )
 
 // IndexPlatform creates Index related to the platfrom
-func IndexPlatform(platformVariant platform.Variant, printer progress.Notifier) {
-	platformConfig := config.GetConfig(platformVariant)
-
+func IndexPlatform(appConf config.App, platformVariant platform.Variant, printer progress.Notifier) {
+	platformConfig := appConf.Platform(platformVariant)
+	databaseConfig := appConf.Database()
 	printer.NextProgress(fmt.Sprintf("Unzipping platform %s", platformVariant.String()))
 	err := zip.UnzipPlatformDatabase(platformConfig)
 	if err != nil {
@@ -44,7 +44,7 @@ func IndexPlatform(platformVariant platform.Variant, printer progress.Notifier) 
 	}
 
 	printer.NextProgress(fmt.Sprintf("Populating database for platform %s", platformVariant.String()))
-	db, err := db.GetDatabase(platformConfig)
+	db, err := db.GetDatabase(databaseConfig)
 	defer db.Close()
 	if err != nil {
 		printer.NextError(err)

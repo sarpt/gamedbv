@@ -1,17 +1,17 @@
 package index
 
-// Config provides index information and settings
-type Config interface {
-	IndexFilepath() (string, error)
+// PlatformConfig provides index information and settings
+type PlatformConfig interface {
+	IndexFilepath() string
 	IndexVariant() string
-	PlatformName() string
+	Name() string
 	DocType() string
 }
 
 // Searcher is used for searching in the indexes of the same type, eg. all bleve indexes could be aggregated to return batch of results
 type Searcher interface {
 	Search(SearchParameters) (Result, error)
-	AddIndex(Config) error
+	AddIndex(PlatformConfig) error
 }
 
 // Creator is responsible for new index creation

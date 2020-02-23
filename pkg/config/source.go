@@ -6,6 +6,7 @@ type Source struct {
 	name            string
 	archived        bool
 	archiveFilename string
+	filepath        string
 	filename        string
 	format          string
 	forceDownload   bool

@@ -33,7 +33,7 @@ func (db Database) Populate(prov PlatformProvider) error {
 func GetDatabase(conf Config) (Database, error) {
 	var db Database
 
-	handle, err := gorm.Open(conf.DatabaseVariant(), conf.DatabasePath())
+	handle, err := gorm.Open(conf.Variant(), conf.Path())
 	if err != nil {
 		return db, err
 	}

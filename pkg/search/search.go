@@ -9,8 +9,8 @@ import (
 )
 
 // Execute takes platforms, find indexes which are available to execute query and executes the query on them, returning game results
-func Execute(settings Settings) (string, error) {
-	searcher := getSearcher(settings)
+func Execute(appConf config.App, settings Settings) (string, error) {
+	searcher := getSearcher(appConf, settings)
 	searchParams := mapToSearcherParameters(settings)
 
 	res, err := searcher.Search(searchParams)
@@ -21,10 +21,10 @@ func Execute(settings Settings) (string, error) {
 	return prepareOutput(res), nil
 }
 
-func getSearcher(settings Settings) index.Searcher {
-	var configs []index.Config
+func getSearcher(appConf config.App, settings Settings) index.Searcher {
+	var configs []index.PlatformConfig
 	for _, plat := range settings.Platforms {
-		configs = append(configs, config.GetConfig(plat))
+		configs = append(configs, appConf.Platform(plat))
 	}
 
 	bleveIndex, _ := bleve.NewSearcher(configs)

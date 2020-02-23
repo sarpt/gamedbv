@@ -4,6 +4,7 @@ import (
 	"flag"
 
 	"github.com/sarpt/gamedbv/pkg/cli"
+	"github.com/sarpt/gamedbv/pkg/config"
 	"github.com/sarpt/gamedbv/pkg/dl"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
@@ -18,6 +19,11 @@ func init() {
 }
 
 func main() {
+	appConf, err := config.NewApp()
+	if err != nil {
+		panic(err)
+	}
+
 	var platformsToDownload []platform.Variant
 
 	printer := cli.New()
@@ -34,6 +40,6 @@ func main() {
 	}
 
 	for _, platformToDownload := range platformsToDownload {
-		dl.DownloadPlatformDatabase(platformToDownload, printer)
+		dl.DownloadPlatformSource(appConf, platformToDownload, printer)
 	}
 }

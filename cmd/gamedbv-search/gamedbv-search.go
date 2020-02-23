@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/sarpt/gamedbv/pkg/cli"
+	"github.com/sarpt/gamedbv/pkg/config"
 	"github.com/sarpt/gamedbv/pkg/platform"
 	"github.com/sarpt/gamedbv/pkg/search"
 )
@@ -21,6 +22,11 @@ func init() {
 }
 
 func main() {
+	appConf, err := config.NewApp()
+	if err != nil {
+		panic(err)
+	}
+
 	printer := cli.New()
 	defer printer.Close()
 
@@ -43,7 +49,7 @@ func main() {
 		Platforms: platforms,
 	}
 
-	result, err := search.Execute(params)
+	result, err := search.Execute(appConf, params)
 	if err != nil {
 		panic(err)
 	}

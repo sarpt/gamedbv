@@ -1,53 +1,31 @@
 package config
 
-import (
-	"path"
-
-	"github.com/sarpt/gamedbv/pkg/platform"
-)
-
 // Platform groups information used for platform database handling
 type Platform struct {
-	appConfig App
-	directory string
-	name      string
-	source    Source
-	index     Index
-	database  Database
-}
-
-// GetConfig returns final platform database information object taking into accounts default values and passed overrides of settings.
-// Todo: implement passing overrides
-func GetConfig(dbPlatform platform.Variant) Platform {
-	return DefaultConfigsPerPlatform[dbPlatform.String()]
-}
-
-// PlatformDirectory returns the parent directory related to the platform
-func (conf Platform) PlatformDirectory() (string, error) {
-	basePath, err := conf.appConfig.GetBaseDirectoryPath()
-
-	return path.Join(basePath, conf.directory), err
+	dirPath string
+	name    string
+	index   Index
+	source  Source
 }
 
 // ArchiveFilepath returns the absolute filepath related to the platform's database archive file
-func (conf Platform) ArchiveFilepath() (string, error) {
-	platformDirectory, err := conf.PlatformDirectory()
-
-	return path.Join(platformDirectory, conf.source.archiveFilename), err
+func (conf Platform) ArchiveFilepath() string {
+	return conf.source.archiveFilename
 }
 
-// Filepath returns the absolute filepath related to the  platform's database content file
-func (conf Platform) Filepath() (string, error) {
-	platformDirectory, err := conf.PlatformDirectory()
+// Filepath returns the absolute filepath related to the platform's database content file
+func (conf Platform) Filepath() string {
+	return conf.source.filename
+}
 
-	return path.Join(platformDirectory, conf.source.filename), err
+// Filename returns filename of source file containing titles database
+func (conf Platform) Filename() string {
+	return conf.source.filename
 }
 
 // IndexFilepath returns absolute path of Index file
-func (conf Platform) IndexFilepath() (string, error) {
-	platformDirectory, err := conf.PlatformDirectory()
-
-	return path.Join(platformDirectory, conf.index.directory), err
+func (conf Platform) IndexFilepath() string {
+	return conf.index.path
 }
 
 // ForceSourceDownload spcifies if the source should be redownloaded, even in the case of source already existing in the filesystem
@@ -70,27 +48,12 @@ func (conf Platform) DocType() string {
 	return conf.index.docType
 }
 
-// Filename returns filename of source file containing titles database
-func (conf Platform) Filename() string {
-	return conf.source.filename
-}
-
-// PlatformName returns name of the platform whose information is presented in config
-func (conf Platform) PlatformName() string {
+// Name returns name of the platform whose information is presented in config
+func (conf Platform) Name() string {
 	return conf.source.name
 }
 
-// DatabasePath return path of the database which persists information about entries parsed from the source file
-func (conf Platform) DatabasePath() string {
-	basePath, err := conf.appConfig.GetBaseDirectoryPath()
-	if err != nil {
-		return ""
-	}
-
-	return path.Join(basePath, conf.database.path)
-}
-
-// DatabaseVariant return path of the database which persists information about entries parsed from the source file
-func (conf Platform) DatabaseVariant() string {
-	return conf.database.variant
+// DirectoryPath returns directory name related to the specified platform
+func (conf Platform) DirectoryPath() string {
+	return conf.dirPath
 }

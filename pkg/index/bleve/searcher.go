@@ -17,13 +17,9 @@ type Searcher struct {
 }
 
 // AddIndex uses platform config to add another index to be used during searching
-func (s *Searcher) AddIndex(conf index.Config) error {
-	indexPath, err := conf.IndexFilepath()
-	if err != nil {
-		return err
-	}
-
-	_, err = os.Stat(indexPath)
+func (s *Searcher) AddIndex(conf index.PlatformConfig) error {
+	indexPath := conf.IndexFilepath()
+	_, err := os.Stat(indexPath)
 	if err != nil {
 		return err
 	}
@@ -33,7 +29,7 @@ func (s *Searcher) AddIndex(conf index.Config) error {
 		return err
 	}
 
-	s.indexes[conf.PlatformName()] = index
+	s.indexes[conf.Name()] = index
 	return nil
 }
 
@@ -95,8 +91,8 @@ func (s Searcher) Search(params index.SearchParameters) (index.Result, error) {
 }
 
 // NewSearcher initializes bleve implementation of Searcher
-func NewSearcher(configs []index.Config) (*Searcher, []index.Config) {
-	var ignored []index.Config
+func NewSearcher(configs []index.PlatformConfig) (*Searcher, []index.PlatformConfig) {
+	var ignored []index.PlatformConfig
 	s := &Searcher{
 		indexes: make(map[string]bleve.Index),
 	}
