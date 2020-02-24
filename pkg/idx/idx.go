@@ -44,7 +44,7 @@ func IndexPlatform(appConf config.App, platformVariant platform.Variant, printer
 	}
 
 	printer.NextProgress(fmt.Sprintf("Populating database for platform %s", platformVariant.String()))
-	db, err := db.GetDatabase(databaseConfig)
+	db, err := db.NewDatabase(databaseConfig)
 	defer db.Close()
 	if err != nil {
 		printer.NextError(err)

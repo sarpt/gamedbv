@@ -12,5 +12,6 @@ type Rom struct {
 	Name      string
 	Size      string
 	Checksums []Checksum
+	Game      *Game
 	GameID    int
 }

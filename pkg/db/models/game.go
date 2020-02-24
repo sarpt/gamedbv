@@ -9,11 +9,11 @@ type Game struct {
 	gorm.Model
 	SerialNo     string `gorm:"unique_index"`
 	Region       string
-	Languages    []GameLanguage
-	Descriptions []GameDescription
+	Languages    []*GameLanguage
+	Descriptions []*GameDescription
 	Developer    string
 	Publisher    string
-	Roms         []Rom
+	Roms         []*Rom
 	Date         string
-	Rating       []Rating
+	Ratings      []*Rating
 }

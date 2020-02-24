@@ -5,5 +5,5 @@ package gametdb
 type Locale struct {
 	Language string `xml:"lang,attr"`
 	Title    string `xml:"title"`
-	Synopsis string `xml:"synposis"`
+	Synopsis string `xml:"synopsis"`
 }

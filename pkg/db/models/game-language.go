@@ -8,7 +8,8 @@ import (
 // Game can have 1-multiple languages
 type GameLanguage struct {
 	gorm.Model
-	Language   Language
+	Language   *Language
 	LanguageID int
+	Game       *Game
 	GameID     int
 }
