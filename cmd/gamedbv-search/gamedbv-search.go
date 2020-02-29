@@ -4,10 +4,10 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/sarpt/gamedbv/internal/config"
+	"github.com/sarpt/gamedbv/internal/search"
 	"github.com/sarpt/gamedbv/pkg/cli"
-	"github.com/sarpt/gamedbv/pkg/config"
 	"github.com/sarpt/gamedbv/pkg/platform"
-	"github.com/sarpt/gamedbv/pkg/search"
 )
 
 var text *string

@@ -6,4 +6,5 @@ import "github.com/sarpt/gamedbv/pkg/db/models"
 type PlatformProvider struct {
 	Games        []*models.Game
 	Descriptions []*models.GameDescription
+	Languages    []*models.Language
 }

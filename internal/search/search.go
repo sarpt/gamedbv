@@ -3,14 +3,14 @@ package search
 import (
 	"fmt"
 
-	"github.com/sarpt/gamedbv/pkg/config"
+	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/pkg/db"
 	"github.com/sarpt/gamedbv/pkg/db/models"
 	"github.com/sarpt/gamedbv/pkg/index"
 	"github.com/sarpt/gamedbv/pkg/index/bleve"
 )
 
-// Execute takes platforms, find indexes which are available to execute query and executes the query on them, returning game results
+// Execute takes platforms, finds indexes which are available to execute query and executes the query on them, returning game results from database
 func Execute(appConf config.App, settings Settings) (string, error) {
 	searcher := getSearcher(appConf, settings)
 	searchParams := mapToSearcherParameters(settings)
@@ -20,7 +20,7 @@ func Execute(appConf config.App, settings Settings) (string, error) {
 		return "", err
 	}
 
-	gameDetails, err := getGamesDetails(appConf.Database(), res.Hits)
+	gameDetails, err := gamesDetails(appConf.Database(), res.Hits)
 	if err != nil {
 		return "", err
 	}
@@ -70,7 +70,7 @@ func prepareOutput(games []*models.Game, ignoredPlatforms []string) string {
 	return out
 }
 
-func getGamesDetails(dbConf config.Database, hits []index.GameHit) ([]*models.Game, error) {
+func gamesDetails(dbConf config.Database, hits []index.GameHit) ([]*models.Game, error) {
 	var models []*models.Game
 
 	database, err := db.OpenDatabase(dbConf)
@@ -83,6 +83,6 @@ func getGamesDetails(dbConf config.Database, hits []index.GameHit) ([]*models.Ga
 		serialNumbers = append(serialNumbers, hit.ID)
 	}
 
-	models = database.GamesForSerials(serialNumbers)
+	models = database.Games(serialNumbers)
 	return models, err
 }

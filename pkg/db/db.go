@@ -18,50 +18,39 @@ func (db Database) Close() {
 	db.handle.Close()
 }
 
-// Populate takes a provider of new data to be pushed to Database.
-// Missing information is being added, while existing information is being updated
-// No data is being removed from the database
-func (db Database) Populate(prov PlatformProvider) error {
-	return db.handle.Transaction(func(tx *gorm.DB) error {
-		for _, game := range prov.Games {
-			tx.Create(game)
-			if tx.Error != nil {
-				return tx.Error
-			}
-		}
-
-		// manual creation of GameDescription instead of relying on Game.Descriptions being filled is due to horrendous performance with latter
-		for _, description := range prov.Descriptions {
-			tx.Create(description)
-			if tx.Error != nil {
-				return tx.Error
-			}
-		}
-
-		return nil
-	})
-}
-
-// GamesForSerials returns games with provided serial numbers
-func (db Database) GamesForSerials(serialNumbers []string) []*models.Game {
+// Games returns games matching provided serial numbers
+func (db Database) Games(serialNumbers []string) []*models.Game {
 	var games []*models.Game
 
 	db.handle.Where("serial_no IN (?)", serialNumbers).Find(&games)
 
-	var descriptions []*models.GameDescription
 	for _, game := range games {
-		db.handle.Model(game).Related(&descriptions)
-
-		language := models.Language{}
-		for _, description := range descriptions {
-			db.handle.Model(description).Related(&language)
-			description.Language = &language
-		}
-
-		game.Descriptions = descriptions
+		game.Descriptions = db.GameDescriptions(*game)
 	}
 
 	return games
+}
+
+// GameDescriptions return descriptions entries for a provided game
+func (db Database) GameDescriptions(game models.Game) []*models.GameDescription {
+	var descriptions []*models.GameDescription
+
+	db.handle.Model(game).Related(&descriptions)
+
+	for _, description := range descriptions {
+		description.Language = db.DescriptionLanguage(*description)
+	}
+
+	return descriptions
+}
+
+// DescriptionLanguage returns the language of provided description entry
+func (db Database) DescriptionLanguage(description models.GameDescription) *models.Language {
+	language := &models.Language{}
+
+	db.handle.Model(description).Related(language)
+
+	return language
 }
 
 // NewDatabase attempts to open the database, performing the auto-migration in the process

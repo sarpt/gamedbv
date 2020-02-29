@@ -4,7 +4,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/sarpt/gamedbv/pkg/config/json"
+	"github.com/sarpt/gamedbv/internal/config/json"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 

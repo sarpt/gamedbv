@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sarpt/gamedbv/pkg/config"
+	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/pkg/platform"
 	"github.com/sarpt/gamedbv/pkg/progress"
 )

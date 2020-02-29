@@ -2,8 +2,9 @@ package idx
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/sarpt/gamedbv/pkg/config"
+	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/pkg/db"
 	"github.com/sarpt/gamedbv/pkg/gametdb"
 	"github.com/sarpt/gamedbv/pkg/index"
@@ -44,13 +45,27 @@ func IndexPlatform(appConf config.App, platformVariant platform.Variant, printer
 	}
 
 	printer.NextProgress(fmt.Sprintf("Populating database for platform %s", platformVariant.String()))
-	db, err := db.NewDatabase(databaseConfig)
-	defer db.Close()
+	var database db.Database
+
+	_, err = os.Stat(databaseConfig.Path())
+	if err != nil && !os.IsNotExist(err) {
+		printer.NextError(err)
+	}
+
+	if os.IsNotExist(err) {
+		printer.NextProgress(fmt.Sprintf("Creating new database in %s", databaseConfig.Path()))
+		database, err = db.NewDatabase(databaseConfig)
+	} else {
+		printer.NextProgress(fmt.Sprintf("Reusing database in %s", databaseConfig.Path()))
+		database, err = db.OpenDatabase(databaseConfig)
+	}
+
+	defer database.Close()
 	if err != nil {
 		printer.NextError(err)
 	}
 
-	err = db.Populate(gametdbAdapter.PlatformProvider())
+	err = database.Populate(gametdbAdapter.PlatformProvider())
 	if err != nil {
 		printer.NextError(err)
 	}

@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 
+	"github.com/sarpt/gamedbv/internal/config"
+	"github.com/sarpt/gamedbv/internal/dl"
 	"github.com/sarpt/gamedbv/pkg/cli"
-	"github.com/sarpt/gamedbv/pkg/config"
-	"github.com/sarpt/gamedbv/pkg/dl"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
