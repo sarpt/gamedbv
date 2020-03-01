@@ -1,7 +1,6 @@
 package dl
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/sarpt/gamedbv/internal/config"
@@ -24,7 +23,7 @@ func DownloadPlatformSource(appConf config.App, variant platform.Variant, printe
 	}
 
 	if sourcesFilesStatuses.DoesSourceExist && !platformConfig.ForceSourceDownload() {
-		printer.NextProgress(fmt.Sprintf(archiveFileAlreadyPresent, variant.String()))
+		printer.NextStatus(newArchiveFileAlreadyPresentStatus(variant.String()))
 		return
 	}
 
@@ -34,7 +33,7 @@ func DownloadPlatformSource(appConf config.App, variant platform.Variant, printe
 		return
 	}
 
-	printer.NextProgress(fmt.Sprintf(downloadingInProgress, platformConfig.Name()))
+	printer.NextStatus(newDownloadingInProgressStatus(platformConfig.Name()))
 	err = downloadSourceFile(platformConfig)
 	if err != nil {
 		printer.NextError(err)

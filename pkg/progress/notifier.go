@@ -1,7 +1,7 @@
 package progress
 
-// Notifier is an interface that enforces implementation of progress and error handling
+// Notifier is an interface that enforces implementation of progress and error handling.
 type Notifier interface {
-	NextProgress(string)
+	NextStatus(Status)
 	NextError(error)
 }

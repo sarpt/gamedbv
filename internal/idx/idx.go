@@ -1,7 +1,6 @@
 package idx
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/sarpt/gamedbv/internal/config"
@@ -17,24 +16,29 @@ import (
 
 // IndexPlatform creates Index related to the platfrom
 func IndexPlatform(appConf config.App, platformVariant platform.Variant, printer progress.Notifier) {
+	platformName := platformVariant.String()
+
 	platformConfig := appConf.Platform(platformVariant)
 	databaseConfig := appConf.Database()
-	printer.NextProgress(fmt.Sprintf("Unzipping platform %s", platformVariant.String()))
+
+	printer.NextStatus(newPlatformUnzipStatus(platformName))
 	err := zip.UnzipPlatformDatabase(platformConfig)
 	if err != nil {
 		printer.NextError(err)
+		return
 	}
 
 	gametdbModelProvider := gametdb.ModelProvider{}
-	printer.NextProgress(fmt.Sprintf("Parsing platform %s", platformVariant.String()))
+	printer.NextStatus(newPlatformParsingStatus(platformName))
 	err = parser.ParseDatabaseFile(platformConfig, &gametdbModelProvider)
 	if err != nil {
 		printer.NextError(err)
+		return
 	}
 
 	gametdbAdapter := NewGameTDBAdapter(platformVariant.String(), gametdbModelProvider)
 
-	printer.NextProgress(fmt.Sprintf("Indexing platform %s", platformVariant.String()))
+	printer.NextStatus(newPlatformIndexingStatus(platformName))
 	creators := map[string]index.Creator{
 		"bleve": bleve.Creator{},
 	}
@@ -42,27 +46,31 @@ func IndexPlatform(appConf config.App, platformVariant platform.Variant, printer
 	err = index.PrepareIndex(creators, platformConfig, gametdbAdapter.GameSources())
 	if err != nil {
 		printer.NextError(err)
+		return
 	}
 
-	printer.NextProgress(fmt.Sprintf("Populating database for platform %s", platformVariant.String()))
+	printer.NextStatus(newDatabasePopulateStatus(platformName))
 	var database db.Database
 
-	_, err = os.Stat(databaseConfig.Path())
+	databasePath := databaseConfig.Path()
+	_, err = os.Stat(databasePath)
 	if err != nil && !os.IsNotExist(err) {
 		printer.NextError(err)
+		return
 	}
 
 	if os.IsNotExist(err) {
-		printer.NextProgress(fmt.Sprintf("Creating new database in %s", databaseConfig.Path()))
+		printer.NextStatus(newDatabaseCreateStatus(databasePath))
 		database, err = db.NewDatabase(databaseConfig)
 	} else {
-		printer.NextProgress(fmt.Sprintf("Reusing database in %s", databaseConfig.Path()))
+		printer.NextStatus(newDatabaseReuseStatus(databasePath))
 		database, err = db.OpenDatabase(databaseConfig)
 	}
 
 	defer database.Close()
 	if err != nil {
 		printer.NextError(err)
+		return
 	}
 
 	err = database.Populate(gametdbAdapter.PlatformProvider())

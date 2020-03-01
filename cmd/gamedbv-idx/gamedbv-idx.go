@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 
 	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/internal/idx"
@@ -34,7 +35,7 @@ func main() {
 	} else if platformFlag.IsSet() {
 		platformsToParse = append(platformsToParse, platformFlag)
 	} else {
-		printer.NextProgress("Neither --platform nor --allPlarforms specified. One of them is mandatory.")
+		printer.NextError(fmt.Errorf("neither --platform nor --allPlarforms specified. One of them is mandatory"))
 		flag.PrintDefaults()
 		return
 	}

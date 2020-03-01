@@ -1,16 +1,21 @@
 package cli
 
-import "fmt"
+import (
+	"fmt"
 
-// Printer is responsible for presenting information to the CLI, implements Notifier
+	"github.com/sarpt/gamedbv/pkg/progress"
+)
+
+// Printer is responsible for presenting information to the CLI
+// It implements progress.Notifier and db.Results
 type Printer struct {
-	progress chan string
+	progress chan progress.Status
 	errors   chan error
 }
 
-// NextProgress should be used for regular messages from function execution
-func (printer Printer) NextProgress(message string) {
-	printer.progress <- message
+// NextStatus should be used for regular messages from function execution
+func (printer Printer) NextStatus(status progress.Status) {
+	printer.progress <- status
 }
 
 // NextError should be used for error from which program cannot recover
@@ -27,7 +32,7 @@ func (printer Printer) Close() {
 // New initializes printer that will call progressHandler and errorsHandler when respective methods will be invoked
 func New() Printer {
 	printer := Printer{
-		progress: make(chan string),
+		progress: make(chan progress.Status),
 		errors:   make(chan error),
 	}
 
@@ -37,9 +42,9 @@ func New() Printer {
 	return printer
 }
 
-func progressReporter(progress <-chan string) {
-	for message := range progress {
-		fmt.Println(message)
+func progressReporter(statuses <-chan progress.Status) {
+	for status := range statuses {
+		fmt.Println(fmt.Sprintf("%s: %s", status.Step, status.Message))
 	}
 }
 
