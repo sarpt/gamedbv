@@ -1,8 +1,6 @@
 package idx
 
 import (
-	"os"
-
 	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/pkg/db"
 	"github.com/sarpt/gamedbv/pkg/gametdb"
@@ -15,11 +13,10 @@ import (
 )
 
 // IndexPlatform creates Index related to the platfrom
-func IndexPlatform(appConf config.App, platformVariant platform.Variant, printer progress.Notifier) {
+func IndexPlatform(appConf config.App, platformVariant platform.Variant, printer progress.Notifier, database db.Database) {
 	platformName := platformVariant.String()
 
 	platformConfig := appConf.Platform(platformVariant)
-	databaseConfig := appConf.Database()
 
 	printer.NextStatus(newPlatformUnzipStatus(platformName))
 	err := zip.UnzipPlatformDatabase(platformConfig)
@@ -50,29 +47,6 @@ func IndexPlatform(appConf config.App, platformVariant platform.Variant, printer
 	}
 
 	printer.NextStatus(newDatabasePopulateStatus(platformName))
-	var database db.Database
-
-	databasePath := databaseConfig.Path()
-	_, err = os.Stat(databasePath)
-	if err != nil && !os.IsNotExist(err) {
-		printer.NextError(err)
-		return
-	}
-
-	if os.IsNotExist(err) {
-		printer.NextStatus(newDatabaseCreateStatus(databasePath))
-		database, err = db.NewDatabase(databaseConfig)
-	} else {
-		printer.NextStatus(newDatabaseReuseStatus(databasePath))
-		database, err = db.OpenDatabase(databaseConfig)
-	}
-
-	defer database.Close()
-	if err != nil {
-		printer.NextError(err)
-		return
-	}
-
 	err = database.Populate(gametdbAdapter.PlatformProvider())
 	if err != nil {
 		printer.NextError(err)

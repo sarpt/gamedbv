@@ -3,10 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"sync"
 
+	"github.com/sarpt/gamedbv/internal/cli"
 	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/internal/dl"
-	"github.com/sarpt/gamedbv/pkg/cli"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
@@ -35,12 +36,20 @@ func main() {
 	} else if platformFlag.IsSet() {
 		platformsToDownload = append(platformsToDownload, platformFlag)
 	} else {
-		printer.NextError(fmt.Errorf("neither --platform nor --allPlarforms specified. One of them is mandatory"))
+		fmt.Println("neither --platform nor --allPlarforms specified. One of them is mandatory")
 		flag.PrintDefaults()
 		return
 	}
 
+	var wg sync.WaitGroup
 	for _, platformToDownload := range platformsToDownload {
-		dl.DownloadPlatformSource(appConf, platformToDownload, printer)
+		wg.Add(1)
+
+		go func(platform platform.Variant) {
+			defer wg.Done()
+			dl.DownloadPlatformSource(appConf, platform, printer)
+		}(platformToDownload)
 	}
+
+	wg.Wait()
 }

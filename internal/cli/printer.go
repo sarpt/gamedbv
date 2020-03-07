@@ -50,6 +50,6 @@ func progressReporter(statuses <-chan progress.Status) {
 
 func errorsReporter(errors <-chan error) {
 	for err := range errors {
-		panic(err)
+		fmt.Println(err)
 	}
 }

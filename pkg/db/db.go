@@ -1,6 +1,8 @@
 package db
 
 import (
+	"sync"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite" // initializes sqlite driver as per docs requirement
 
@@ -11,11 +13,14 @@ import (
 type Database struct {
 	config Config
 	handle *gorm.DB
+	mux    *sync.Mutex
 }
 
 // Close closes the underlying open db handle
 func (db Database) Close() {
-	db.handle.Close()
+	if db.handle != nil {
+		db.handle.Close()
+	}
 }
 
 // Games returns games matching provided serial numbers
@@ -85,6 +90,7 @@ func OpenDatabase(conf Config) (Database, error) {
 	db = Database{
 		config: conf,
 		handle: handle,
+		mux:    &sync.Mutex{},
 	}
 
 	return db, handle.Error

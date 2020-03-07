@@ -86,10 +86,10 @@ func NewGameTDBAdapter(platform string, provider gametdb.ModelProvider) GameTDBA
 
 func (adapt *GameTDBAdapter) addGameDbModel(source gametdb.Game) {
 	newGame := &models.Game{
-		SerialNo:  source.ID,
+		SerialNo:  fmt.Sprintf("%s_%s", adapt.platform, source.ID), // turns out serial numbers are not unique across different platforms, quick workaround
 		Region:    source.Region,
 		Developer: source.Developer,
-		Date:      fmt.Sprintf("%d-%d-%d", source.Date.Day, source.Date.Month, source.Date.Year),
+		Date:      fmt.Sprintf("%d-%d-%d", source.Date.Day, source.Date.Month, source.Date.Year), // this needs fixing too
 	}
 
 	for _, desc := range source.Locales {
