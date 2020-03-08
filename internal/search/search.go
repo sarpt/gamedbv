@@ -17,6 +17,10 @@ func Execute(appConf config.App, settings Settings) (string, error) {
 		return "", err
 	}
 
+	if len(results.Hits) <= 0 {
+		return "No results found", err
+	}
+
 	gameDetails, err := gamesDetailsFromDatabase(appConf.Database(), settings, results.Hits)
 	if err != nil {
 		return "", err
@@ -80,9 +84,7 @@ func gamesDetailsFromDatabase(dbConf config.Database, settings Settings, hits []
 	}
 
 	gamesQuery := database.NewGameQuery()
-	if len(serialNumbers) > 0 {
-		gamesQuery.FilterSerialNumbers(serialNumbers)
-	}
+	gamesQuery.FilterSerialNumbers(serialNumbers)
 
 	if len(settings.Regions) > 0 {
 		gamesQuery.FilterRegions(settings.Regions)

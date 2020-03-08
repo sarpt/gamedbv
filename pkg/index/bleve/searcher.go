@@ -50,13 +50,16 @@ func (s Searcher) Search(params index.SearchParameters) (index.Result, error) {
 		return searchResult, fmt.Errorf("Could not execute search due to lack of indexes for any of the provided platforms")
 	}
 
-	query := bleve.NewConjunctionQuery()
+	query := bleve.NewDisjunctionQuery()
+	query.SetMin(1)
 
 	textQuery := bleve.NewMatchPhraseQuery(params.Text)
 	query.AddQuery(textQuery)
 
+	prefixQuery := bleve.NewPrefixQuery(params.Text)
+	query.AddQuery(prefixQuery)
+
 	request := bleve.NewSearchRequest(query)
-	request.Fields = []string{nameField}
 	request.Size = maxNumberOfResults
 
 	result, err := indexAlias.Search(request)
@@ -65,15 +68,10 @@ func (s Searcher) Search(params index.SearchParameters) (index.Result, error) {
 	}
 
 	for _, hit := range result.Hits {
-		for key, value := range hit.Fields {
-			if key == nameField {
-				gameHit := index.GameHit{
-					ID:   hit.ID,
-					Name: value.(string),
-				}
-				searchResult.Hits = append(searchResult.Hits, gameHit)
-			}
+		gameHit := index.GameHit{
+			ID: hit.ID,
 		}
+		searchResult.Hits = append(searchResult.Hits, gameHit)
 	}
 
 	return searchResult, nil
