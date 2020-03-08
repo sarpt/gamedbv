@@ -4,7 +4,6 @@ import (
 	"math"
 
 	"github.com/blevesearch/bleve"
-	"github.com/blevesearch/bleve/mapping"
 
 	"github.com/sarpt/gamedbv/pkg/index"
 )
@@ -15,8 +14,8 @@ const defaultBatchLength = 1000
 type Creator struct{}
 
 // CreateIndex saves parsed index on the disk. The function uses batching to speed up the indexing
-func (c Creator) CreateIndex(docType string, filepath string, games []index.GameSource) error {
-	mapping := createIndexMapping(docType)
+func (c Creator) CreateIndex(filepath string, games []index.GameSource) error {
+	mapping := createIndexMapping()
 
 	index, err := bleve.New(filepath, mapping)
 	if err != nil {
@@ -35,12 +34,7 @@ func (c Creator) CreateIndex(docType string, filepath string, games []index.Game
 
 		gamesToBatch := games[firstIdxToBatch:lastIdxToBatch]
 		for _, game := range gamesToBatch {
-			idxSource := Data{
-				Name:    game.Name,
-				Region:  game.Region,
-				docType: docType,
-			}
-			err = batch.Index(game.ID, idxSource)
+			err = batch.Index(game.ID, game)
 			if err != nil {
 				return err
 			}
@@ -53,33 +47,6 @@ func (c Creator) CreateIndex(docType string, filepath string, games []index.Game
 	}
 
 	return nil
-}
-
-func createIndexMapping(docType string) *mapping.IndexMappingImpl {
-	mapping := bleve.NewIndexMapping()
-
-	gametdbDocMapping := createGameTDBDocumentMapping()
-	mapping.AddDocumentMapping(docType, gametdbDocMapping)
-
-	return mapping
-}
-
-func createGameTDBDocumentMapping() *mapping.DocumentMapping {
-	docMapping := bleve.NewDocumentMapping()
-
-	nameField := bleve.NewTextFieldMapping()
-	nameField.Store = true
-	nameField.IncludeInAll = true
-	nameField.Index = true
-	docMapping.AddFieldMappingsAt("Name", nameField)
-
-	textField := bleve.NewTextFieldMapping()
-	textField.Store = false
-	textField.IncludeInAll = false
-	textField.Index = true
-	docMapping.AddFieldMappingsAt("Region", textField)
-
-	return docMapping
 }
 
 func getNumberOfBatches(batchLength int, collectionLength int) int {

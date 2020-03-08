@@ -123,9 +123,16 @@ func (adapt *GameTDBAdapter) addDescription(game *models.Game, source gametdb.Lo
 }
 
 func (adapt *GameTDBAdapter) addGameSource(source gametdb.Game) {
+	var descriptions []index.Description
+	for _, locale := range source.Locales {
+		descriptions = append(descriptions, index.Description{
+			Synopsis: locale.Synopsis,
+		})
+	}
+
 	adapt.index.games = append(adapt.index.games, index.GameSource{
-		ID:     source.ID,
-		Name:   source.Name,
-		Region: source.Region,
+		ID:           fmt.Sprintf("%s_%s", adapt.platform, source.ID),
+		Name:         source.Name,
+		Descriptions: descriptions,
 	})
 }

@@ -21,7 +21,7 @@ func PrepareIndex(creators map[string]Creator, conf PlatformConfig, games []Game
 	}
 
 	if creator, ok := creators[conf.IndexVariant()]; ok {
-		err = creator.CreateIndex(conf.DocType(), indexPath, games)
+		err = creator.CreateIndex(indexPath, games)
 	} else {
 		err = fmt.Errorf("Creator not found for the config")
 	}

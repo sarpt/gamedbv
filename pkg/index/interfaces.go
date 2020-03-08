@@ -16,5 +16,5 @@ type Searcher interface {
 
 // Creator is responsible for new index creation
 type Creator interface {
-	CreateIndex(string, string, []GameSource) error
+	CreateIndex(string, []GameSource) error
 }

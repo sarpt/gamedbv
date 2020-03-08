@@ -55,17 +55,6 @@ func (s Searcher) Search(params index.SearchParameters) (index.Result, error) {
 	textQuery := bleve.NewMatchPhraseQuery(params.Text)
 	query.AddQuery(textQuery)
 
-	if len(params.Regions) > 0 {
-		anyRegionQuery := bleve.NewDisjunctionQuery()
-
-		for _, region := range params.Regions {
-			regionQuery := bleve.NewTermQuery(region)
-			anyRegionQuery.AddQuery(regionQuery)
-		}
-
-		query.AddQuery(anyRegionQuery)
-	}
-
 	request := bleve.NewSearchRequest(query)
 	request.Fields = []string{nameField}
 	request.Size = maxNumberOfResults

@@ -23,39 +23,27 @@ func (db Database) Close() {
 	}
 }
 
-// Games returns games matching provided serial numbers
-func (db Database) Games(serialNumbers []string) []*models.Game {
-	var games []*models.Game
-
-	db.handle.Where("serial_no IN (?)", serialNumbers).Find(&games)
-
-	for _, game := range games {
-		game.Descriptions = db.GameDescriptions(*game)
+// NewGameQuery returns an object used retrieving games
+func (db Database) NewGameQuery() *GameQuery {
+	return &GameQuery{
+		handle:                db.handle.New(),
+		gameDescriptionsQuery: db.NewGameDescriptionsQuery(),
 	}
-
-	return games
 }
 
-// GameDescriptions return descriptions entries for a provided game
-func (db Database) GameDescriptions(game models.Game) []*models.GameDescription {
-	var descriptions []*models.GameDescription
-
-	db.handle.Model(game).Related(&descriptions)
-
-	for _, description := range descriptions {
-		description.Language = db.DescriptionLanguage(*description)
+// NewGameDescriptionsQuery returns an object used for retrieving games descriptions
+func (db Database) NewGameDescriptionsQuery() *GameDescriptionsQuery {
+	return &GameDescriptionsQuery{
+		handle:                   db.handle.New(),
+		descriptionLanguageQuery: db.NewGameDescriptionLanguageQuery(),
 	}
-
-	return descriptions
 }
 
-// DescriptionLanguage returns the language of provided description entry
-func (db Database) DescriptionLanguage(description models.GameDescription) *models.Language {
-	language := &models.Language{}
-
-	db.handle.Model(description).Related(language)
-
-	return language
+// NewGameDescriptionLanguageQuery returns an object used for retriving language of a query
+func (db Database) NewGameDescriptionLanguageQuery() *GameDescriptionLanguageQuery {
+	return &GameDescriptionLanguageQuery{
+		handle: db.handle.New(),
+	}
 }
 
 // NewDatabase attempts to open the database, performing the auto-migration in the process

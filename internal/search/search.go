@@ -12,20 +12,17 @@ import (
 
 // Execute takes platforms, finds indexes which are available to execute query and executes the query on them, returning game results from database
 func Execute(appConf config.App, settings Settings) (string, error) {
-	searcher := getSearcher(appConf, settings)
-	searchParams := mapToSearcherParameters(settings)
-
-	res, err := searcher.Search(searchParams)
+	results, err := resultsFromIndex(appConf, settings)
 	if err != nil {
 		return "", err
 	}
 
-	gameDetails, err := gamesDetails(appConf.Database(), res.Hits)
+	gameDetails, err := gamesDetailsFromDatabase(appConf.Database(), settings, results.Hits)
 	if err != nil {
 		return "", err
 	}
 
-	return prepareOutput(gameDetails, res.IgnoredPlatforms), nil
+	return prepareOutput(gameDetails, results.IgnoredPlatforms), nil
 }
 
 func getSearcher(appConf config.App, settings Settings) index.Searcher {
@@ -47,7 +44,6 @@ func mapToSearcherParameters(settings Settings) index.SearchParameters {
 
 	return index.SearchParameters{
 		Text:      settings.Text,
-		Regions:   settings.Regions,
 		Platforms: platforms,
 	}
 }
@@ -70,7 +66,7 @@ func prepareOutput(games []*models.Game, ignoredPlatforms []string) string {
 	return out
 }
 
-func gamesDetails(dbConf config.Database, hits []index.GameHit) ([]*models.Game, error) {
+func gamesDetailsFromDatabase(dbConf config.Database, settings Settings, hits []index.GameHit) ([]*models.Game, error) {
 	var models []*models.Game
 
 	database, err := db.OpenDatabase(dbConf)
@@ -83,6 +79,23 @@ func gamesDetails(dbConf config.Database, hits []index.GameHit) ([]*models.Game,
 		serialNumbers = append(serialNumbers, hit.ID)
 	}
 
-	models = database.Games(serialNumbers)
+	gamesQuery := database.NewGameQuery()
+	if len(serialNumbers) > 0 {
+		gamesQuery.FilterSerialNumbers(serialNumbers)
+	}
+
+	if len(settings.Regions) > 0 {
+		gamesQuery.FilterRegions(settings.Regions)
+	}
+
+	models = gamesQuery.Get()
 	return models, err
+}
+
+func resultsFromIndex(appConf config.App, settings Settings) (index.Result, error) {
+	searcher := getSearcher(appConf, settings)
+	searchParams := mapToSearcherParameters(settings)
+
+	res, err := searcher.Search(searchParams)
+	return res, err
 }
