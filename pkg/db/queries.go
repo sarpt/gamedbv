@@ -7,8 +7,7 @@ import (
 
 // GameQuery is used for getting games from database
 type GameQuery struct {
-	handle                *gorm.DB
-	gameDescriptionsQuery *GameDescriptionsQuery
+	handle *gorm.DB
 }
 
 // FilterSerialNumbers filters games by matching serial numbers, if not called all games are returned
@@ -27,25 +26,19 @@ func (q *GameQuery) FilterRegions(regions []string) *GameQuery {
 func (q *GameQuery) Get() []*models.Game {
 	var games []*models.Game
 
-	q.handle.Find(&games)
-
-	for _, game := range games {
-		game.Descriptions = q.gameDescriptionsQuery.ForGame(*game).Get()
-	}
+	q.handle.Preload("Descriptions.Language").Preload("Descriptions").Limit(100).Find(&games)
 
 	return games
 }
 
 // GameDescriptionsQuery is used for getting descriptions of games
 type GameDescriptionsQuery struct {
-	handle                   *gorm.DB
-	game                     models.Game
-	descriptionLanguageQuery *GameDescriptionLanguageQuery
+	handle *gorm.DB
 }
 
 // ForGame specifies for which game the description should be returned
 func (q *GameDescriptionsQuery) ForGame(game models.Game) *GameDescriptionsQuery {
-	q.game = game
+	q.handle = q.handle.Where("game_id = ?", game.ID)
 	return q
 }
 
@@ -53,11 +46,7 @@ func (q *GameDescriptionsQuery) ForGame(game models.Game) *GameDescriptionsQuery
 func (q *GameDescriptionsQuery) Get() []*models.GameDescription {
 	var descriptions []*models.GameDescription
 
-	q.handle.Model(q.game).Related(&descriptions)
-
-	for _, description := range descriptions {
-		description.Language = q.descriptionLanguageQuery.ForGameDescription(*description).Get()
-	}
+	q.handle.Preload("Language").Find(&descriptions)
 
 	return descriptions
 }

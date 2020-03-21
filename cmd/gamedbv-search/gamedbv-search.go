@@ -7,6 +7,7 @@ import (
 	"github.com/sarpt/gamedbv/internal/cli"
 	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/internal/search"
+	"github.com/sarpt/gamedbv/pkg/db/models"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
@@ -49,10 +50,25 @@ func main() {
 		Platforms: platforms,
 	}
 
-	result, err := search.Execute(appConf, params)
+	games, err := search.FindGames(appConf, params)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(result)
+	out := prepareOutput(games)
+	fmt.Println(out)
+}
+
+func prepareOutput(games []*models.Game) string {
+	var out string
+
+	for _, game := range games {
+		for _, description := range game.Descriptions {
+			if description.Language.Code == "EN" {
+				out = out + fmt.Sprintf("===\n[%s] %s\nSynopsis: %s\n", game.SerialNo, description.Title, description.Synopsis)
+			}
+		}
+	}
+
+	return out
 }

@@ -1,8 +1,6 @@
 package search
 
 import (
-	"fmt"
-
 	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/pkg/db"
 	"github.com/sarpt/gamedbv/pkg/db/models"
@@ -10,23 +8,26 @@ import (
 	"github.com/sarpt/gamedbv/pkg/index/bleve"
 )
 
-// Execute takes platforms, finds indexes which are available to execute query and executes the query on them, returning game results from database
-func Execute(appConf config.App, settings Settings) (string, error) {
-	results, err := resultsFromIndex(appConf, settings)
-	if err != nil {
-		return "", err
+// FindGames takes platforms, finds indexes which are available to execute query and executes the query on them, returning game results from database
+func FindGames(appConf config.App, settings Settings) ([]*models.Game, error) {
+	var games []*models.Game
+	var serialNumbers []string
+
+	if settings.Text != "" {
+		results, err := resultsFromIndex(appConf, settings)
+		if err != nil {
+			return games, err
+		}
+
+		if len(results.Hits) <= 0 {
+			return games, err
+		}
+
+		serialNumbers = getSerialNumbersFromGameHits(results.Hits)
 	}
 
-	if len(results.Hits) <= 0 {
-		return "No results found", err
-	}
-
-	gameDetails, err := gamesDetailsFromDatabase(appConf.Database(), settings, results.Hits)
-	if err != nil {
-		return "", err
-	}
-
-	return prepareOutput(gameDetails, results.IgnoredPlatforms), nil
+	games, err := gamesDetailsFromDatabase(appConf.Database(), settings, serialNumbers)
+	return games, err
 }
 
 func getSearcher(appConf config.App, settings Settings) index.Searcher {
@@ -52,25 +53,16 @@ func mapToSearcherParameters(settings Settings) index.SearchParameters {
 	}
 }
 
-func prepareOutput(games []*models.Game, ignoredPlatforms []string) string {
-	var out string
-
-	for _, ignored := range ignoredPlatforms {
-		out = out + fmt.Sprintf("Search could not be executed for platform %s\n", ignored)
+func getSerialNumbersFromGameHits(hits []index.GameHit) []string {
+	var serialNumbers []string
+	for _, hit := range hits {
+		serialNumbers = append(serialNumbers, hit.ID)
 	}
 
-	for _, game := range games {
-		for _, description := range game.Descriptions {
-			if description.Language.Code == "EN" {
-				out = out + fmt.Sprintf("===\n[%s] %s\nSynopsis: %s\n", game.SerialNo, description.Title, description.Synopsis)
-			}
-		}
-	}
-
-	return out
+	return serialNumbers
 }
 
-func gamesDetailsFromDatabase(dbConf config.Database, settings Settings, hits []index.GameHit) ([]*models.Game, error) {
+func gamesDetailsFromDatabase(dbConf config.Database, settings Settings, serialNumbers []string) ([]*models.Game, error) {
 	var models []*models.Game
 
 	database, err := db.OpenDatabase(dbConf)
@@ -78,13 +70,10 @@ func gamesDetailsFromDatabase(dbConf config.Database, settings Settings, hits []
 		return models, err
 	}
 
-	var serialNumbers []string
-	for _, hit := range hits {
-		serialNumbers = append(serialNumbers, hit.ID)
-	}
-
 	gamesQuery := database.NewGameQuery()
-	gamesQuery.FilterSerialNumbers(serialNumbers)
+	if len(serialNumbers) > 0 {
+		gamesQuery.FilterSerialNumbers(serialNumbers)
+	}
 
 	if len(settings.Regions) > 0 {
 		gamesQuery.FilterRegions(settings.Regions)
