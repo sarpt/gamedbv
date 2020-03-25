@@ -3,6 +3,7 @@ package serv
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -25,33 +26,84 @@ func Serve(appConf config.App) error {
 }
 
 func initRouter(appConf config.App) *mux.Router {
-	r := mux.NewRouter()
+	router := mux.NewRouter()
 
-	r.HandleFunc("/games", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/games", func(resp http.ResponseWriter, req *http.Request) {
+		page, err := getCurrentPageFromRequest(req)
+		if err != nil {
+			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		pageLimit, err := getPageLimitFromRequest(req)
+		if err != nil {
+			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		params := search.Settings{
-			Text:      getTextQueryFromRequest(r),
+			Text:      getTextQueryFromRequest(req),
 			Regions:   []string{},
 			Platforms: platform.GetAllPlatforms(),
+			Page:      page,
+			PageLimit: pageLimit,
 		}
 
 		result, err := search.FindGames(appConf, params)
 		if err != nil {
-			panic(err)
+			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		out, err := json.Marshal(result)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(resp, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(out)
+		resp.Header().Set("Content-Type", "application/json")
+		resp.Write(out)
 	})
 
-	return r
+	return router
 }
 
 func getTextQueryFromRequest(r *http.Request) string {
 	return r.URL.Query().Get("q")
+}
+
+func getCurrentPageFromRequest(r *http.Request) (int, error) {
+	page := r.URL.Query().Get("_page")
+	if page == "" {
+		return 0, nil
+	}
+
+	return strconv.Atoi(page)
+}
+
+func getPageLimitFromRequest(r *http.Request) (int, error) {
+	limit := r.URL.Query().Get("_limit")
+	if limit == "" {
+		return -1, nil
+	}
+
+	return strconv.Atoi(limit)
+}
+
+func getPlatformsFromRequest(r *http.Request) []string {
+	query := r.URL.Query()
+	if platforms, ok := query["platform"]; ok {
+		return platforms
+	}
+
+	return []string{}
+}
+
+func getRegionsFromRequest(r *http.Request) []string {
+	query := r.URL.Query()
+	if regions, ok := query["region"]; ok {
+		return regions
+	}
+
+	return []string{}
 }

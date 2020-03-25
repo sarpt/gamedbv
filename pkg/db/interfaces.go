@@ -4,4 +4,5 @@ package db
 type Config interface {
 	Path() string
 	Variant() string
+	MaxLimit() int
 }

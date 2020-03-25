@@ -44,8 +44,9 @@ func NewApp() (App, error) {
 	newApp = App{
 		directoryPath: directoryPath,
 		database: Database{
-			variant: json.DefaultConfig.Database.Variant,
-			path:    path.Join(directoryPath, json.DefaultConfig.Database.FileName),
+			variant:  json.DefaultConfig.Database.Variant,
+			path:     path.Join(directoryPath, json.DefaultConfig.Database.FileName),
+			maxLimit: json.DefaultConfig.Database.MaxLimit,
 		},
 	}
 

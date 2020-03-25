@@ -23,24 +23,11 @@ func (db Database) Close() {
 	}
 }
 
-// NewGameQuery returns an object used retrieving games
-func (db Database) NewGameQuery() *GameQuery {
-	return &GameQuery{
-		handle: db.handle.New(),
-	}
-}
-
-// NewGameDescriptionsQuery returns an object used for retrieving games descriptions
-func (db Database) NewGameDescriptionsQuery() *GameDescriptionsQuery {
-	return &GameDescriptionsQuery{
-		handle: db.handle.New(),
-	}
-}
-
-// NewGameDescriptionLanguageQuery returns an object used for retriving language of a query
-func (db Database) NewGameDescriptionLanguageQuery() *GameDescriptionLanguageQuery {
-	return &GameDescriptionLanguageQuery{
-		handle: db.handle.New(),
+// NewGamesQuery returns an object used retrieving games
+func (db Database) NewGamesQuery() *GamesQuery {
+	return &GamesQuery{
+		handle:   db.handle.New(),
+		maxLimit: db.config.MaxLimit(),
 	}
 }
 

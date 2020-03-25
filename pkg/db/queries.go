@@ -5,69 +5,60 @@ import (
 	"github.com/sarpt/gamedbv/pkg/db/models"
 )
 
-// GameQuery is used for getting games from database
-type GameQuery struct {
-	handle *gorm.DB
+// GamesQuery is used for getting games from database
+type GamesQuery struct {
+	handle   *gorm.DB
+	limit    int
+	page     int
+	maxLimit int
 }
 
 // FilterSerialNumbers filters games by matching serial numbers, if not called all games are returned
-func (q *GameQuery) FilterSerialNumbers(serialNumbers []string) *GameQuery {
+func (q *GamesQuery) FilterSerialNumbers(serialNumbers []string) *GamesQuery {
 	q.handle = q.handle.Where("serial_no IN (?)", serialNumbers)
 	return q
 }
 
 // FilterRegions filters games by matching their regions, if not called games from all regions are returned
-func (q *GameQuery) FilterRegions(regions []string) *GameQuery {
+func (q *GamesQuery) FilterRegions(regions []string) *GamesQuery {
 	q.handle = q.handle.Where("region IN (?)", regions)
 	return q
 }
 
+// Limit sets the maximum amount of games being returned
+// It may exceed max limit set by the App config
+func (q *GamesQuery) Limit(limit int) *GamesQuery {
+	q.limit = limit
+	return q
+}
+
+// Page sets the multiplication of limit. Used for paging the results
+func (q *GamesQuery) Page(offset int) *GamesQuery {
+	q.page = offset
+	return q
+}
+
 // Get retrives games
-func (q *GameQuery) Get() []*models.Game {
+func (q *GamesQuery) Get() ([]*models.Game, int) {
+	var total int
+	q.handle.Model(&models.Game{}).Count(&total)
+
 	var games []*models.Game
 
-	q.handle.Preload("Descriptions.Language").Preload("Descriptions").Limit(100).Find(&games)
+	if q.limit > 0 {
+		q.handle = q.handle.Limit(q.limit)
+	}
 
-	return games
+	offset := getOffset(q.limit, q.page)
+	if offset > 0 {
+		q.handle = q.handle.Offset(offset)
+	}
+
+	q.handle.Preload("Descriptions.Language").Preload("Descriptions").Find(&games)
+
+	return games, total
 }
 
-// GameDescriptionsQuery is used for getting descriptions of games
-type GameDescriptionsQuery struct {
-	handle *gorm.DB
-}
-
-// ForGame specifies for which game the description should be returned
-func (q *GameDescriptionsQuery) ForGame(game models.Game) *GameDescriptionsQuery {
-	q.handle = q.handle.Where("game_id = ?", game.ID)
-	return q
-}
-
-// Get retrieves game description
-func (q *GameDescriptionsQuery) Get() []*models.GameDescription {
-	var descriptions []*models.GameDescription
-
-	q.handle.Preload("Language").Find(&descriptions)
-
-	return descriptions
-}
-
-// GameDescriptionLanguageQuery is used for returning language of a game description
-type GameDescriptionLanguageQuery struct {
-	handle      *gorm.DB
-	description models.GameDescription
-}
-
-// ForGameDescription specifies for which game description the langaguage should be returned
-func (q *GameDescriptionLanguageQuery) ForGameDescription(description models.GameDescription) *GameDescriptionLanguageQuery {
-	q.description = description
-	return q
-}
-
-// Get retrieves language
-func (q *GameDescriptionLanguageQuery) Get() *models.Language {
-	language := &models.Language{}
-
-	q.handle.Model(q.description).Related(language)
-
-	return language
+func getOffset(limit int, page int) int {
+	return page * limit
 }

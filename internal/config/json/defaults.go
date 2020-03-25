@@ -120,5 +120,6 @@ var DefaultConfig App = App{
 	Database: Database{
 		FileName: "/store.db",
 		Variant:  "sqlite3",
+		MaxLimit: 999,
 	},
 }

@@ -7,4 +7,6 @@ type Settings struct {
 	Platforms []platform.Variant
 	Text      string
 	Regions   []string
+	Page      int
+	PageLimit int
 }

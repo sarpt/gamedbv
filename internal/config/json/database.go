@@ -4,4 +4,5 @@ package json
 type Database struct {
 	FileName string
 	Variant  string
+	MaxLimit int
 }
