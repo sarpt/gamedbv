@@ -65,25 +65,6 @@ func (adapt GameTDBAdapter) PlatformProvider() db.PlatformProvider {
 	}
 }
 
-// NewGameTDBAdapter returns new instance of GameTDB adapter
-func NewGameTDBAdapter(platform string, provider gametdb.ModelProvider) GameTDBAdapter {
-	adapt := &GameTDBAdapter{
-		platform: platform,
-		root:     provider.Root(),
-		gametdb: gametdbModels{
-			games:     make(map[string]*models.Game),
-			languages: make(map[string]*models.Language),
-		},
-	}
-
-	for _, game := range adapt.root.Games {
-		adapt.addGameDbModel(game)
-		adapt.addGameSource(game)
-	}
-
-	return *adapt
-}
-
 func (adapt *GameTDBAdapter) addGameDbModel(source gametdb.Game) {
 	newGame := &models.Game{
 		SerialNo:  fmt.Sprintf("%s_%s", adapt.platform, source.ID), // turns out serial numbers are not unique across different platforms, quick workaround

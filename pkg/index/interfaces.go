@@ -12,6 +12,7 @@ type PlatformConfig interface {
 type Searcher interface {
 	Search(SearchParameters) (Result, error)
 	AddIndex(PlatformConfig) error
+	Close() error
 }
 
 // Creator is responsible for new index creation

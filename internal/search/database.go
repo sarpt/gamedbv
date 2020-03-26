@@ -10,6 +10,8 @@ func gamesDetailsFromDatabase(dbConf config.Database, settings Settings, serialN
 	var models []*models.Game
 
 	database, err := db.OpenDatabase(dbConf)
+	defer database.Close()
+
 	if err != nil {
 		return models, err
 	}

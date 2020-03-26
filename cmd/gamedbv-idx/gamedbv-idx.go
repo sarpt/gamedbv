@@ -28,7 +28,7 @@ func main() {
 
 	var platformsToParse []platform.Variant
 
-	printer := cli.New()
+	printer := cli.NewPrinter()
 	defer printer.Close()
 
 	if *shouldParseAllPlatforms {

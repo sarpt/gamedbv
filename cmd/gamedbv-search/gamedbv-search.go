@@ -28,7 +28,7 @@ func main() {
 		panic(err)
 	}
 
-	printer := cli.New()
+	printer := cli.NewPrinter()
 	defer printer.Close()
 
 	// todo: add possibility to pass more than one region

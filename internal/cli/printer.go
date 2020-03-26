@@ -29,19 +29,6 @@ func (printer Printer) Close() {
 	close(printer.errors)
 }
 
-// New initializes printer that will call progressHandler and errorsHandler when respective methods will be invoked
-func New() Printer {
-	printer := Printer{
-		progress: make(chan progress.Status),
-		errors:   make(chan error),
-	}
-
-	go progressReporter(printer.progress)
-	go errorsReporter(printer.errors)
-
-	return printer
-}
-
 func progressReporter(statuses <-chan progress.Status) {
 	for status := range statuses {
 		fmt.Println(fmt.Sprintf("%s: %s", status.Step, status.Message))

@@ -16,6 +16,21 @@ type Searcher struct {
 	indexes map[string]bleve.Index
 }
 
+// Close closes all indexes of a Searcher opened by AddIndex
+// Always needs to be called as NewSearcher invokes AddIndex too
+func (s *Searcher) Close() error {
+	var closeError error
+
+	for _, idx := range s.indexes {
+		err := idx.Close()
+		if err != nil {
+			closeError = err
+		}
+	}
+
+	return closeError
+}
+
 // AddIndex uses platform config to add another index to be used during searching
 func (s *Searcher) AddIndex(conf index.PlatformConfig) error {
 	indexPath := conf.IndexFilepath()
@@ -75,21 +90,4 @@ func (s Searcher) Search(params index.SearchParameters) (index.Result, error) {
 	}
 
 	return searchResult, nil
-}
-
-// NewSearcher initializes bleve implementation of Searcher
-func NewSearcher(configs []index.PlatformConfig) (*Searcher, []index.PlatformConfig) {
-	var ignored []index.PlatformConfig
-	s := &Searcher{
-		indexes: make(map[string]bleve.Index),
-	}
-
-	for _, conf := range configs {
-		err := s.AddIndex(conf)
-		if err != nil {
-			ignored = append(ignored, conf)
-		}
-	}
-
-	return s, ignored
 }

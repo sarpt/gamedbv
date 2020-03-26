@@ -19,6 +19,8 @@ func getSearcher(appConf config.App, settings Settings) index.Searcher {
 
 func resultsFromIndex(appConf config.App, settings Settings) (index.Result, error) {
 	searcher := getSearcher(appConf, settings)
+	defer searcher.Close()
+
 	searchParams := mapToSearcherParameters(settings)
 
 	res, err := searcher.Search(searchParams)
