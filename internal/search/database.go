@@ -3,17 +3,16 @@ package search
 import (
 	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/pkg/db"
-	"github.com/sarpt/gamedbv/pkg/db/models"
 )
 
-func gamesDetailsFromDatabase(dbConf config.Database, settings Settings, serialNumbers []string) ([]*models.Game, error) {
-	var models []*models.Game
+func gamesDetailsFromDatabase(dbConf config.Database, settings Settings, serialNumbers []string) (db.GamesResult, error) {
+	var gamesResult db.GamesResult
 
 	database, err := db.OpenDatabase(dbConf)
 	defer database.Close()
 
 	if err != nil {
-		return models, err
+		return gamesResult, err
 	}
 
 	gamesQuery := database.NewGamesQuery()
@@ -28,6 +27,6 @@ func gamesDetailsFromDatabase(dbConf config.Database, settings Settings, serialN
 	gamesQuery.Page(settings.Page)
 	gamesQuery.Limit(settings.PageLimit)
 
-	models, _ = gamesQuery.Get()
-	return models, err
+	gamesResult = gamesQuery.Get()
+	return gamesResult, err
 }

@@ -39,7 +39,7 @@ func (q *GamesQuery) Page(offset int) *GamesQuery {
 }
 
 // Get retrives games
-func (q *GamesQuery) Get() ([]*models.Game, int) {
+func (q *GamesQuery) Get() GamesResult {
 	var total int
 	q.handle.Model(&models.Game{}).Count(&total)
 
@@ -56,7 +56,10 @@ func (q *GamesQuery) Get() ([]*models.Game, int) {
 
 	q.handle.Preload("Descriptions.Language").Preload("Descriptions").Find(&games)
 
-	return games, total
+	return GamesResult{
+		Games: games,
+		Total: total,
+	}
 }
 
 func getOffset(limit int, page int) int {
