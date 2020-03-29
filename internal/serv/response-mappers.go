@@ -8,9 +8,9 @@ func mapToGamesResponse(result db.GamesResult) gamesResponse {
 		var descriptions []description
 		for _, desc := range item.Descriptions {
 			descriptions = append(descriptions, description{
-				Language:    desc.Language.Code,
-				Title:       desc.Title,
-				Description: desc.Synopsis,
+				Language: desc.Language.Code,
+				Title:    desc.Title,
+				Synopsis: desc.Synopsis,
 			})
 		}
 
