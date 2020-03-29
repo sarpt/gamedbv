@@ -13,9 +13,9 @@ type GamesQuery struct {
 	maxLimit int
 }
 
-// FilterSerialNumbers filters games by matching serial numbers, if not called all games are returned
-func (q *GamesQuery) FilterSerialNumbers(serialNumbers []string) *GamesQuery {
-	q.handle = q.handle.Where("serial_no IN (?)", serialNumbers)
+// FilterUIDs filters games by matching UID (platform:serial_no), if not called all games are returned
+func (q *GamesQuery) FilterUIDs(serialNumbers []string) *GamesQuery {
+	q.handle = q.handle.Where("uid IN (?)", serialNumbers)
 	return q
 }
 
@@ -57,7 +57,7 @@ func (q *GamesQuery) Get() GamesResult {
 	q.handle.Preload("Descriptions.Language").Preload("Descriptions").Find(&games)
 
 	return GamesResult{
-		Games: games,
+		Items: games,
 		Total: total,
 	}
 }

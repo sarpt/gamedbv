@@ -55,7 +55,7 @@ func main() {
 		panic(err)
 	}
 
-	out := prepareOutput(games.Games)
+	out := prepareOutput(games.Items)
 	fmt.Println(out)
 }
 

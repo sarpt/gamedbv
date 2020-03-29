@@ -35,7 +35,7 @@ func newPlatformIndexingStatus(platform string) progress.Status {
 func newDatabasePopulateStatus(platform string) progress.Status {
 	return progress.Status{
 		Process: process,
-		Step:    "databse-populate",
+		Step:    "database-populate",
 		Message: fmt.Sprintf("Populating database for platform %s", platform),
 	}
 }

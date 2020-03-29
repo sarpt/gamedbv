@@ -34,7 +34,7 @@ func (c Creator) CreateIndex(filepath string, games []index.GameSource) error {
 
 		gamesToBatch := games[firstIdxToBatch:lastIdxToBatch]
 		for _, game := range gamesToBatch {
-			err = batch.Index(game.ID, game)
+			err = batch.Index(game.UID, game)
 			if err != nil {
 				return err
 			}

@@ -39,6 +39,7 @@ func NewDatabase(conf Config) (Database, error) {
 	}
 
 	db.handle.AutoMigrate(
+		&models.Platform{},
 		&models.Game{},
 		&models.GameLanguage{},
 		&models.GameDescription{},

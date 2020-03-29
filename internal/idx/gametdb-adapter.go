@@ -10,6 +10,7 @@ import (
 )
 
 type gametdbModels struct {
+	platform     *models.Platform
 	games        map[string]*models.Game
 	descriptions []*models.GameDescription
 	languages    map[string]*models.Language
@@ -25,13 +26,13 @@ type indexModels struct {
 type GameTDBAdapter struct {
 	platform string
 	root     gametdb.Datafile
-	gametdb  gametdbModels
+	models   gametdbModels
 	index    indexModels
 }
 
 func (adapt GameTDBAdapter) games() []*models.Game {
 	var games []*models.Game
-	for _, game := range adapt.gametdb.games {
+	for _, game := range adapt.models.games {
 		games = append(games, game)
 	}
 
@@ -39,12 +40,12 @@ func (adapt GameTDBAdapter) games() []*models.Game {
 }
 
 func (adapt GameTDBAdapter) descriptions() []*models.GameDescription {
-	return adapt.gametdb.descriptions
+	return adapt.models.descriptions
 }
 
 func (adapt GameTDBAdapter) languages() []*models.Language {
 	var languages []*models.Language
-	for _, lang := range adapt.gametdb.languages {
+	for _, lang := range adapt.models.languages {
 		languages = append(languages, lang)
 	}
 
@@ -59,6 +60,7 @@ func (adapt GameTDBAdapter) GameSources() []index.GameSource {
 // PlatformProvider returns all data adapted to the format database accepts
 func (adapt GameTDBAdapter) PlatformProvider() db.PlatformProvider {
 	return db.PlatformProvider{
+		Platform:     adapt.models.platform,
 		Games:        adapt.games(),
 		Descriptions: adapt.descriptions(),
 		Languages:    adapt.languages(),
@@ -67,28 +69,32 @@ func (adapt GameTDBAdapter) PlatformProvider() db.PlatformProvider {
 
 func (adapt *GameTDBAdapter) addGameDbModel(source gametdb.Game) {
 	newGame := &models.Game{
-		SerialNo:  fmt.Sprintf("%s_%s", adapt.platform, source.ID), // turns out serial numbers are not unique across different platforms, quick workaround
+		UID:       adapt.generateUID(source),
+		SerialNo:  source.ID,
 		Region:    source.Region,
 		Developer: source.Developer,
 		Date:      fmt.Sprintf("%d-%d-%d", source.Date.Day, source.Date.Month, source.Date.Year), // this needs fixing too
+		Platform:  adapt.models.platform,
 	}
 
 	for _, desc := range source.Locales {
 		adapt.addDescription(newGame, desc)
 	}
+
+	adapt.models.games[newGame.UID] = newGame
 }
 
 func (adapt *GameTDBAdapter) addLanguage(source gametdb.Locale) *models.Language {
 	language := &models.Language{
 		Code: source.Language,
 	}
-	adapt.gametdb.languages[language.Code] = language
+	adapt.models.languages[language.Code] = language
 
 	return language
 }
 
 func (adapt *GameTDBAdapter) addDescription(game *models.Game, source gametdb.Locale) {
-	language, ok := adapt.gametdb.languages[source.Language]
+	language, ok := adapt.models.languages[source.Language]
 	if !ok {
 		language = adapt.addLanguage(source)
 	}
@@ -100,7 +106,7 @@ func (adapt *GameTDBAdapter) addDescription(game *models.Game, source gametdb.Lo
 		Game:     game,
 	}
 
-	adapt.gametdb.descriptions = append(adapt.gametdb.descriptions, description)
+	adapt.models.descriptions = append(adapt.models.descriptions, description)
 }
 
 func (adapt *GameTDBAdapter) addGameSource(source gametdb.Game) {
@@ -112,8 +118,12 @@ func (adapt *GameTDBAdapter) addGameSource(source gametdb.Game) {
 	}
 
 	adapt.index.games = append(adapt.index.games, index.GameSource{
-		ID:           fmt.Sprintf("%s_%s", adapt.platform, source.ID),
+		UID:          adapt.generateUID(source),
 		Name:         source.Name,
 		Descriptions: descriptions,
 	})
+}
+
+func (adapt GameTDBAdapter) generateUID(source gametdb.Game) string {
+	return fmt.Sprintf("%s:%s", adapt.platform, source.ID)
 }

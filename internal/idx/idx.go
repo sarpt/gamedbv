@@ -12,10 +12,11 @@ import (
 	"github.com/sarpt/gamedbv/pkg/zip"
 )
 
+const bleveCreator string = "bleve"
+
 // IndexPlatform creates Index related to the platfrom
 func IndexPlatform(appConf config.App, platformVariant platform.Variant, printer progress.Notifier, database db.Database) {
 	platformName := platformVariant.String()
-
 	platformConfig := appConf.Platform(platformVariant)
 
 	printer.NextStatus(newPlatformUnzipStatus(platformName))
@@ -27,17 +28,16 @@ func IndexPlatform(appConf config.App, platformVariant platform.Variant, printer
 
 	gametdbModelProvider := gametdb.ModelProvider{}
 	printer.NextStatus(newPlatformParsingStatus(platformName))
-	err = parser.ParseDatabaseFile(platformConfig, &gametdbModelProvider)
+	err = parser.ParseSourceFile(platformConfig, &gametdbModelProvider)
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
 	gametdbAdapter := NewGameTDBAdapter(platformVariant.String(), gametdbModelProvider)
-
 	printer.NextStatus(newPlatformIndexingStatus(platformName))
 	creators := map[string]index.Creator{
-		"bleve": bleve.Creator{},
+		bleveCreator: bleve.Creator{},
 	}
 
 	err = index.PrepareIndex(creators, platformConfig, gametdbAdapter.GameSources())

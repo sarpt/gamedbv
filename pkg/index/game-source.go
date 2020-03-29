@@ -7,7 +7,7 @@ type Description struct {
 
 // GameSource provides information neccessary for game indexing
 type GameSource struct {
-	ID           string
+	UID          string
 	Name         string
 	Descriptions []Description
 }

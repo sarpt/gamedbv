@@ -5,12 +5,20 @@ import (
 	"strconv"
 )
 
+const (
+	textFilterQuery string = "q"
+	pageQuery       string = "_page"
+	limitQuery      string = "_limit"
+	platformQuery   string = "platform"
+	regionQuery     string = "region"
+)
+
 func getTextQueryFromRequest(r *http.Request) string {
-	return r.URL.Query().Get("q")
+	return r.URL.Query().Get(textFilterQuery)
 }
 
 func getCurrentPageFromRequest(r *http.Request) (int, error) {
-	page := r.URL.Query().Get("_page")
+	page := r.URL.Query().Get(pageQuery)
 	if page == "" {
 		return 0, nil
 	}
@@ -19,7 +27,7 @@ func getCurrentPageFromRequest(r *http.Request) (int, error) {
 }
 
 func getPageLimitFromRequest(r *http.Request) (int, error) {
-	limit := r.URL.Query().Get("_limit")
+	limit := r.URL.Query().Get(limitQuery)
 	if limit == "" {
 		return -1, nil
 	}
@@ -29,7 +37,7 @@ func getPageLimitFromRequest(r *http.Request) (int, error) {
 
 func getPlatformsFromRequest(r *http.Request) []string {
 	query := r.URL.Query()
-	if platforms, ok := query["platform"]; ok {
+	if platforms, ok := query[platformQuery]; ok {
 		return platforms
 	}
 
@@ -38,7 +46,7 @@ func getPlatformsFromRequest(r *http.Request) []string {
 
 func getRegionsFromRequest(r *http.Request) []string {
 	query := r.URL.Query()
-	if regions, ok := query["region"]; ok {
+	if regions, ok := query[regionQuery]; ok {
 		return regions
 	}
 

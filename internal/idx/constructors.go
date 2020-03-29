@@ -10,7 +10,8 @@ func NewGameTDBAdapter(platform string, provider gametdb.ModelProvider) GameTDBA
 	adapt := &GameTDBAdapter{
 		platform: platform,
 		root:     provider.Root(),
-		gametdb: gametdbModels{
+		models: gametdbModels{
+			platform:  &models.Platform{Name: platform},
 			games:     make(map[string]*models.Game),
 			languages: make(map[string]*models.Language),
 		},

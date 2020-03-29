@@ -17,7 +17,7 @@ func gamesDetailsFromDatabase(dbConf config.Database, settings Settings, serialN
 
 	gamesQuery := database.NewGamesQuery()
 	if len(serialNumbers) > 0 {
-		gamesQuery.FilterSerialNumbers(serialNumbers)
+		gamesQuery.FilterUIDs(serialNumbers)
 	}
 
 	if len(settings.Regions) > 0 {
