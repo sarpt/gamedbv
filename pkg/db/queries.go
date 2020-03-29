@@ -54,10 +54,10 @@ func (q *GamesQuery) Get() GamesResult {
 		q.handle = q.handle.Offset(offset)
 	}
 
-	q.handle.Preload("Descriptions.Language").Preload("Descriptions").Find(&games)
+	q.handle.Preload("Descriptions.Language").Preload("Descriptions").Preload("Platform").Find(&games)
 
 	return GamesResult{
-		Items: games,
+		Games: games,
 		Total: total,
 	}
 }

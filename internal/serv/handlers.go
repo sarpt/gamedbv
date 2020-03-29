@@ -37,7 +37,8 @@ func getGamesHandler(appConf config.App) http.HandlerFunc {
 			return
 		}
 
-		out, err := json.Marshal(result)
+		response := mapToGamesResponse(result)
+		out, err := json.Marshal(response)
 		if err != nil {
 			http.Error(resp, err.Error(), http.StatusInternalServerError)
 			return
