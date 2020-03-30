@@ -29,6 +29,7 @@ func Serve(appConf config.App) error {
 
 func initRouter(appConf config.App) *mux.Router {
 	router := mux.NewRouter()
+	router.Use(corsMiddleware)
 
 	for path, handler := range handlersCreators {
 		router.HandleFunc(path, handler(appConf))

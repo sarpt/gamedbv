@@ -3,7 +3,7 @@ package serv
 import "github.com/sarpt/gamedbv/pkg/db"
 
 func mapToGamesResponse(result db.GamesResult) gamesResponse {
-	var games []game
+	games := []game{}
 	for _, item := range result.Games {
 		var descriptions []description
 		for _, desc := range item.Descriptions {
