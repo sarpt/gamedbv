@@ -11,7 +11,9 @@ import (
 type handlerCreator func(config.App) http.HandlerFunc
 
 var handlersCreators = map[string]handlerCreator{
-	"/games": getGamesHandler,
+	"/games":          getGamesHandler,
+	"/info/languages": getLanguagesHandler,
+	"/info/platforms": getPlatformsHandler,
 }
 
 // Serve starts GameDBV server
@@ -30,6 +32,7 @@ func Serve(appConf config.App) error {
 func initRouter(appConf config.App) *mux.Router {
 	router := mux.NewRouter()
 	router.Use(corsMiddleware)
+	router.Use(jsonAPIMiddleware)
 
 	for path, handler := range handlersCreators {
 		router.HandleFunc(path, handler(appConf))

@@ -32,7 +32,7 @@ func main() {
 	defer printer.Close()
 
 	if *shouldDownloadAllPlatforms {
-		platformsToDownload = append(platformsToDownload, platform.GetAllPlatforms()...)
+		platformsToDownload = append(platformsToDownload, platform.GetAllVariants()...)
 	} else if platformFlag.IsSet() {
 		platformsToDownload = append(platformsToDownload, platformFlag)
 	} else {

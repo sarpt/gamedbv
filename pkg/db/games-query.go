@@ -38,7 +38,7 @@ func (q *GamesQuery) Page(offset int) *GamesQuery {
 	return q
 }
 
-// Get retrives games
+// Get retrives games and their total count
 func (q *GamesQuery) Get() GamesResult {
 	var total int
 	q.handle.Model(&models.Game{}).Count(&total)

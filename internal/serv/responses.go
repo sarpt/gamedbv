@@ -14,7 +14,24 @@ type game struct {
 	Descriptions []description `json:"descriptions"`
 }
 
+type language struct {
+	Code string `json:"code"`
+	Name string `json:"name"`
+}
+
+type platform struct {
+	Name string `json:"name"`
+}
+
 type gamesResponse struct {
 	Total int    `json:"total"`
 	Games []game `json:"games"`
+}
+
+type languagesResponse struct {
+	Languages []language `json:"languages"`
+}
+
+type platformsResponse struct {
+	Platforms []platform `json:"platforms"`
 }

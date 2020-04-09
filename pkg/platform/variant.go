@@ -45,8 +45,8 @@ func (variant Variant) IsSet() bool {
 	return len(variant.value) > 0
 }
 
-// GetAllPlatforms returns all possible variants of platform databases that could be downloaded
-func GetAllPlatforms() []Variant {
+// GetAllVariants returns all possible variants of platform databases that could be downloaded
+func GetAllVariants() []Variant {
 	var allPlatforms []Variant
 
 	for _, platform := range platforms {

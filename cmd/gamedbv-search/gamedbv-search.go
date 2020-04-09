@@ -41,7 +41,7 @@ func main() {
 	if platformVariant.IsSet() {
 		platforms = append(platforms, platformVariant)
 	} else {
-		platforms = platform.GetAllPlatforms()
+		platforms = platform.GetAllVariants()
 	}
 
 	params := search.Settings{

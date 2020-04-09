@@ -5,8 +5,9 @@ import (
 	"net/http"
 
 	"github.com/sarpt/gamedbv/internal/config"
+	"github.com/sarpt/gamedbv/internal/info"
 	"github.com/sarpt/gamedbv/internal/search"
-	"github.com/sarpt/gamedbv/pkg/platform"
+	plat "github.com/sarpt/gamedbv/pkg/platform"
 )
 
 func getGamesHandler(appConf config.App) http.HandlerFunc {
@@ -26,7 +27,7 @@ func getGamesHandler(appConf config.App) http.HandlerFunc {
 		params := search.Settings{
 			Text:      getTextQueryFromRequest(req),
 			Regions:   getRegionsFromRequest(req),
-			Platforms: platform.GetAllPlatforms(),
+			Platforms: plat.GetAllVariants(),
 			Page:      page,
 			PageLimit: pageLimit,
 		}
@@ -44,7 +45,44 @@ func getGamesHandler(appConf config.App) http.HandlerFunc {
 			return
 		}
 
-		resp.Header().Set("Content-Type", "application/json")
+		resp.Write(out)
+	}
+}
+
+func getLanguagesHandler(appConf config.App) http.HandlerFunc {
+	return func(resp http.ResponseWriter, req *http.Request) {
+		result, err := info.Languages(appConf.Database())
+		if err != nil {
+			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		response := mapToLanguagesResponse(result)
+		out, err := json.Marshal(response)
+		if err != nil {
+			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		resp.Write(out)
+	}
+}
+
+func getPlatformsHandler(appConf config.App) http.HandlerFunc {
+	return func(resp http.ResponseWriter, req *http.Request) {
+		result, err := info.Platforms(appConf.Database())
+		if err != nil {
+			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		response := mapToPlatformsResponse(result)
+		out, err := json.Marshal(response)
+		if err != nil {
+			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		resp.Write(out)
 	}
 }
