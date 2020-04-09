@@ -85,12 +85,13 @@ func (adapt *GameTDBAdapter) addGameDbModel(source gametdb.Game) {
 }
 
 func (adapt *GameTDBAdapter) addLanguage(source gametdb.Locale) *models.Language {
-	language := &models.Language{
+	newLanguage := &models.Language{
 		Code: source.Language,
+		Name: convertLanguageCodeToName(source.Language), // temp, at the moment name will be stored in the db but it should be moved as per-presentation basis (translated name vs self name)
 	}
-	adapt.models.languages[language.Code] = language
+	adapt.models.languages[newLanguage.Code] = newLanguage
 
-	return language
+	return newLanguage
 }
 
 func (adapt *GameTDBAdapter) addDescription(game *models.Game, source gametdb.Locale) {
