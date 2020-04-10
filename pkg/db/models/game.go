@@ -15,7 +15,7 @@ type Game struct {
 	Developer    string
 	Publisher    string
 	Platform     *Platform
-	PlatformID   int
+	PlatformID   uint
 	Roms         []*Rom
 	Date         string
 	Ratings      []*Rating

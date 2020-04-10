@@ -9,9 +9,9 @@ import (
 type Rating struct {
 	gorm.Model
 	Language   *Language
-	LanguageID int
+	LanguageID uint
 	Variant    string
 	Value      string
 	Game       *Game
-	GameID     int
+	GameID     uint
 }

@@ -47,7 +47,7 @@ func populateLanguages(tx *gorm.DB, languages []*models.Language) error {
 func populateGames(tx *gorm.DB, games []*models.Game) error {
 	for _, game := range games {
 		identity := models.Game{SerialNo: game.SerialNo}
-		tx.Assign(game).FirstOrCreate(game, identity)
+		tx.FirstOrCreate(game, identity)
 		if tx.Error != nil {
 			return tx.Error
 		}
@@ -58,8 +58,8 @@ func populateGames(tx *gorm.DB, games []*models.Game) error {
 
 func populateDescriptions(tx *gorm.DB, descriptions []*models.GameDescription) error {
 	for _, description := range descriptions {
-		identity := models.GameDescription{GameID: description.GameID, LanguageID: description.LanguageID}
-		tx.Assign(description).FirstOrCreate(description, identity)
+		identity := models.GameDescription{GameID: description.Game.ID, LanguageID: description.Language.ID}
+		tx.FirstOrCreate(description, identity)
 		if tx.Error != nil {
 			return tx.Error
 		}
@@ -70,7 +70,7 @@ func populateDescriptions(tx *gorm.DB, descriptions []*models.GameDescription) e
 
 func populatePlatform(tx *gorm.DB, platform *models.Platform) error {
 	identity := models.Platform{Name: platform.Name}
-	tx.Assign(platform).FirstOrCreate(platform, identity)
+	tx.FirstOrCreate(platform, identity)
 	if tx.Error != nil {
 		return tx.Error
 	}

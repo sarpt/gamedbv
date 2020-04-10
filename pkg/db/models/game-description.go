@@ -9,9 +9,9 @@ import (
 type GameDescription struct {
 	gorm.Model
 	Language   *Language
-	LanguageID int
+	LanguageID uint
 	Title      string
 	Synopsis   string
 	Game       *Game
-	GameID     int
+	GameID     uint
 }

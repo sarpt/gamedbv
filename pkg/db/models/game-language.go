@@ -9,7 +9,7 @@ import (
 type GameLanguage struct {
 	gorm.Model
 	Language   *Language
-	LanguageID int
+	LanguageID uint
 	Game       *Game
-	GameID     int
+	GameID     uint
 }

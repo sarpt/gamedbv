@@ -10,5 +10,5 @@ type Checksum struct {
 	gorm.Model
 	Variant string
 	Value   string
-	RomID   int
+	RomID   uint
 }
