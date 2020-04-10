@@ -1,9 +1,9 @@
 package serv
 
 type description struct {
-	Language string `json:"language"`
-	Title    string `json:"title"`
-	Synopsis string `json:"synopsis"`
+	Language language `json:"language"`
+	Title    string   `json:"title"`
+	Synopsis string   `json:"synopsis"`
 }
 
 type game struct {
