@@ -6,10 +6,14 @@ type description struct {
 	Synopsis string   `json:"synopsis"`
 }
 
+type region struct {
+	Code string `json:"code"`
+}
+
 type game struct {
 	UID          string        `json:"uid"`
 	SerialNumber string        `json:"serialNumber"`
-	Region       string        `json:"region"`
+	Region       region        `json:"region"`
 	Platform     string        `json:"platform"`
 	Descriptions []description `json:"descriptions"`
 }
@@ -20,6 +24,7 @@ type language struct {
 }
 
 type platform struct {
+	Code string `json:"code"`
 	Name string `json:"name"`
 }
 

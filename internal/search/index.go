@@ -12,7 +12,7 @@ func getSearcher(appConf config.App, settings Settings) index.Searcher {
 		configs = append(configs, appConf.Platform(plat))
 	}
 
-	bleveIndex, _ := bleve.NewSearcher(configs)
+	bleveIndex, _ := bleve.NewBleveSearcher(configs)
 
 	return bleveIndex
 }

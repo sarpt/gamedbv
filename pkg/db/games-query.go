@@ -11,6 +11,7 @@ type GamesQuery struct {
 	limit    int
 	page     int
 	maxLimit int
+	regions  []string
 }
 
 // FilterUIDs filters games by matching UID (platform:serial_no), if not called all games are returned
@@ -21,7 +22,7 @@ func (q *GamesQuery) FilterUIDs(serialNumbers []string) *GamesQuery {
 
 // FilterRegions filters games by matching their regions, if not called games from all regions are returned
 func (q *GamesQuery) FilterRegions(regions []string) *GamesQuery {
-	q.handle = q.handle.Where("region IN (?)", regions)
+	q.handle = q.handle.Joins("left join regions on regions.id = games.region_id").Where("regions.code IN (?)", regions)
 	return q
 }
 
@@ -54,7 +55,7 @@ func (q *GamesQuery) Get() GamesResult {
 		q.handle = q.handle.Offset(offset)
 	}
 
-	q.handle.Preload("Descriptions.Language").Preload("Descriptions").Preload("Platform").Find(&games)
+	q.handle.Preload("Region").Preload("Descriptions.Language").Preload("Descriptions").Preload("Platform").Find(&games)
 
 	return GamesResult{
 		Games: games,

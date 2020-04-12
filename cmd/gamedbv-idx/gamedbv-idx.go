@@ -41,7 +41,7 @@ func main() {
 		return
 	}
 
-	database, err := idx.OpenDatabase(appConf, printer)
+	database, err := idx.GetDatabase(appConf, printer)
 	defer database.Close()
 
 	if err != nil {
@@ -55,7 +55,7 @@ func main() {
 
 		go func(platform platform.Variant) {
 			defer wg.Done()
-			idx.IndexPlatform(appConf, platform, printer, database)
+			idx.PreparePlatform(appConf, platform, printer, database)
 		}(platformToParse)
 	}
 

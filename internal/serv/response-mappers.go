@@ -7,6 +7,7 @@ import (
 
 func mapToGamesResponse(result db.GamesResult) gamesResponse {
 	games := []game{}
+
 	for _, item := range result.Games {
 		var descriptions []description
 		for _, desc := range item.Descriptions {
@@ -23,8 +24,10 @@ func mapToGamesResponse(result db.GamesResult) gamesResponse {
 		games = append(games, game{
 			UID:          item.UID,
 			SerialNumber: item.SerialNo,
-			Region:       item.Region,
-			Platform:     item.Platform.Name,
+			Region: region{
+				Code: item.Region.Code,
+			},
+			Platform:     item.Platform.Code,
 			Descriptions: descriptions,
 		})
 	}
@@ -53,7 +56,7 @@ func mapToPlatformsResponse(results []models.Platform) platformsResponse {
 	platforms := []platform{}
 	for _, result := range results {
 		platforms = append(platforms, platform{
-			Name: result.Name,
+			Code: result.Code,
 		})
 	}
 

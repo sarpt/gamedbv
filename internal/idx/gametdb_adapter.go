@@ -9,11 +9,14 @@ import (
 	"github.com/sarpt/gamedbv/pkg/index"
 )
 
+const unknownRegionCode string = "other"
+
 type gametdbModels struct {
 	platform     *models.Platform
 	games        map[string]*models.Game
 	descriptions []*models.GameDescription
 	languages    map[string]*models.Language
+	regions      map[string]*models.Region
 }
 
 type indexModels struct {
@@ -30,6 +33,27 @@ type GameTDBAdapter struct {
 	index    indexModels
 }
 
+// NewGameTDBAdapter returns new instance of GameTDB adapter
+func NewGameTDBAdapter(platform string, provider gametdb.ModelProvider) GameTDBAdapter {
+	adapt := &GameTDBAdapter{
+		platform: platform,
+		root:     provider.Root(),
+		models: gametdbModels{
+			platform:  &models.Platform{Code: platform},
+			games:     make(map[string]*models.Game),
+			languages: make(map[string]*models.Language),
+			regions:   make(map[string]*models.Region),
+		},
+	}
+
+	for _, game := range adapt.root.Games {
+		adapt.addGameDbModel(game)
+		adapt.addGameSource(game)
+	}
+
+	return *adapt
+}
+
 func (adapt GameTDBAdapter) games() []*models.Game {
 	var games []*models.Game
 	for _, game := range adapt.models.games {
@@ -41,6 +65,15 @@ func (adapt GameTDBAdapter) games() []*models.Game {
 
 func (adapt GameTDBAdapter) descriptions() []*models.GameDescription {
 	return adapt.models.descriptions
+}
+
+func (adapt GameTDBAdapter) regions() []*models.Region {
+	var regions []*models.Region
+	for _, region := range adapt.models.regions {
+		regions = append(regions, region)
+	}
+
+	return regions
 }
 
 func (adapt GameTDBAdapter) languages() []*models.Language {
@@ -64,6 +97,7 @@ func (adapt GameTDBAdapter) PlatformProvider() db.PlatformProvider {
 		Games:        adapt.games(),
 		Descriptions: adapt.descriptions(),
 		Languages:    adapt.languages(),
+		Regions:      adapt.regions(),
 	}
 }
 
@@ -71,17 +105,35 @@ func (adapt *GameTDBAdapter) addGameDbModel(source gametdb.Game) {
 	newGame := &models.Game{
 		UID:       adapt.generateUID(source),
 		SerialNo:  source.ID,
-		Region:    source.Region,
 		Developer: source.Developer,
 		Date:      fmt.Sprintf("%d-%d-%d", source.Date.Day, source.Date.Month, source.Date.Year), // this needs fixing too
 		Platform:  adapt.models.platform,
 	}
+
+	adapt.addRegion(newGame, source)
 
 	for _, desc := range source.Locales {
 		adapt.addDescription(newGame, desc)
 	}
 
 	adapt.models.games[newGame.UID] = newGame
+}
+
+func (adapt *GameTDBAdapter) addRegion(game *models.Game, source gametdb.Game) {
+	regionCode := source.Region
+	if regionCode == "" {
+		regionCode = unknownRegionCode
+	}
+
+	region, ok := adapt.models.regions[regionCode]
+	if !ok {
+		region = &models.Region{
+			Code: regionCode,
+		}
+		adapt.models.regions[region.Code] = region
+	}
+
+	game.Region = region
 }
 
 func (adapt *GameTDBAdapter) addLanguage(source gametdb.Locale) *models.Language {

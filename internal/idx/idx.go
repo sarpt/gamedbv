@@ -14,41 +14,60 @@ import (
 
 const bleveCreator string = "bleve"
 
-// IndexPlatform creates Index related to the platfrom
-func IndexPlatform(appConf config.App, platformVariant platform.Variant, printer progress.Notifier, database db.Database) {
+// PreparePlatform unzips and parses source file, creates Index related to the platfrom and populates the database
+func PreparePlatform(appConf config.App, platformVariant platform.Variant, printer progress.Notifier, database db.Database) {
 	platformName := platformVariant.String()
 	platformConfig := appConf.Platform(platformVariant)
 
 	printer.NextStatus(newPlatformUnzipStatus(platformName))
-	err := zip.UnzipPlatformDatabase(platformConfig)
+	err := unzipPlatform(platformConfig)
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
-	gametdbModelProvider := gametdb.ModelProvider{}
 	printer.NextStatus(newPlatformParsingStatus(platformName))
-	err = parser.ParseSourceFile(platformConfig, &gametdbModelProvider)
+	gametdbModelProvider, err := parsePlatformSource(platformConfig)
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
 	gametdbAdapter := NewGameTDBAdapter(platformVariant.String(), gametdbModelProvider)
-	printer.NextStatus(newPlatformIndexingStatus(platformName))
-	creators := map[string]index.Creator{
-		bleveCreator: bleve.Creator{},
-	}
 
-	err = index.PrepareIndex(creators, platformConfig, gametdbAdapter.GameSources())
+	printer.NextStatus(newPlatformIndexingStatus(platformName))
+	err = indexPlatform(platformConfig, gametdbAdapter)
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
 	printer.NextStatus(newDatabasePopulateStatus(platformName))
-	err = database.Populate(gametdbAdapter.PlatformProvider())
+	err = populateDatabase(database, gametdbAdapter)
 	if err != nil {
 		printer.NextError(err)
 	}
+}
+
+func unzipPlatform(platformConfig config.Platform) error {
+	return zip.UnzipPlatformDatabase(platformConfig)
+}
+
+func parsePlatformSource(platformConfig config.Platform) (gametdb.ModelProvider, error) {
+	gametdbModelProvider := gametdb.ModelProvider{}
+	err := parser.ParseSourceFile(platformConfig, &gametdbModelProvider)
+
+	return gametdbModelProvider, err
+}
+
+func indexPlatform(platformConfig config.Platform, gametdbAdapter GameTDBAdapter) error {
+	creators := map[string]index.Creator{
+		bleveCreator: bleve.BleveCreator{},
+	}
+
+	return index.PrepareIndex(creators, platformConfig, gametdbAdapter.GameSources())
+}
+
+func populateDatabase(database db.Database, gametdbAdapter GameTDBAdapter) error {
+	return database.ProvidePlatformData(gametdbAdapter.PlatformProvider())
 }

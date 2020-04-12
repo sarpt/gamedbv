@@ -8,8 +8,8 @@ import (
 	"github.com/sarpt/gamedbv/pkg/progress"
 )
 
-// OpenDatabase creates and opens the database pointed to by application config
-func OpenDatabase(appConf config.App, printer progress.Notifier) (db.Database, error) {
+// GetDatabase creates with initialization and opens (or just opens) the database pointed to by application config
+func GetDatabase(appConf config.App, printer progress.Notifier) (db.Database, error) {
 	var database db.Database
 
 	databaseConfig := appConf.Database()
@@ -28,4 +28,10 @@ func OpenDatabase(appConf config.App, printer progress.Notifier) (db.Database, e
 	}
 
 	return database, err
+}
+
+// InitializeDatabase fills newly created database with data that is system-specific, rather than platfrom-specific.
+// At the moment only all supported console platforms are being filled.
+func InitializeDatabase(database db.Database) {
+	// allPlatformVariants := platform.GetAllVariants()
 }
