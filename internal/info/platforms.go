@@ -16,6 +16,6 @@ func Platforms(dbConf db.Config) ([]models.Platform, error) {
 		return platforms, err
 	}
 
-	platforms = database.NewPlatforsmQuery().Get()
+	platforms = database.NewPlatformsQuery().Get()
 	return platforms, nil
 }

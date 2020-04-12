@@ -27,7 +27,9 @@ func mapToGamesResponse(result db.GamesResult) gamesResponse {
 			Region: region{
 				Code: item.Region.Code,
 			},
-			Platform:     item.Platform.Code,
+			Platform: platform{
+				Code: item.Platform.Code,
+			},
 			Descriptions: descriptions,
 		})
 	}

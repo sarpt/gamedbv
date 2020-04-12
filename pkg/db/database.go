@@ -81,8 +81,8 @@ func (db Database) NewLanguagesQuery() *LanguagesQuery {
 	}
 }
 
-// NewPlatforsmQuery returns a query used for retrieving lanugages
-func (db Database) NewPlatforsmQuery() *PlatformsQuery {
+// NewPlatformsQuery returns a query used for retrieving lanugages
+func (db Database) NewPlatformsQuery() *PlatformsQuery {
 	return &PlatformsQuery{
 		handle: db.handle.New(),
 	}

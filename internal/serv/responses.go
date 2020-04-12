@@ -14,7 +14,7 @@ type game struct {
 	UID          string        `json:"uid"`
 	SerialNumber string        `json:"serialNumber"`
 	Region       region        `json:"region"`
-	Platform     string        `json:"platform"`
+	Platform     platform      `json:"platform"`
 	Descriptions []description `json:"descriptions"`
 }
 
