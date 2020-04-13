@@ -1,4 +1,4 @@
-package db
+package queries
 
 import (
 	"github.com/jinzhu/gorm"
@@ -8,6 +8,13 @@ import (
 // PlatformsQuery is responsible for returning the platforms information from database
 type PlatformsQuery struct {
 	handle *gorm.DB
+}
+
+// NewPlatformsQuery returns a query used for retrieving lanugages
+func NewPlatformsQuery(handle *gorm.DB) *PlatformsQuery {
+	return &PlatformsQuery{
+		handle: handle,
+	}
 }
 
 // Get returns platforms

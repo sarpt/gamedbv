@@ -7,10 +7,8 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite" // initializes sqlite driver as per docs requirement
 
 	"github.com/sarpt/gamedbv/pkg/db/models"
+	"github.com/sarpt/gamedbv/pkg/db/queries"
 )
-
-// Transaction is an operation which should be executed on a database, preferably in a batch with other opertions
-type Transaction = func(db *gorm.DB) error
 
 // Database is a wrapper around Gorm-handled SQLite3 database that exposes methods useful for GameDBV information handling
 type Database struct {
@@ -67,29 +65,27 @@ func (db Database) Close() {
 }
 
 // NewGamesQuery returns a query used for retrieving games
-func (db Database) NewGamesQuery() *GamesQuery {
-	return &GamesQuery{
-		handle:   db.handle.New(),
-		maxLimit: db.config.MaxLimit(),
-	}
+func (db Database) NewGamesQuery() *queries.GamesQuery {
+	return queries.NewGamesQuery(db.handle.New(), db.config.MaxLimit())
 }
 
 // NewLanguagesQuery returns a query used for retrieving lanugages
-func (db Database) NewLanguagesQuery() *LanguagesQuery {
-	return &LanguagesQuery{
-		handle: db.handle.New(),
-	}
+func (db Database) NewLanguagesQuery() *queries.LanguagesQuery {
+	return queries.NewLanguagesQuery(db.handle.New())
 }
 
 // NewPlatformsQuery returns a query used for retrieving lanugages
-func (db Database) NewPlatformsQuery() *PlatformsQuery {
-	return &PlatformsQuery{
-		handle: db.handle.New(),
-	}
+func (db Database) NewPlatformsQuery() *queries.PlatformsQuery {
+	return queries.NewPlatformsQuery(db.handle.New())
+}
+
+// NewRegionsQuery returns a query used for retrieving regions
+func (db Database) NewRegionsQuery() *queries.RegionsQuery {
+	return queries.NewRegionsQuery(db.handle.New())
 }
 
 // ExecuteTransactions locks the database in order to execute batch of operations
-func (db Database) ExecuteTransactions(transactions []Transaction) error {
+func (db Database) ExecuteTransactions(transactions []transaction) error {
 	db.mux.Lock()
 	defer db.mux.Unlock()
 
@@ -106,7 +102,7 @@ func (db Database) ExecuteTransactions(transactions []Transaction) error {
 
 // ProvidePlatformData takes a provider of platform's new data to be pushed to Database
 func (db Database) ProvidePlatformData(provider PlatformProvider) error {
-	transactions := []Transaction{
+	transactions := []transaction{
 		createPlatformsTransaction([]*models.Platform{provider.Platform}),
 		createRegionsTransaction(provider.Regions),
 		createGamesTransaction(provider.Games),
@@ -119,7 +115,7 @@ func (db Database) ProvidePlatformData(provider PlatformProvider) error {
 
 // ProvideInitialData fills data needed for application work (independent from platforms etc.)
 func (db Database) ProvideInitialData(provider InitializationProvider) error {
-	transactions := []Transaction{
+	transactions := []transaction{
 		createPlatformsTransaction(provider.Platforms),
 	}
 

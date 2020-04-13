@@ -2,12 +2,12 @@ package search
 
 import (
 	"github.com/sarpt/gamedbv/internal/config"
-	"github.com/sarpt/gamedbv/pkg/db"
+	"github.com/sarpt/gamedbv/pkg/db/queries"
 )
 
 // FindGames takes platforms, finds indexes which are available to execute query and executes the query on them, returning game results from database
-func FindGames(appConf config.App, settings Settings) (db.GamesResult, error) {
-	var gamesResult db.GamesResult
+func FindGames(appConf config.App, settings Settings) (queries.GamesResult, error) {
+	var gamesResult queries.GamesResult
 	var serialNumbers []string
 
 	if settings.Text != "" {

@@ -14,6 +14,7 @@ var handlersCreators = map[string]handlerCreator{
 	"/games":          getGamesHandler,
 	"/info/languages": getLanguagesHandler,
 	"/info/platforms": getPlatformsHandler,
+	"/info/regions":   getRegionsHandler,
 }
 
 // Serve starts GameDBV server

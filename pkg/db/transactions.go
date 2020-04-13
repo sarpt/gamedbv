@@ -5,7 +5,10 @@ import (
 	"github.com/sarpt/gamedbv/pkg/db/models"
 )
 
-func createLanguagesTransaction(languages []*models.Language) Transaction {
+// transaction is an operation which should be executed on a database, preferably in a batch with other opertions
+type transaction = func(db *gorm.DB) error
+
+func createLanguagesTransaction(languages []*models.Language) transaction {
 	return func(db *gorm.DB) error {
 		return execLanguagesTransaction(db, languages)
 	}
@@ -23,7 +26,7 @@ func execLanguagesTransaction(db *gorm.DB, languages []*models.Language) error {
 	return nil
 }
 
-func createGamesTransaction(games []*models.Game) Transaction {
+func createGamesTransaction(games []*models.Game) transaction {
 	return func(db *gorm.DB) error {
 		return execGamesTransaction(db, games)
 	}
@@ -41,7 +44,7 @@ func execGamesTransaction(db *gorm.DB, games []*models.Game) error {
 	return nil
 }
 
-func createDescriptionsTransaction(descriptions []*models.GameDescription) Transaction {
+func createDescriptionsTransaction(descriptions []*models.GameDescription) transaction {
 	return func(db *gorm.DB) error {
 		return execDescriptionsTransaction(db, descriptions)
 	}
@@ -59,7 +62,7 @@ func execDescriptionsTransaction(db *gorm.DB, descriptions []*models.GameDescrip
 	return nil
 }
 
-func createPlatformsTransaction(platform []*models.Platform) Transaction {
+func createPlatformsTransaction(platform []*models.Platform) transaction {
 	return func(db *gorm.DB) error {
 		return execPlatformTransaction(db, platform)
 	}
@@ -77,7 +80,7 @@ func execPlatformTransaction(db *gorm.DB, platforms []*models.Platform) error {
 	return nil
 }
 
-func createRegionsTransaction(regions []*models.Region) Transaction {
+func createRegionsTransaction(regions []*models.Region) transaction {
 	return func(db *gorm.DB) error {
 		return execRegionsTransaction(db, regions)
 	}

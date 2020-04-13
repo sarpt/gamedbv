@@ -1,4 +1,4 @@
-package db
+package queries
 
 import (
 	"github.com/jinzhu/gorm"
@@ -8,6 +8,13 @@ import (
 // LanguagesQuery is responsible for returning the languages information from database
 type LanguagesQuery struct {
 	handle *gorm.DB
+}
+
+// NewLanguagesQuery returns a query used for retrieving lanugages
+func NewLanguagesQuery(handle *gorm.DB) *LanguagesQuery {
+	return &LanguagesQuery{
+		handle: handle,
+	}
 }
 
 // Get returns languages

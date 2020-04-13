@@ -86,3 +86,22 @@ func getPlatformsHandler(appConf config.App) http.HandlerFunc {
 		resp.Write(out)
 	}
 }
+
+func getRegionsHandler(appConf config.App) http.HandlerFunc {
+	return func(resp http.ResponseWriter, req *http.Request) {
+		result, err := info.Regions(appConf.Database())
+		if err != nil {
+			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		response := mapToRegionsResponse(result)
+		out, err := json.Marshal(response)
+		if err != nil {
+			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		resp.Write(out)
+	}
+}

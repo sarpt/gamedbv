@@ -40,3 +40,7 @@ type languagesResponse struct {
 type platformsResponse struct {
 	Platforms []platform `json:"platforms"`
 }
+
+type regionsResponse struct {
+	Regions []region `json:"regions"`
+}

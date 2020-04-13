@@ -1,11 +1,11 @@
 package serv
 
 import (
-	"github.com/sarpt/gamedbv/pkg/db"
 	"github.com/sarpt/gamedbv/pkg/db/models"
+	"github.com/sarpt/gamedbv/pkg/db/queries"
 )
 
-func mapToGamesResponse(result db.GamesResult) gamesResponse {
+func mapToGamesResponse(result queries.GamesResult) gamesResponse {
 	games := []game{}
 
 	for _, item := range result.Games {
@@ -64,5 +64,18 @@ func mapToPlatformsResponse(results []models.Platform) platformsResponse {
 
 	return platformsResponse{
 		Platforms: platforms,
+	}
+}
+
+func mapToRegionsResponse(results []models.Region) regionsResponse {
+	regions := []region{}
+	for _, result := range results {
+		regions = append(regions, region{
+			Code: result.Code,
+		})
+	}
+
+	return regionsResponse{
+		Regions: regions,
 	}
 }

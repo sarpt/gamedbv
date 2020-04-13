@@ -1,9 +1,15 @@
-package db
+package queries
 
 import (
 	"github.com/jinzhu/gorm"
 	"github.com/sarpt/gamedbv/pkg/db/models"
 )
+
+// GamesResult contains informations about games fetched from database
+type GamesResult struct {
+	Games []*models.Game
+	Total int
+}
 
 // GamesQuery is used for getting games from database
 type GamesQuery struct {
@@ -12,6 +18,14 @@ type GamesQuery struct {
 	page     int
 	maxLimit int
 	regions  []string
+}
+
+// NewGamesQuery return the new query used for retrieving games
+func NewGamesQuery(handle *gorm.DB, maxLimit int) *GamesQuery {
+	return &GamesQuery{
+		handle:   handle,
+		maxLimit: maxLimit,
+	}
 }
 
 // FilterUIDs filters games by matching UID (platform:serial_no), if not called all games are returned
