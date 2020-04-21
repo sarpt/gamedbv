@@ -11,12 +11,12 @@ import (
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
-var platformFlag platform.Variant
-var shouldParseAllPlatforms *bool
+var platformFlag *string
+var allPlatformsFlag *bool
 
 func init() {
-	flag.Var(&platformFlag, "platform", "platform specifies which database console variant should be indexed")
-	shouldParseAllPlatforms = flag.Bool("allPlatforms", false, "When specified as true, all possible console platforms databases will be indexed. When false, platform argument is mandatory")
+	platformFlag = flag.String("platform", "", "platform specifies which database console variant should be indexed")
+	allPlatformsFlag = flag.Bool("allPlatforms", false, "When specified as true, all possible console platforms databases will be indexed. When false, platform argument is mandatory")
 	flag.Parse()
 }
 
@@ -31,10 +31,15 @@ func main() {
 	printer := cli.NewPrinter()
 	defer printer.Close()
 
-	if *shouldParseAllPlatforms {
-		platformsToParse = append(platformsToParse, platform.GetAllVariants()...)
-	} else if platformFlag.IsSet() {
-		platformsToParse = append(platformsToParse, platformFlag)
+	if *allPlatformsFlag {
+		platformsToParse = append(platformsToParse, platform.All()...)
+	} else if *platformFlag != "" {
+		variant, err := platform.Get(*platformFlag)
+		if err != nil {
+			panic(err)
+		}
+
+		platformsToParse = append(platformsToParse, variant)
 	} else {
 		fmt.Println("neither --platform nor --allPlarforms specified. One of them is mandatory")
 		flag.PrintDefaults()

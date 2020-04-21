@@ -2,66 +2,34 @@ package platform
 
 import "strings"
 
-const (
-	// Wii is Nintendo Wii platform
-	Wii = "wii"
-	// Wiiu is Nintendo WiiU platform
-	Wiiu = "wiiu"
-	// Ps3 is PlayStation 3 platform
-	Ps3 = "ps3"
-	// Nds is Nintendo DS platform
-	Nds = "nds"
-	// N3ds is Nintendo 3DS platform
-	N3ds = "n3ds"
-	// Switch is Nintendo Switch platfrom
-	Switch = "switch"
-)
-
 // Variant is used to specify type of Database to download.
 type Variant struct {
-	value string
+	id   string
+	name string
 }
 
-var platforms = []string{Wii, Wiiu, Ps3, Nds, N3ds, Switch}
+// Get returns Variant when supported platform variant exists with the id
+// Otherwise IncorrectPlatformError is returned
+func Get(id string) (Variant, error) {
+	variant, ok := variants[strings.ToLower(id)]
 
-func (variant *Variant) String() string {
-	return variant.value
-}
-
-// Set validates and sets platform if it's a correct string value or throws an error when it's a not supported value
-func (variant *Variant) Set(value string) error {
-	lowerCaseValue := strings.ToLower(value)
-
-	if !isValueCorrectPlatform(lowerCaseValue) {
-		return &IncorrectPlatformError{incorrectPlatform: value}
+	if !ok {
+		return variant, &IncorrectPlatformError{incorrectPlatform: id}
 	}
 
-	variant.value = lowerCaseValue
-	return nil
+	return variant, nil
 }
 
-// IsSet returns true when the variant has been correctly set
-func (variant Variant) IsSet() bool {
-	return len(variant.value) > 0
+// ID returns platform variant id
+func (variant Variant) ID() string {
+	return variant.id
 }
 
-// GetAllVariants returns all possible variants of platform databases that could be downloaded
-func GetAllVariants() []Variant {
-	var allPlatforms []Variant
-
-	for _, platform := range platforms {
-		allPlatforms = append(allPlatforms, Variant{value: platform})
-	}
-
-	return allPlatforms
+// Name returns platform variant name as commercially known
+func (variant Variant) Name() string {
+	return variant.name
 }
 
-func isValueCorrectPlatform(value string) bool {
-	for _, platform := range platforms {
-		if value == platform {
-			return true
-		}
-	}
-
-	return false
+func (variant Variant) String() string {
+	return variant.Name()
 }

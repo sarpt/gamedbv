@@ -27,7 +27,7 @@ func getGamesHandler(appConf config.App) http.HandlerFunc {
 		params := search.Settings{
 			Text:      getTextQueryFromRequest(req),
 			Regions:   getRegionsFromRequest(req),
-			Platforms: plat.GetAllVariants(),
+			Platforms: plat.All(),
 			Page:      page,
 			PageLimit: pageLimit,
 		}

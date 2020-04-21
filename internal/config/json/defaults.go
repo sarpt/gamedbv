@@ -4,9 +4,9 @@ import "github.com/sarpt/gamedbv/pkg/platform"
 
 // DefaultConfigsPerPlatform are default configuration values used for platforms database files when no overwrites are present
 var DefaultConfigsPerPlatform = map[string]Platform{
-	platform.Wii: Platform{
+	platform.Wii.ID(): {
 		Directory: "wii",
-		Name:      platform.Wii,
+		Name:      platform.Wii.ID(),
 		Index: Index{
 			Directory: "wii_bleve",
 			DocType:   "gametdb/game",
@@ -22,9 +22,9 @@ var DefaultConfigsPerPlatform = map[string]Platform{
 			URL:             "https://www.gametdb.com/wiitdb.zip",
 		},
 	},
-	platform.Ps3: Platform{
+	platform.Ps3.ID(): {
 		Directory: "ps3",
-		Name:      platform.Ps3,
+		Name:      platform.Ps3.ID(),
 		Index: Index{
 			Directory: "ps3_bleve",
 			DocType:   "gametdb/game",
@@ -40,9 +40,9 @@ var DefaultConfigsPerPlatform = map[string]Platform{
 			ArchiveFilename: "ps3db.zip",
 		},
 	},
-	platform.Wiiu: Platform{
+	platform.Wiiu.ID(): {
 		Directory: "wiiu",
-		Name:      platform.Wiiu,
+		Name:      platform.Wiiu.ID(),
 		Index: Index{
 			Directory: "wiiu_bleve",
 			DocType:   "gametdb/game",
@@ -58,9 +58,9 @@ var DefaultConfigsPerPlatform = map[string]Platform{
 			URL:             "https://www.gametdb.com/wiiutdb.zip",
 		},
 	},
-	platform.Nds: Platform{
+	platform.Nds.ID(): {
 		Directory: "nds",
-		Name:      platform.Nds,
+		Name:      platform.Nds.ID(),
 		Index: Index{
 			Directory: "nds_bleve",
 			DocType:   "gametdb/game",
@@ -76,9 +76,9 @@ var DefaultConfigsPerPlatform = map[string]Platform{
 			URL:             "https://www.gametdb.com/dstdb.zip",
 		},
 	},
-	platform.N3ds: Platform{
+	platform.N3ds.ID(): {
 		Directory: "3ds",
-		Name:      platform.N3ds,
+		Name:      platform.N3ds.ID(),
 		Index: Index{
 			Directory: "3ds_bleve",
 			DocType:   "gametdb/game",
@@ -94,9 +94,9 @@ var DefaultConfigsPerPlatform = map[string]Platform{
 			URL:             "https://www.gametdb.com/3dstdb.zip",
 		},
 	},
-	platform.Switch: Platform{
+	platform.Switch.ID(): {
 		Directory: "switch",
-		Name:      platform.Switch,
+		Name:      platform.Switch.ID(),
 		Index: Index{
 			Directory: "switch_bleve",
 			DocType:   "gametdb/game",

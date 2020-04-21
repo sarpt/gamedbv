@@ -11,18 +11,19 @@ import (
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
-var text *string
-var region *string
-var platformVariant platform.Variant
+var textFlag *string
+var regionFlag *string
+var platformFlag *string
 
 func init() {
-	text = flag.String("text", "", "A text to be searched for in the index")
-	region = flag.String("region", "", "A region of the game")
-	flag.Var(&platformVariant, "platform", "A platform for which the search should be executed")
+	textFlag = flag.String("text", "", "A text to be searched for in the index")
+	regionFlag = flag.String("region", "", "A region of the game")
+	platformFlag = flag.String("platform", "", "A platform for which the search should be executed")
 	flag.Parse()
 }
 
 func main() {
+
 	appConf, err := config.NewApp()
 	if err != nil {
 		panic(err)
@@ -33,19 +34,24 @@ func main() {
 
 	// todo: add possibility to pass more than one region
 	regions := []string{}
-	if *region != "" {
-		regions = append(regions, *region)
+	if *regionFlag != "" {
+		regions = append(regions, *regionFlag)
 	}
 
 	var platforms []platform.Variant
-	if platformVariant.IsSet() {
-		platforms = append(platforms, platformVariant)
+	if *platformFlag != "" {
+		variant, err := platform.Get(*platformFlag)
+		if err != nil {
+			panic(err)
+		}
+
+		platforms = append(platforms, variant)
 	} else {
-		platforms = platform.GetAllVariants()
+		platforms = platform.All()
 	}
 
 	params := search.Settings{
-		Text:      *text,
+		Text:      *textFlag,
 		Regions:   regions,
 		Platforms: platforms,
 	}

@@ -69,7 +69,7 @@ func (conf App) GetBaseDirectoryPath() string {
 
 // Platform returns platform config
 func (conf App) Platform(variant platform.Variant) Platform {
-	return conf.platforms[variant.String()]
+	return conf.platforms[variant.ID()]
 }
 
 // Database returns information neccessary to connect to persistence

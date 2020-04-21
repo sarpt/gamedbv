@@ -30,7 +30,7 @@ func resultsFromIndex(appConf config.App, settings Settings) (index.Result, erro
 func mapToSearcherParameters(settings Settings) index.SearchParameters {
 	var platforms []string
 	for _, plat := range settings.Platforms {
-		platforms = append(platforms, plat.String())
+		platforms = append(platforms, plat.ID())
 	}
 
 	return index.SearchParameters{
