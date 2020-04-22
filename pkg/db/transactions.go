@@ -62,16 +62,41 @@ func execDescriptionsTransaction(db *gorm.DB, descriptions []*models.GameDescrip
 	return nil
 }
 
-func createPlatformsTransaction(platform []*models.Platform) transaction {
+func createUpdatePlatformsTransaction(platforms []*models.Platform) transaction {
 	return func(db *gorm.DB) error {
-		return execPlatformTransaction(db, platform)
+		return execUpdatePlatformsTransaction(db, platforms)
 	}
 }
 
-func execPlatformTransaction(db *gorm.DB, platforms []*models.Platform) error {
-	for _, platforms := range platforms {
-		identity := models.Platform{Name: platforms.Name}
-		db.FirstOrCreate(platforms, identity)
+func execUpdatePlatformsTransaction(db *gorm.DB, platforms []*models.Platform) error {
+	for _, platform := range platforms {
+		identity := &models.Platform{}
+		db.Where("code = ?", platform.Code).First(identity)
+		if db.Error != nil {
+			return db.Error
+		}
+
+		db.Model(identity).Update(platform)
+		if db.Error != nil {
+			return db.Error
+		}
+
+		*platform = *identity
+	}
+
+	return nil
+}
+
+func createInitPlatformsTransaction(platforms []*models.Platform) transaction {
+	return func(db *gorm.DB) error {
+		return execInitPlatformsTransaction(db, platforms)
+	}
+}
+
+func execInitPlatformsTransaction(db *gorm.DB, platforms []*models.Platform) error {
+	for _, platform := range platforms {
+		identity := models.Platform{Code: platform.Code}
+		db.FirstOrCreate(platform, identity)
 		if db.Error != nil {
 			return db.Error
 		}

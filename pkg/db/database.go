@@ -17,8 +17,20 @@ type Database struct {
 	mux    *sync.Mutex
 }
 
+// Config specifies behavior of database
+type Config struct {
+	Path     string
+	Variant  string
+	MaxLimit int
+}
+
+// InitialData is used for population of database with platform-independent information
+type InitialData struct {
+	Platforms []*models.Platform
+}
+
 // NewDatabase attempts to open the database, performing the auto-migration in the process
-func NewDatabase(conf Config) (Database, error) {
+func NewDatabase(conf Config, initialData InitialData) (Database, error) {
 	db, err := OpenDatabase(conf)
 	if err != nil {
 		return db, err
@@ -36,6 +48,8 @@ func NewDatabase(conf Config) (Database, error) {
 		&models.Region{},
 	)
 
+	db.provideInitialData(initialData)
+
 	return db, err
 }
 
@@ -43,7 +57,7 @@ func NewDatabase(conf Config) (Database, error) {
 func OpenDatabase(conf Config) (Database, error) {
 	var db Database
 
-	handle, err := gorm.Open(conf.Variant(), conf.Path())
+	handle, err := gorm.Open(conf.Variant, conf.Path)
 	if err != nil {
 		return db, err
 	}
@@ -66,7 +80,7 @@ func (db Database) Close() {
 
 // NewGamesQuery returns a query used for retrieving games
 func (db Database) NewGamesQuery() *queries.GamesQuery {
-	return queries.NewGamesQuery(db.handle.New(), db.config.MaxLimit())
+	return queries.NewGamesQuery(db.handle.New(), db.config.MaxLimit)
 }
 
 // NewLanguagesQuery returns a query used for retrieving lanugages
@@ -103,7 +117,7 @@ func (db Database) ExecuteTransactions(transactions []transaction) error {
 // ProvidePlatformData takes a provider of platform's new data to be pushed to Database
 func (db Database) ProvidePlatformData(provider PlatformProvider) error {
 	transactions := []transaction{
-		createPlatformsTransaction([]*models.Platform{provider.Platform}),
+		createUpdatePlatformsTransaction([]*models.Platform{provider.Platform}),
 		createRegionsTransaction(provider.Regions),
 		createGamesTransaction(provider.Games),
 		createLanguagesTransaction(provider.Languages),
@@ -113,10 +127,10 @@ func (db Database) ProvidePlatformData(provider PlatformProvider) error {
 	return db.ExecuteTransactions(transactions)
 }
 
-// ProvideInitialData fills data needed for application work (independent from platforms etc.)
-func (db Database) ProvideInitialData(provider InitializationProvider) error {
+// provideInitialData fills data needed for application work (independent from platforms etc.)
+func (db Database) provideInitialData(initData InitialData) error {
 	transactions := []transaction{
-		createPlatformsTransaction(provider.Platforms),
+		createInitPlatformsTransaction(initData.Platforms),
 	}
 
 	return db.ExecuteTransactions(transactions)

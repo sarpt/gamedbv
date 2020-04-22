@@ -5,14 +5,16 @@ import (
 	"path"
 
 	"github.com/sarpt/gamedbv/internal/config/json"
+	"github.com/sarpt/gamedbv/pkg/db"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
 // App groups configuration properties of the whole GameDBV project
+// Todo: instead of implementing own types, App should act as an adapter for other configs from json models. Database is implemented, rest to follow
 type App struct {
 	directoryPath string
 	platforms     map[string]Platform
-	database      Database
+	database      db.Config
 }
 
 // NewApp returns new config
@@ -28,10 +30,10 @@ func NewApp() (App, error) {
 	directoryPath := path.Join(userConfigDir, json.DefaultConfig.Directory)
 	newApp = App{
 		directoryPath: directoryPath,
-		database: Database{
-			variant:  json.DefaultConfig.Database.Variant,
-			path:     path.Join(directoryPath, json.DefaultConfig.Database.FileName),
-			maxLimit: json.DefaultConfig.Database.MaxLimit,
+		database: db.Config{
+			Variant:  json.DefaultConfig.Database.Variant,
+			Path:     path.Join(directoryPath, json.DefaultConfig.Database.FileName),
+			MaxLimit: json.DefaultConfig.Database.MaxLimit,
 		},
 	}
 
@@ -73,6 +75,6 @@ func (conf App) Platform(variant platform.Variant) Platform {
 }
 
 // Database returns information neccessary to connect to persistence
-func (conf App) Database() Database {
+func (conf App) Database() db.Config {
 	return conf.database
 }

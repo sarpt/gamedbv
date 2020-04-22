@@ -5,6 +5,8 @@ import (
 
 	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/pkg/db"
+	"github.com/sarpt/gamedbv/pkg/db/models"
+	"github.com/sarpt/gamedbv/pkg/platform"
 	"github.com/sarpt/gamedbv/pkg/progress"
 )
 
@@ -13,7 +15,7 @@ func GetDatabase(appConf config.App, printer progress.Notifier) (db.Database, er
 	var database db.Database
 
 	databaseConfig := appConf.Database()
-	databasePath := databaseConfig.Path()
+	databasePath := databaseConfig.Path
 	_, err := os.Stat(databasePath)
 	if err != nil && !os.IsNotExist(err) {
 		return database, err
@@ -21,7 +23,8 @@ func GetDatabase(appConf config.App, printer progress.Notifier) (db.Database, er
 
 	if os.IsNotExist(err) {
 		printer.NextStatus(newDatabaseCreateStatus(databasePath))
-		database, err = db.NewDatabase(databaseConfig)
+		initalData := getInitialData()
+		database, err = db.NewDatabase(databaseConfig, initalData)
 	} else {
 		printer.NextStatus(newDatabaseReuseStatus(databasePath))
 		database, err = db.OpenDatabase(databaseConfig)
@@ -30,8 +33,18 @@ func GetDatabase(appConf config.App, printer progress.Notifier) (db.Database, er
 	return database, err
 }
 
-// InitializeDatabase fills newly created database with data that is system-specific, rather than platfrom-specific.
-// At the moment only all supported console platforms are being filled.
-func InitializeDatabase(database db.Database) {
-	// allPlatformVariants := platform.GetAllVariants()
+func getInitialData() db.InitialData {
+	var platforms []*models.Platform
+
+	allPlatformVariants := platform.All()
+	for _, variant := range allPlatformVariants {
+		platforms = append(platforms, &models.Platform{
+			Code: variant.ID(),
+			Name: variant.Name(),
+		})
+	}
+
+	return db.InitialData{
+		Platforms: platforms,
+	}
 }

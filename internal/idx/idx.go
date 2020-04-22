@@ -33,7 +33,7 @@ func PreparePlatform(appConf config.App, platformVariant platform.Variant, print
 		return
 	}
 
-	gametdbAdapter := NewGameTDBAdapter(platformVariant.String(), gametdbModelProvider)
+	gametdbAdapter := NewGameTDBAdapter(platformVariant.ID(), gametdbModelProvider)
 
 	printer.NextStatus(newPlatformIndexingStatus(platformName))
 	err = indexPlatform(platformConfig, gametdbAdapter)

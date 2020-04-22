@@ -27,19 +27,19 @@ type indexModels struct {
 // This is the gluing component which should be used for transforming data provided by GameTDB source to fit any other package required
 // As a result parsing, indexing and persistence packages can be decoupled using interfaces and are not dependent on the shape of GameTDB source
 type GameTDBAdapter struct {
-	platform string
-	root     gametdb.Datafile
-	models   gametdbModels
-	index    indexModels
+	platformID string
+	root       gametdb.Datafile
+	models     gametdbModels
+	index      indexModels
 }
 
 // NewGameTDBAdapter returns new instance of GameTDB adapter
-func NewGameTDBAdapter(platform string, provider gametdb.ModelProvider) GameTDBAdapter {
+func NewGameTDBAdapter(platformID string, provider gametdb.ModelProvider) GameTDBAdapter {
 	adapt := &GameTDBAdapter{
-		platform: platform,
-		root:     provider.Root(),
+		platformID: platformID,
+		root:       provider.Root(),
 		models: gametdbModels{
-			platform:  &models.Platform{Code: platform},
+			platform:  &models.Platform{Code: platformID, Indexed: true},
 			games:     make(map[string]*models.Game),
 			languages: make(map[string]*models.Language),
 			regions:   make(map[string]*models.Region),
@@ -178,5 +178,5 @@ func (adapt *GameTDBAdapter) addGameSource(source gametdb.Game) {
 }
 
 func (adapt GameTDBAdapter) generateUID(source gametdb.Game) string {
-	return fmt.Sprintf("%s:%s", adapt.platform, source.ID)
+	return fmt.Sprintf("%s:%s", adapt.platformID, source.ID)
 }
