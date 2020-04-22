@@ -3,6 +3,7 @@ package db
 import (
 	"github.com/jinzhu/gorm"
 	"github.com/sarpt/gamedbv/pkg/db/models"
+	"github.com/sarpt/gamedbv/pkg/db/queries"
 )
 
 // transaction is an operation which should be executed on a database, preferably in a batch with other opertions
@@ -70,18 +71,18 @@ func createUpdatePlatformsTransaction(platforms []*models.Platform) transaction 
 
 func execUpdatePlatformsTransaction(db *gorm.DB, platforms []*models.Platform) error {
 	for _, platform := range platforms {
-		identity := &models.Platform{}
-		db.Where("code = ?", platform.Code).First(identity)
+		q := queries.NewPlatformsQuery(db)
+		identity := q.WithUID(platform.UID).First()
 		if db.Error != nil {
 			return db.Error
 		}
 
-		db.Model(identity).Update(platform)
+		db.Model(&identity).Update(platform)
 		if db.Error != nil {
 			return db.Error
 		}
 
-		*platform = *identity
+		*platform = identity
 	}
 
 	return nil
@@ -95,7 +96,7 @@ func createInitPlatformsTransaction(platforms []*models.Platform) transaction {
 
 func execInitPlatformsTransaction(db *gorm.DB, platforms []*models.Platform) error {
 	for _, platform := range platforms {
-		identity := models.Platform{Code: platform.Code}
+		identity := models.Platform{UID: platform.UID}
 		db.FirstOrCreate(platform, identity)
 		if db.Error != nil {
 			return db.Error

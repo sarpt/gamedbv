@@ -2,7 +2,7 @@ package platform
 
 import "strings"
 
-// Variant is used to specify type of Database to download.
+// Variant holds information about a console platform variant
 type Variant struct {
 	id   string
 	name string
@@ -20,7 +20,7 @@ func Get(id string) (Variant, error) {
 	return variant, nil
 }
 
-// ID returns platform variant id
+// ID returns platform variant id, should be unique per platform
 func (variant Variant) ID() string {
 	return variant.id
 }

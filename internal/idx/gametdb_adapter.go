@@ -39,7 +39,7 @@ func NewGameTDBAdapter(platformID string, provider gametdb.ModelProvider) GameTD
 		platformID: platformID,
 		root:       provider.Root(),
 		models: gametdbModels{
-			platform:  &models.Platform{Code: platformID, Indexed: true},
+			platform:  &models.Platform{UID: platformID, Indexed: true},
 			games:     make(map[string]*models.Game),
 			languages: make(map[string]*models.Language),
 			regions:   make(map[string]*models.Region),

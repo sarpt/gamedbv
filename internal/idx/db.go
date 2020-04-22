@@ -39,7 +39,7 @@ func getInitialData() db.InitialData {
 	allPlatformVariants := platform.All()
 	for _, variant := range allPlatformVariants {
 		platforms = append(platforms, &models.Platform{
-			Code: variant.ID(),
+			UID:  variant.ID(),
 			Name: variant.Name(),
 		})
 	}

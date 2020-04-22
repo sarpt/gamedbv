@@ -28,7 +28,7 @@ func mapToGamesResponse(result queries.GamesResult) gamesResponse {
 				Code: item.Region.Code,
 			},
 			Platform: platform{
-				Code: item.Platform.Code,
+				UID: item.Platform.UID,
 			},
 			Descriptions: descriptions,
 		})
@@ -58,7 +58,7 @@ func mapToPlatformsResponse(results []models.Platform) platformsResponse {
 	platforms := []platform{}
 	for _, result := range results {
 		platforms = append(platforms, platform{
-			Code: result.Code,
+			UID: result.UID,
 		})
 	}
 

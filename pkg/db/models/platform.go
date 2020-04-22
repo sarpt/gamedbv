@@ -7,7 +7,7 @@ import (
 // Platform inlcudes information about
 type Platform struct {
 	gorm.Model
-	Code    string `gorm:"unique;not null"`
+	UID     string `gorm:"unique;not null"`
 	Name    string
 	Indexed bool
 }

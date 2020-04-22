@@ -24,7 +24,7 @@ type language struct {
 }
 
 type platform struct {
-	Code string `json:"code"`
+	UID  string `json:"uid"`
 	Name string `json:"name"`
 }
 
