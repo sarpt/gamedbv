@@ -58,7 +58,8 @@ func mapToPlatformsResponse(results []models.Platform) platformsResponse {
 	platforms := []platformResponse{}
 	for _, result := range results {
 		platforms = append(platforms, platformResponse{
-			UID: result.UID,
+			UID:  result.UID,
+			Name: result.Name,
 		})
 	}
 

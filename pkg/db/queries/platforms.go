@@ -24,9 +24,9 @@ func (q *PlatformsQuery) WithUID(uid string) *PlatformsQuery {
 	return q
 }
 
-// FilterIndexed filters platforms so only platforms that were marked as indexed are returned
-func (q *PlatformsQuery) FilterIndexed() *PlatformsQuery {
-	q.handle = q.handle.Where("indexed = ?", true)
+// FilterIndexed filters platforms that are either with index or without
+func (q *PlatformsQuery) FilterIndexed(indexed bool) *PlatformsQuery {
+	q.handle = q.handle.Where("indexed = ?", indexed)
 
 	return q
 }

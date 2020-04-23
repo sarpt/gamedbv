@@ -3,6 +3,8 @@ package serv
 import (
 	"net/http"
 	"strconv"
+
+	"github.com/sarpt/gamedbv/internal/info"
 )
 
 const (
@@ -11,13 +13,15 @@ const (
 	limitQuery      string = "_limit"
 	platformQuery   string = "platform"
 	regionQuery     string = "region"
+	uidQuery        string = "uid"
+	indexedQuery    string = "indexed"
 )
 
-func getTextQueryFromRequest(r *http.Request) string {
+func getTextQuery(r *http.Request) string {
 	return r.URL.Query().Get(textFilterQuery)
 }
 
-func getCurrentPageFromRequest(r *http.Request) (int, error) {
+func getCurrentPageQuery(r *http.Request) (int, error) {
 	page := r.URL.Query().Get(pageQuery)
 	if page == "" {
 		return 0, nil
@@ -26,7 +30,7 @@ func getCurrentPageFromRequest(r *http.Request) (int, error) {
 	return strconv.Atoi(page)
 }
 
-func getPageLimitFromRequest(r *http.Request) (int, error) {
+func getPageLimitQuery(r *http.Request) (int, error) {
 	limit := r.URL.Query().Get(limitQuery)
 	if limit == "" {
 		return -1, nil
@@ -35,7 +39,7 @@ func getPageLimitFromRequest(r *http.Request) (int, error) {
 	return strconv.Atoi(limit)
 }
 
-func getPlatformsFromRequest(r *http.Request) []string {
+func getPlatformsQuery(r *http.Request) []string {
 	query := r.URL.Query()
 	if platforms, ok := query[platformQuery]; ok {
 		return platforms
@@ -44,11 +48,33 @@ func getPlatformsFromRequest(r *http.Request) []string {
 	return []string{}
 }
 
-func getRegionsFromRequest(r *http.Request) []string {
+func getRegionsQuery(r *http.Request) []string {
 	query := r.URL.Query()
 	if regions, ok := query[regionQuery]; ok {
 		return regions
 	}
 
 	return []string{}
+}
+
+func getUIDQuery(r *http.Request) string {
+	return r.URL.Query().Get(uidQuery)
+}
+
+func getIndexedQuery(r *http.Request) (info.FilterIndexing, error) {
+	indexed := r.URL.Query().Get(indexedQuery)
+	if indexed == "" {
+		return info.AllPlatforms, nil
+	}
+
+	onlyIndexed, err := strconv.ParseBool(indexed)
+	if err != nil {
+		return info.AllPlatforms, nil
+	}
+
+	if onlyIndexed {
+		return info.WithIndex, nil
+	}
+
+	return info.WithoutIndex, nil
 }

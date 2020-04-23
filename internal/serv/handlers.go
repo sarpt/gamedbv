@@ -12,21 +12,21 @@ import (
 
 func getGamesHandler(appConf config.App) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
-		page, err := getCurrentPageFromRequest(req)
+		page, err := getCurrentPageQuery(req)
 		if err != nil {
 			http.Error(resp, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		pageLimit, err := getPageLimitFromRequest(req)
+		pageLimit, err := getPageLimitQuery(req)
 		if err != nil {
 			http.Error(resp, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		params := search.Parameters{
-			Text:      getTextQueryFromRequest(req),
-			Regions:   getRegionsFromRequest(req),
+			Text:      getTextQuery(req),
+			Regions:   getRegionsQuery(req),
 			Platforms: platform.All(),
 			Page:      page,
 			PageLimit: pageLimit,
@@ -70,7 +70,20 @@ func getLanguagesHandler(appConf config.App) http.HandlerFunc {
 
 func getPlatformsHandler(appConf config.App) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
-		result, err := info.Platforms(appConf.Database())
+		filterIndexed, err := getIndexedQuery(req)
+		if err != nil {
+			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		uid := getUIDQuery(req)
+
+		params := info.PlatformsParameters{
+			Indexed: filterIndexed,
+			UID:     uid,
+		}
+
+		result, err := info.Platforms(appConf.Database(), params)
 		if err != nil {
 			http.Error(resp, err.Error(), http.StatusInternalServerError)
 			return
