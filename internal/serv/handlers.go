@@ -7,7 +7,7 @@ import (
 	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/internal/info"
 	"github.com/sarpt/gamedbv/internal/search"
-	plat "github.com/sarpt/gamedbv/pkg/platform"
+	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
 func getGamesHandler(appConf config.App) http.HandlerFunc {
@@ -24,10 +24,10 @@ func getGamesHandler(appConf config.App) http.HandlerFunc {
 			return
 		}
 
-		params := search.Settings{
+		params := search.Parameters{
 			Text:      getTextQueryFromRequest(req),
 			Regions:   getRegionsFromRequest(req),
-			Platforms: plat.All(),
+			Platforms: platform.All(),
 			Page:      page,
 			PageLimit: pageLimit,
 		}

@@ -50,7 +50,7 @@ func main() {
 		platforms = platform.All()
 	}
 
-	params := search.Settings{
+	params := search.Parameters{
 		Text:      *textFlag,
 		Regions:   regions,
 		Platforms: platforms,

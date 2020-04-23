@@ -6,13 +6,13 @@ import (
 )
 
 func mapToGamesResponse(result queries.GamesResult) gamesResponse {
-	games := []game{}
+	games := []gameResponse{}
 
 	for _, item := range result.Games {
-		var descriptions []description
+		var descriptions []descriptionResponse
 		for _, desc := range item.Descriptions {
-			descriptions = append(descriptions, description{
-				Language: language{
+			descriptions = append(descriptions, descriptionResponse{
+				Language: languageResponse{
 					Code: desc.Language.Code,
 					Name: desc.Language.Name,
 				},
@@ -21,13 +21,13 @@ func mapToGamesResponse(result queries.GamesResult) gamesResponse {
 			})
 		}
 
-		games = append(games, game{
+		games = append(games, gameResponse{
 			UID:          item.UID,
 			SerialNumber: item.SerialNo,
-			Region: region{
+			Region: regionResponse{
 				Code: item.Region.Code,
 			},
-			Platform: platform{
+			Platform: platformResponse{
 				UID: item.Platform.UID,
 			},
 			Descriptions: descriptions,
@@ -41,9 +41,9 @@ func mapToGamesResponse(result queries.GamesResult) gamesResponse {
 }
 
 func mapToLanguagesResponse(results []models.Language) languagesResponse {
-	languages := []language{}
+	languages := []languageResponse{}
 	for _, result := range results {
-		languages = append(languages, language{
+		languages = append(languages, languageResponse{
 			Code: result.Code,
 			Name: result.Name,
 		})
@@ -55,9 +55,9 @@ func mapToLanguagesResponse(results []models.Language) languagesResponse {
 }
 
 func mapToPlatformsResponse(results []models.Platform) platformsResponse {
-	platforms := []platform{}
+	platforms := []platformResponse{}
 	for _, result := range results {
-		platforms = append(platforms, platform{
+		platforms = append(platforms, platformResponse{
 			UID: result.UID,
 		})
 	}
@@ -68,9 +68,9 @@ func mapToPlatformsResponse(results []models.Platform) platformsResponse {
 }
 
 func mapToRegionsResponse(results []models.Region) regionsResponse {
-	regions := []region{}
+	regions := []regionResponse{}
 	for _, result := range results {
-		regions = append(regions, region{
+		regions = append(regions, regionResponse{
 			Code: result.Code,
 		})
 	}

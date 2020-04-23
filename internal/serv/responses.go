@@ -1,46 +1,46 @@
 package serv
 
-type description struct {
-	Language language `json:"language"`
-	Title    string   `json:"title"`
-	Synopsis string   `json:"synopsis"`
+type descriptionResponse struct {
+	Language languageResponse `json:"language"`
+	Title    string           `json:"title"`
+	Synopsis string           `json:"synopsis"`
 }
 
-type region struct {
+type regionResponse struct {
 	Code string `json:"code"`
 }
 
-type game struct {
-	UID          string        `json:"uid"`
-	SerialNumber string        `json:"serialNumber"`
-	Region       region        `json:"region"`
-	Platform     platform      `json:"platform"`
-	Descriptions []description `json:"descriptions"`
+type gameResponse struct {
+	UID          string                `json:"uid"`
+	SerialNumber string                `json:"serialNumber"`
+	Region       regionResponse        `json:"region"`
+	Platform     platformResponse      `json:"platform"`
+	Descriptions []descriptionResponse `json:"descriptions"`
 }
 
-type language struct {
+type languageResponse struct {
 	Code string `json:"code"`
 	Name string `json:"name"`
 }
 
-type platform struct {
+type platformResponse struct {
 	UID  string `json:"uid"`
 	Name string `json:"name"`
 }
 
 type gamesResponse struct {
-	Total int    `json:"total"`
-	Games []game `json:"games"`
+	Total int            `json:"total"`
+	Games []gameResponse `json:"games"`
 }
 
 type languagesResponse struct {
-	Languages []language `json:"languages"`
+	Languages []languageResponse `json:"languages"`
 }
 
 type platformsResponse struct {
-	Platforms []platform `json:"platforms"`
+	Platforms []platformResponse `json:"platforms"`
 }
 
 type regionsResponse struct {
-	Regions []region `json:"regions"`
+	Regions []regionResponse `json:"regions"`
 }

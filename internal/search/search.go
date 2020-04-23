@@ -6,12 +6,12 @@ import (
 )
 
 // FindGames takes platforms, finds indexes which are available to execute query and executes the query on them, returning game results from database
-func FindGames(appConf config.App, settings Settings) (queries.GamesResult, error) {
+func FindGames(appConf config.App, params Parameters) (queries.GamesResult, error) {
 	var gamesResult queries.GamesResult
 	var serialNumbers []string
 
-	if settings.Text != "" {
-		results, err := resultsFromIndex(appConf, settings)
+	if params.Text != "" {
+		results, err := resultsFromIndex(appConf, params)
 		if err != nil {
 			return gamesResult, err
 		}
@@ -23,6 +23,6 @@ func FindGames(appConf config.App, settings Settings) (queries.GamesResult, erro
 		serialNumbers = getSerialNumbersFromGameHits(results.Hits)
 	}
 
-	gamesResult, err := gamesDetailsFromDatabase(appConf.Database(), settings, serialNumbers)
+	gamesResult, err := gamesDetailsFromDatabase(appConf.Database(), params, serialNumbers)
 	return gamesResult, err
 }

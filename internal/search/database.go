@@ -5,7 +5,7 @@ import (
 	"github.com/sarpt/gamedbv/pkg/db/queries"
 )
 
-func gamesDetailsFromDatabase(dbConf db.Config, settings Settings, serialNumbers []string) (queries.GamesResult, error) {
+func gamesDetailsFromDatabase(dbConf db.Config, params Parameters, serialNumbers []string) (queries.GamesResult, error) {
 	var gamesResult queries.GamesResult
 
 	database, err := db.OpenDatabase(dbConf)
@@ -20,12 +20,12 @@ func gamesDetailsFromDatabase(dbConf db.Config, settings Settings, serialNumbers
 		gamesQuery.FilterUIDs(serialNumbers)
 	}
 
-	if len(settings.Regions) > 0 {
-		gamesQuery.FilterRegions(settings.Regions)
+	if len(params.Regions) > 0 {
+		gamesQuery.FilterRegions(params.Regions)
 	}
 
-	gamesQuery.Page(settings.Page)
-	gamesQuery.Limit(settings.PageLimit)
+	gamesQuery.Page(params.Page)
+	gamesQuery.Limit(params.PageLimit)
 
 	gamesResult = gamesQuery.Get()
 	return gamesResult, err

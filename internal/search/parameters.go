@@ -2,8 +2,8 @@ package search
 
 import "github.com/sarpt/gamedbv/pkg/platform"
 
-// Settings allow to control search execution
-type Settings struct {
+// Parameters allow to control search execution
+type Parameters struct {
 	Platforms []platform.Variant
 	Text      string
 	Regions   []string
