@@ -24,8 +24,9 @@ type languageResponse struct {
 }
 
 type platformResponse struct {
-	UID  string `json:"uid"`
-	Name string `json:"name"`
+	UID     string `json:"uid"`
+	Name    string `json:"name"`
+	Indexed bool   `json:"indexed"`
 }
 
 type gamesResponse struct {
