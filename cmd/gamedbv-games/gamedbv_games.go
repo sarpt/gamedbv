@@ -24,7 +24,7 @@ func init() {
 
 func main() {
 
-	appConf, err := config.NewApp()
+	appCfg, err := config.NewApp()
 	if err != nil {
 		panic(err)
 	}
@@ -56,7 +56,7 @@ func main() {
 		Platforms: platforms,
 	}
 
-	games, err := games.Search(appConf.Games(), params)
+	games, err := games.Search(appCfg.Games(), params)
 	if err != nil {
 		panic(err)
 	}

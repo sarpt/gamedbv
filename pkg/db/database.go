@@ -30,8 +30,8 @@ type InitialData struct {
 }
 
 // NewDatabase attempts to open the database, performing the auto-migration in the process
-func NewDatabase(conf Config, initialData InitialData) (Database, error) {
-	db, err := OpenDatabase(conf)
+func NewDatabase(cfg Config, initialData InitialData) (Database, error) {
+	db, err := OpenDatabase(cfg)
 	if err != nil {
 		return db, err
 	}
@@ -54,16 +54,16 @@ func NewDatabase(conf Config, initialData InitialData) (Database, error) {
 }
 
 // OpenDatabase attempts to open the database
-func OpenDatabase(conf Config) (Database, error) {
+func OpenDatabase(cfg Config) (Database, error) {
 	var db Database
 
-	handle, err := gorm.Open(conf.Variant, conf.Path)
+	handle, err := gorm.Open(cfg.Variant, cfg.Path)
 	if err != nil {
 		return db, err
 	}
 
 	db = Database{
-		config: conf,
+		config: cfg,
 		handle: handle,
 		mux:    &sync.Mutex{},
 	}

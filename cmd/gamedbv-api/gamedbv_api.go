@@ -6,12 +6,12 @@ import (
 )
 
 func main() {
-	appConf, err := config.NewApp()
+	appCfg, err := config.NewApp()
 	if err != nil {
 		panic(err)
 	}
 
-	err = api.Serve(appConf.API())
+	err = api.Serve(appCfg.API())
 	if err != nil {
 		panic(err)
 	}

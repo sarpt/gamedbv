@@ -14,8 +14,8 @@ type Config struct {
 }
 
 // PrepareIndex handles creating index that will be used for searching purposes
-func PrepareIndex(creators map[string]Creator, conf Config, games []GameSource) error {
-	indexPath := conf.Filepath
+func PrepareIndex(creators map[string]Creator, cfg Config, games []GameSource) error {
+	indexPath := cfg.Filepath
 	indexFile, err := os.Stat(indexPath)
 	if !os.IsNotExist(err) && err != nil {
 		return err
@@ -28,7 +28,7 @@ func PrepareIndex(creators map[string]Creator, conf Config, games []GameSource) 
 		}
 	}
 
-	if creator, ok := creators[conf.Variant]; ok {
+	if creator, ok := creators[cfg.Variant]; ok {
 		err = creator.CreateIndex(indexPath, games)
 	} else {
 		err = fmt.Errorf("Creator not found for the config")

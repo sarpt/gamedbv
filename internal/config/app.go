@@ -70,18 +70,18 @@ func NewApp() (App, error) {
 }
 
 // platform returns platform config
-func (conf App) platform(variant platform.Variant) Platform {
-	return conf.platforms[variant.ID()]
+func (cfg App) platform(variant platform.Variant) Platform {
+	return cfg.platforms[variant.ID()]
 }
 
 // Database returns information neccessary to connect to persistence
-func (conf App) Database() db.Config {
-	return conf.database
+func (cfg App) Database() db.Config {
+	return cfg.database
 }
 
 // Idx returns confiuration for Idx component
-func (conf App) Idx(variant platform.Variant) idx.Config {
-	platformConfig := conf.platform(variant)
+func (cfg App) Idx(variant platform.Variant) idx.Config {
+	platformConfig := cfg.platform(variant)
 
 	return idx.Config{
 		IndexFilepath:   platformConfig.index.path,
@@ -95,10 +95,10 @@ func (conf App) Idx(variant platform.Variant) idx.Config {
 }
 
 // Games returns configuration for Games component
-func (conf App) Games() games.Config {
+func (cfg App) Games() games.Config {
 	indexes := make(map[platform.Variant]index.Config)
 
-	for platID, plat := range conf.platforms {
+	for platID, plat := range cfg.platforms {
 		variant, err := platform.Get(platID)
 		if err != nil {
 			continue
@@ -114,24 +114,24 @@ func (conf App) Games() games.Config {
 	}
 
 	return games.Config{
-		Database: conf.database,
+		Database: cfg.database,
 		Indexes:  indexes,
 	}
 }
 
 // API returns configuration for Api component
-func (conf App) API() api.Config {
+func (cfg App) API() api.Config {
 	return api.Config{
-		GamesConfig: conf.Games(),
+		GamesConfig: cfg.Games(),
 	}
 }
 
 // Dl returns configuration for Dl component
-func (conf App) Dl(variant platform.Variant) dl.Config {
-	platformConfig := conf.platform(variant)
+func (cfg App) Dl(variant platform.Variant) dl.Config {
+	platformConfig := cfg.platform(variant)
 
 	return dl.Config{
-		DirectoryPath:   conf.directoryPath,
+		DirectoryPath:   cfg.directoryPath,
 		Filepath:        platformConfig.source.archiveFilepath,
 		ForceRedownload: platformConfig.source.forceDownload,
 		URL:             platformConfig.source.url,

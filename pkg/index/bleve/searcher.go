@@ -23,10 +23,10 @@ func NewBleveSearcher(configs []index.Config) (*BleveSearcher, []index.Config) {
 		indexes: make(map[string]bleve.Index),
 	}
 
-	for _, conf := range configs {
-		err := s.AddIndex(conf)
+	for _, cfg := range configs {
+		err := s.AddIndex(cfg)
 		if err != nil {
-			ignored = append(ignored, conf)
+			ignored = append(ignored, cfg)
 		}
 	}
 
@@ -49,8 +49,8 @@ func (s *BleveSearcher) Close() error {
 }
 
 // AddIndex uses platform config to add another index to be used during searching
-func (s *BleveSearcher) AddIndex(conf index.Config) error {
-	indexPath := conf.Filepath
+func (s *BleveSearcher) AddIndex(cfg index.Config) error {
+	indexPath := cfg.Filepath
 	_, err := os.Stat(indexPath)
 	if err != nil {
 		return err
@@ -61,7 +61,7 @@ func (s *BleveSearcher) AddIndex(conf index.Config) error {
 		return err
 	}
 
-	s.indexes[conf.Name] = index
+	s.indexes[cfg.Name] = index
 	return nil
 }
 

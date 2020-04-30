@@ -10,10 +10,10 @@ import (
 )
 
 // GetDatabase creates with initialization and opens (or just opens) the database pointed to by application config
-func GetDatabase(conf db.Config, printer progress.Notifier) (db.Database, error) {
+func GetDatabase(cfg db.Config, printer progress.Notifier) (db.Database, error) {
 	var database db.Database
 
-	databasePath := conf.Path
+	databasePath := cfg.Path
 	_, err := os.Stat(databasePath)
 	if err != nil && !os.IsNotExist(err) {
 		return database, err
@@ -22,10 +22,10 @@ func GetDatabase(conf db.Config, printer progress.Notifier) (db.Database, error)
 	if os.IsNotExist(err) {
 		printer.NextStatus(newDatabaseCreateStatus(databasePath))
 		initalData := getInitialData()
-		database, err = db.NewDatabase(conf, initalData)
+		database, err = db.NewDatabase(cfg, initalData)
 	} else {
 		printer.NextStatus(newDatabaseReuseStatus(databasePath))
-		database, err = db.OpenDatabase(conf)
+		database, err = db.OpenDatabase(cfg)
 	}
 
 	return database, err

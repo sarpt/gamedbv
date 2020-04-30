@@ -14,12 +14,12 @@ type Config struct {
 }
 
 // Search takes platforms, finds indexes which are available to execute query and executes the query on them, returning game results from database
-func Search(conf Config, params SearchParameters) (queries.GamesResult, error) {
+func Search(cfg Config, params SearchParameters) (queries.GamesResult, error) {
 	var gamesResult queries.GamesResult
 	var serialNumbers []string
 
 	if params.Text != "" {
-		results, err := resultsFromIndex(conf, params)
+		results, err := resultsFromIndex(cfg, params)
 		if err != nil {
 			return gamesResult, err
 		}
@@ -31,6 +31,6 @@ func Search(conf Config, params SearchParameters) (queries.GamesResult, error) {
 		serialNumbers = getSerialNumbersFromGameHits(results.Hits)
 	}
 
-	gamesResult, err := gamesDetailsFromDatabase(conf.Database, params, serialNumbers)
+	gamesResult, err := gamesDetailsFromDatabase(cfg.Database, params, serialNumbers)
 	return gamesResult, err
 }

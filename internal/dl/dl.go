@@ -22,54 +22,54 @@ type Config struct {
 }
 
 // DownloadPlatformSource downloads neccessary source files related to provided platform
-func DownloadPlatformSource(conf Config, variant platform.Variant, printer progress.Notifier) {
-	sourcesFilesStatuses, err := getFilesStatuses(conf)
+func DownloadPlatformSource(cfg Config, variant platform.Variant, printer progress.Notifier) {
+	sourcesFilesStatuses, err := getFilesStatuses(cfg)
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
-	if sourcesFilesStatuses.DoesSourceExist && !conf.ForceRedownload {
+	if sourcesFilesStatuses.DoesSourceExist && !cfg.ForceRedownload {
 		printer.NextStatus(newArchiveFileAlreadyPresentStatus(variant.String()))
 		return
 	}
 
-	err = preparePlatformDirectory(conf)
+	err = preparePlatformDirectory(cfg)
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
-	printer.NextStatus(newDownloadingInProgressStatus(conf.PlatformName))
-	err = downloadSourceFile(conf)
+	printer.NextStatus(newDownloadingInProgressStatus(cfg.PlatformName))
+	err = downloadSourceFile(cfg)
 	if err != nil {
 		printer.NextError(err)
 	}
 }
 
-func downloadSourceFile(conf Config) error {
-	filePath := conf.Filepath
+func downloadSourceFile(cfg Config) error {
+	filePath := cfg.Filepath
 	outputFile, err := os.Create(filePath)
 	if err != nil {
 		return err
 	}
 	defer outputFile.Close()
 
-	err = downloadFile(conf.URL, outputFile)
+	err = downloadFile(cfg.URL, outputFile)
 	return err
 }
 
-func getFilesStatuses(conf Config) (FilesStatus, error) {
+func getFilesStatuses(cfg Config) (FilesStatus, error) {
 	var filesStatus FilesStatus
 
-	filePath := conf.Filepath
+	filePath := cfg.Filepath
 	filesStatus.DoesSourceExist = doesFileExist(filePath)
 
 	return filesStatus, nil
 }
 
-func preparePlatformDirectory(conf Config) error {
-	directory := conf.DirectoryPath
+func preparePlatformDirectory(cfg Config) error {
+	directory := cfg.DirectoryPath
 
 	err := os.MkdirAll(directory, 0700)
 	return err

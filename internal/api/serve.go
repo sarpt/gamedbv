@@ -23,8 +23,8 @@ var handlersCreators = map[string]handlerCreator{
 }
 
 // Serve starts GameDBV API server
-func Serve(conf Config) error {
-	router := initRouter(conf)
+func Serve(cfg Config) error {
+	router := initRouter(cfg)
 	srv := &http.Server{
 		Handler:      router,
 		Addr:         "127.0.0.1:3001",
@@ -35,13 +35,13 @@ func Serve(conf Config) error {
 	return srv.ListenAndServe()
 }
 
-func initRouter(conf Config) *mux.Router {
+func initRouter(cfg Config) *mux.Router {
 	router := mux.NewRouter()
 	router.Use(corsMiddleware)
 	router.Use(jsonAPIMiddleware)
 
 	for path, handler := range handlersCreators {
-		router.HandleFunc(path, handler(conf))
+		router.HandleFunc(path, handler(cfg))
 	}
 
 	return router

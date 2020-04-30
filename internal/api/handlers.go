@@ -9,7 +9,7 @@ import (
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
-func getGamesHandler(conf Config) http.HandlerFunc {
+func getGamesHandler(cfg Config) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
 		page, err := getCurrentPageQuery(req)
 		if err != nil {
@@ -31,7 +31,7 @@ func getGamesHandler(conf Config) http.HandlerFunc {
 			PageLimit: pageLimit,
 		}
 
-		result, err := games.Search(conf.GamesConfig, params)
+		result, err := games.Search(cfg.GamesConfig, params)
 		if err != nil {
 			http.Error(resp, err.Error(), http.StatusInternalServerError)
 			return
@@ -48,9 +48,9 @@ func getGamesHandler(conf Config) http.HandlerFunc {
 	}
 }
 
-func getLanguagesHandler(conf Config) http.HandlerFunc {
+func getLanguagesHandler(cfg Config) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
-		result, err := info.Languages(conf.GamesConfig.Database)
+		result, err := info.Languages(cfg.GamesConfig.Database)
 		if err != nil {
 			http.Error(resp, err.Error(), http.StatusInternalServerError)
 			return
@@ -67,7 +67,7 @@ func getLanguagesHandler(conf Config) http.HandlerFunc {
 	}
 }
 
-func getPlatformsHandler(conf Config) http.HandlerFunc {
+func getPlatformsHandler(cfg Config) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
 		filterIndexed, err := getIndexedQuery(req)
 		if err != nil {
@@ -82,7 +82,7 @@ func getPlatformsHandler(conf Config) http.HandlerFunc {
 			UID:     uid,
 		}
 
-		result, err := info.Platforms(conf.GamesConfig.Database, params)
+		result, err := info.Platforms(cfg.GamesConfig.Database, params)
 		if err != nil {
 			http.Error(resp, err.Error(), http.StatusInternalServerError)
 			return
@@ -99,9 +99,9 @@ func getPlatformsHandler(conf Config) http.HandlerFunc {
 	}
 }
 
-func getRegionsHandler(conf Config) http.HandlerFunc {
+func getRegionsHandler(cfg Config) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
-		result, err := info.Regions(conf.GamesConfig.Database)
+		result, err := info.Regions(cfg.GamesConfig.Database)
 		if err != nil {
 			http.Error(resp, err.Error(), http.StatusInternalServerError)
 			return

@@ -11,8 +11,8 @@ type Config struct {
 }
 
 // ParseSourceFile converts source file contents and returns gamedb game Entries from files
-func ParseSourceFile(conf Config, provider ModelProvider) error {
-	sourceFilePath := conf.Filepath
+func ParseSourceFile(cfg Config, provider ModelProvider) error {
+	sourceFilePath := cfg.Filepath
 	sourceFile, err := os.Open(sourceFilePath)
 	if err != nil {
 		return err

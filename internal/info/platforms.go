@@ -24,10 +24,10 @@ type PlatformsParameters struct {
 }
 
 // Platforms returtns list of platforms available in the database
-func Platforms(dbConf db.Config, params PlatformsParameters) ([]models.Platform, error) {
+func Platforms(dbCfg db.Config, params PlatformsParameters) ([]models.Platform, error) {
 	var platforms []models.Platform
 
-	database, err := db.OpenDatabase(dbConf)
+	database, err := db.OpenDatabase(dbCfg)
 	defer database.Close()
 
 	if err != nil {

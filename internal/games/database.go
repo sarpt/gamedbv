@@ -5,10 +5,10 @@ import (
 	"github.com/sarpt/gamedbv/pkg/db/queries"
 )
 
-func gamesDetailsFromDatabase(dbConf db.Config, params SearchParameters, serialNumbers []string) (queries.GamesResult, error) {
+func gamesDetailsFromDatabase(dbCfg db.Config, params SearchParameters, serialNumbers []string) (queries.GamesResult, error) {
 	var gamesResult queries.GamesResult
 
-	database, err := db.OpenDatabase(dbConf)
+	database, err := db.OpenDatabase(dbCfg)
 	defer database.Close()
 
 	if err != nil {

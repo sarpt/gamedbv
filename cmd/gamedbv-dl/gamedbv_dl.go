@@ -21,7 +21,7 @@ func init() {
 }
 
 func main() {
-	appConf, err := config.NewApp()
+	appCfg, err := config.NewApp()
 	if err != nil {
 		panic(err)
 	}
@@ -52,7 +52,7 @@ func main() {
 
 		go func(platform platform.Variant) {
 			defer wg.Done()
-			dl.DownloadPlatformSource(appConf.Dl(platform), platform, printer)
+			dl.DownloadPlatformSource(appCfg.Dl(platform), platform, printer)
 		}(platformToDownload)
 	}
 

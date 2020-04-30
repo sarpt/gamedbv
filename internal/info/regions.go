@@ -6,10 +6,10 @@ import (
 )
 
 // Regions returns list of regions available in the database
-func Regions(dbConf db.Config) ([]models.Region, error) {
+func Regions(dbCfg db.Config) ([]models.Region, error) {
 	var regions []models.Region
 
-	database, err := db.OpenDatabase(dbConf)
+	database, err := db.OpenDatabase(dbCfg)
 	defer database.Close()
 
 	if err != nil {

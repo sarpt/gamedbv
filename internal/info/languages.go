@@ -6,10 +6,10 @@ import (
 )
 
 // Languages returns list of languages available in the database
-func Languages(dbConf db.Config) ([]models.Language, error) {
+func Languages(dbCfg db.Config) ([]models.Language, error) {
 	var languages []models.Language
 
-	database, err := db.OpenDatabase(dbConf)
+	database, err := db.OpenDatabase(dbCfg)
 	defer database.Close()
 
 	if err != nil {
