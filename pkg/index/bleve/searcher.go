@@ -11,15 +11,15 @@ import (
 const maxNumberOfResults = 1000
 const nameField = "Name"
 
-// BleveSearcher implements the interface of the same name for indexes created by bleve
-type BleveSearcher struct {
+// Searcher implements the interface of the same name for indexes created by bleve
+type Searcher struct {
 	indexes map[string]bleve.Index
 }
 
 // NewBleveSearcher initializes bleve implementation of Searcher
-func NewBleveSearcher(configs []index.Config) (*BleveSearcher, []index.Config) {
+func NewBleveSearcher(configs []index.Config) (*Searcher, []index.Config) {
 	var ignored []index.Config
-	s := &BleveSearcher{
+	s := &Searcher{
 		indexes: make(map[string]bleve.Index),
 	}
 
@@ -35,7 +35,7 @@ func NewBleveSearcher(configs []index.Config) (*BleveSearcher, []index.Config) {
 
 // Close closes all indexes of a Searcher opened by AddIndex
 // Always needs to be called as NewSearcher invokes AddIndex too
-func (s *BleveSearcher) Close() error {
+func (s *Searcher) Close() error {
 	var closeError error
 
 	for _, idx := range s.indexes {
@@ -49,7 +49,7 @@ func (s *BleveSearcher) Close() error {
 }
 
 // AddIndex uses platform config to add another index to be used during searching
-func (s *BleveSearcher) AddIndex(cfg index.Config) error {
+func (s *Searcher) AddIndex(cfg index.Config) error {
 	indexPath := cfg.Filepath
 	_, err := os.Stat(indexPath)
 	if err != nil {
@@ -66,7 +66,7 @@ func (s *BleveSearcher) AddIndex(cfg index.Config) error {
 }
 
 // Search returns aggregated results from indexes added to alias
-func (s BleveSearcher) Search(params index.SearchParameters) (index.Result, error) {
+func (s Searcher) Search(params index.SearchParameters) (index.Result, error) {
 	searchResult := index.Result{}
 
 	indexAlias := bleve.NewIndexAlias()

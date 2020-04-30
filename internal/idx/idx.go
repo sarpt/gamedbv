@@ -67,7 +67,7 @@ func parsePlatformSource(cfg parser.Config) (gametdb.ModelProvider, error) {
 
 func indexPlatform(platformConfig index.Config, gametdbAdapter GameTDBAdapter) error {
 	creators := map[string]index.Creator{
-		bleveCreator: bleve.BleveCreator{},
+		bleveCreator: bleve.Creator{},
 	}
 
 	return index.PrepareIndex(creators, platformConfig, gametdbAdapter.GameSources())
