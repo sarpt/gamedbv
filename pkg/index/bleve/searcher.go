@@ -17,8 +17,8 @@ type BleveSearcher struct {
 }
 
 // NewBleveSearcher initializes bleve implementation of Searcher
-func NewBleveSearcher(configs []index.PlatformConfig) (*BleveSearcher, []index.PlatformConfig) {
-	var ignored []index.PlatformConfig
+func NewBleveSearcher(configs []index.Config) (*BleveSearcher, []index.Config) {
+	var ignored []index.Config
 	s := &BleveSearcher{
 		indexes: make(map[string]bleve.Index),
 	}
@@ -49,8 +49,8 @@ func (s *BleveSearcher) Close() error {
 }
 
 // AddIndex uses platform config to add another index to be used during searching
-func (s *BleveSearcher) AddIndex(conf index.PlatformConfig) error {
-	indexPath := conf.IndexFilepath()
+func (s *BleveSearcher) AddIndex(conf index.Config) error {
+	indexPath := conf.Filepath
 	_, err := os.Stat(indexPath)
 	if err != nil {
 		return err
@@ -61,7 +61,7 @@ func (s *BleveSearcher) AddIndex(conf index.PlatformConfig) error {
 		return err
 	}
 
-	s.indexes[conf.Name()] = index
+	s.indexes[conf.Name] = index
 	return nil
 }
 

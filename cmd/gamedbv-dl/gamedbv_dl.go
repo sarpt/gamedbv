@@ -52,7 +52,7 @@ func main() {
 
 		go func(platform platform.Variant) {
 			defer wg.Done()
-			dl.DownloadPlatformSource(appConf, platform, printer)
+			dl.DownloadPlatformSource(appConf.Dl(platform), platform, printer)
 		}(platformToDownload)
 	}
 

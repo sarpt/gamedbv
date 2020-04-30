@@ -1,15 +1,16 @@
 package games
 
 import (
-	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/pkg/index"
 	"github.com/sarpt/gamedbv/pkg/index/bleve"
 )
 
-func getSearcher(appConf config.App, params SearchParameters) index.Searcher {
-	var configs []index.PlatformConfig
+func getSearcher(conf Config, params SearchParameters) index.Searcher {
+	var configs []index.Config
 	for _, plat := range params.Platforms {
-		configs = append(configs, appConf.Platform(plat))
+		if indexConfig, ok := conf.Indexes[plat]; ok { // not sure how to deal with not ok rn, to be fixed
+			configs = append(configs, indexConfig)
+		}
 	}
 
 	bleveIndex, _ := bleve.NewBleveSearcher(configs)
@@ -17,8 +18,8 @@ func getSearcher(appConf config.App, params SearchParameters) index.Searcher {
 	return bleveIndex
 }
 
-func resultsFromIndex(appConf config.App, params SearchParameters) (index.Result, error) {
-	searcher := getSearcher(appConf, params)
+func resultsFromIndex(conf Config, params SearchParameters) (index.Result, error) {
+	searcher := getSearcher(conf, params)
 	defer searcher.Close()
 
 	searchParams := mapToSearcherParameters(params)

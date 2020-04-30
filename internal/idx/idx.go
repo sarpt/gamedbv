@@ -1,7 +1,6 @@
 package idx
 
 import (
-	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/pkg/db"
 	"github.com/sarpt/gamedbv/pkg/gametdb"
 	"github.com/sarpt/gamedbv/pkg/index"
@@ -14,20 +13,30 @@ import (
 
 const bleveCreator string = "bleve"
 
+// Config instructs how unziping, parsing and indexing should be performed
+type Config struct {
+	IndexFilepath   string
+	IndexVariant    string
+	Name            string
+	DocType         string
+	SourceFilepath  string
+	ArchiveFilepath string
+	SourceFilename  string
+}
+
 // PreparePlatform unzips and parses source file, creates Index related to the platfrom and populates the database
-func PreparePlatform(appConf config.App, platformVariant platform.Variant, printer progress.Notifier, database db.Database) {
+func PreparePlatform(conf Config, platformVariant platform.Variant, printer progress.Notifier, database db.Database) {
 	platformName := platformVariant.String()
-	platformConfig := appConf.Platform(platformVariant)
 
 	printer.NextStatus(newPlatformUnzipStatus(platformName))
-	err := unzipPlatform(platformConfig)
+	err := zip.UnzipPlatformSource(getZipConfig(conf))
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
 	printer.NextStatus(newPlatformParsingStatus(platformName))
-	gametdbModelProvider, err := parsePlatformSource(platformConfig)
+	gametdbModelProvider, err := parsePlatformSource(getParserConfig(conf))
 	if err != nil {
 		printer.NextError(err)
 		return
@@ -36,31 +45,27 @@ func PreparePlatform(appConf config.App, platformVariant platform.Variant, print
 	gametdbAdapter := NewGameTDBAdapter(platformVariant.ID(), gametdbModelProvider)
 
 	printer.NextStatus(newPlatformIndexingStatus(platformName))
-	err = indexPlatform(platformConfig, gametdbAdapter)
+	err = indexPlatform(getIndexConfig(conf), gametdbAdapter)
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
 	printer.NextStatus(newDatabasePopulateStatus(platformName))
-	err = populateDatabase(database, gametdbAdapter)
+	err = database.ProvidePlatformData(gametdbAdapter.PlatformProvider())
 	if err != nil {
 		printer.NextError(err)
 	}
 }
 
-func unzipPlatform(platformConfig config.Platform) error {
-	return zip.UnzipPlatformDatabase(platformConfig)
-}
-
-func parsePlatformSource(platformConfig config.Platform) (gametdb.ModelProvider, error) {
+func parsePlatformSource(conf parser.Config) (gametdb.ModelProvider, error) {
 	gametdbModelProvider := gametdb.ModelProvider{}
-	err := parser.ParseSourceFile(platformConfig, &gametdbModelProvider)
+	err := parser.ParseSourceFile(conf, &gametdbModelProvider)
 
 	return gametdbModelProvider, err
 }
 
-func indexPlatform(platformConfig config.Platform, gametdbAdapter GameTDBAdapter) error {
+func indexPlatform(platformConfig index.Config, gametdbAdapter GameTDBAdapter) error {
 	creators := map[string]index.Creator{
 		bleveCreator: bleve.BleveCreator{},
 	}
@@ -68,6 +73,26 @@ func indexPlatform(platformConfig config.Platform, gametdbAdapter GameTDBAdapter
 	return index.PrepareIndex(creators, platformConfig, gametdbAdapter.GameSources())
 }
 
-func populateDatabase(database db.Database, gametdbAdapter GameTDBAdapter) error {
-	return database.ProvidePlatformData(gametdbAdapter.PlatformProvider())
+func getZipConfig(conf Config) zip.Config {
+	return zip.Config{
+		ArchiveFilepath: conf.ArchiveFilepath,
+		SourceFilename:  conf.SourceFilename,
+		Name:            conf.Name,
+		OutputFilepath:  conf.SourceFilepath,
+	}
+}
+
+func getParserConfig(conf Config) parser.Config {
+	return parser.Config{
+		Filepath: conf.SourceFilepath,
+	}
+}
+
+func getIndexConfig(conf Config) index.Config {
+	return index.Config{
+		Filepath: conf.IndexFilepath,
+		Variant:  conf.IndexVariant,
+		Name:     conf.Name,
+		DocType:  conf.DocType,
+	}
 }

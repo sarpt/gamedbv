@@ -3,7 +3,6 @@ package idx
 import (
 	"os"
 
-	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/pkg/db"
 	"github.com/sarpt/gamedbv/pkg/db/models"
 	"github.com/sarpt/gamedbv/pkg/platform"
@@ -11,11 +10,10 @@ import (
 )
 
 // GetDatabase creates with initialization and opens (or just opens) the database pointed to by application config
-func GetDatabase(appConf config.App, printer progress.Notifier) (db.Database, error) {
+func GetDatabase(conf db.Config, printer progress.Notifier) (db.Database, error) {
 	var database db.Database
 
-	databaseConfig := appConf.Database()
-	databasePath := databaseConfig.Path
+	databasePath := conf.Path
 	_, err := os.Stat(databasePath)
 	if err != nil && !os.IsNotExist(err) {
 		return database, err
@@ -24,10 +22,10 @@ func GetDatabase(appConf config.App, printer progress.Notifier) (db.Database, er
 	if os.IsNotExist(err) {
 		printer.NextStatus(newDatabaseCreateStatus(databasePath))
 		initalData := getInitialData()
-		database, err = db.NewDatabase(databaseConfig, initalData)
+		database, err = db.NewDatabase(conf, initalData)
 	} else {
 		printer.NextStatus(newDatabaseReuseStatus(databasePath))
-		database, err = db.OpenDatabase(databaseConfig)
+		database, err = db.OpenDatabase(conf)
 	}
 
 	return database, err

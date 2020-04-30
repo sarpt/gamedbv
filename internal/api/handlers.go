@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/internal/games"
 	"github.com/sarpt/gamedbv/internal/info"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
-func getGamesHandler(appConf config.App) http.HandlerFunc {
+func getGamesHandler(conf Config) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
 		page, err := getCurrentPageQuery(req)
 		if err != nil {
@@ -32,7 +31,7 @@ func getGamesHandler(appConf config.App) http.HandlerFunc {
 			PageLimit: pageLimit,
 		}
 
-		result, err := games.Search(appConf, params)
+		result, err := games.Search(conf.GamesConfig, params)
 		if err != nil {
 			http.Error(resp, err.Error(), http.StatusInternalServerError)
 			return
@@ -49,9 +48,9 @@ func getGamesHandler(appConf config.App) http.HandlerFunc {
 	}
 }
 
-func getLanguagesHandler(appConf config.App) http.HandlerFunc {
+func getLanguagesHandler(conf Config) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
-		result, err := info.Languages(appConf.Database())
+		result, err := info.Languages(conf.GamesConfig.Database)
 		if err != nil {
 			http.Error(resp, err.Error(), http.StatusInternalServerError)
 			return
@@ -68,7 +67,7 @@ func getLanguagesHandler(appConf config.App) http.HandlerFunc {
 	}
 }
 
-func getPlatformsHandler(appConf config.App) http.HandlerFunc {
+func getPlatformsHandler(conf Config) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
 		filterIndexed, err := getIndexedQuery(req)
 		if err != nil {
@@ -83,7 +82,7 @@ func getPlatformsHandler(appConf config.App) http.HandlerFunc {
 			UID:     uid,
 		}
 
-		result, err := info.Platforms(appConf.Database(), params)
+		result, err := info.Platforms(conf.GamesConfig.Database, params)
 		if err != nil {
 			http.Error(resp, err.Error(), http.StatusInternalServerError)
 			return
@@ -100,9 +99,9 @@ func getPlatformsHandler(appConf config.App) http.HandlerFunc {
 	}
 }
 
-func getRegionsHandler(appConf config.App) http.HandlerFunc {
+func getRegionsHandler(conf Config) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
-		result, err := info.Regions(appConf.Database())
+		result, err := info.Regions(conf.GamesConfig.Database)
 		if err != nil {
 			http.Error(resp, err.Error(), http.StatusInternalServerError)
 			return

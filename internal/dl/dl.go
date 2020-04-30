@@ -3,7 +3,6 @@ package dl
 import (
 	"os"
 
-	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/pkg/platform"
 	"github.com/sarpt/gamedbv/pkg/progress"
 )
@@ -13,56 +12,64 @@ type FilesStatus struct {
 	DoesSourceExist bool
 }
 
+// Config instructs Dl how to download source file and where to put it
+type Config struct {
+	URL             string
+	Filepath        string
+	DirectoryPath   string
+	ForceRedownload bool
+	PlatformName    string
+}
+
 // DownloadPlatformSource downloads neccessary source files related to provided platform
-func DownloadPlatformSource(appConf config.App, variant platform.Variant, printer progress.Notifier) {
-	platformConfig := appConf.Platform(variant)
-	sourcesFilesStatuses, err := getFilesStatuses(platformConfig)
+func DownloadPlatformSource(conf Config, variant platform.Variant, printer progress.Notifier) {
+	sourcesFilesStatuses, err := getFilesStatuses(conf)
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
-	if sourcesFilesStatuses.DoesSourceExist && !platformConfig.ForceSourceDownload() {
+	if sourcesFilesStatuses.DoesSourceExist && !conf.ForceRedownload {
 		printer.NextStatus(newArchiveFileAlreadyPresentStatus(variant.String()))
 		return
 	}
 
-	err = preparePlatformDirectory(platformConfig)
+	err = preparePlatformDirectory(conf)
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
-	printer.NextStatus(newDownloadingInProgressStatus(platformConfig.Name()))
-	err = downloadSourceFile(platformConfig)
+	printer.NextStatus(newDownloadingInProgressStatus(conf.PlatformName))
+	err = downloadSourceFile(conf)
 	if err != nil {
 		printer.NextError(err)
 	}
 }
 
-func downloadSourceFile(config config.Platform) error {
-	filePath := config.ArchiveFilepath()
+func downloadSourceFile(conf Config) error {
+	filePath := conf.Filepath
 	outputFile, err := os.Create(filePath)
 	if err != nil {
 		return err
 	}
 	defer outputFile.Close()
 
-	err = downloadFile(config.URL(), outputFile)
+	err = downloadFile(conf.URL, outputFile)
 	return err
 }
 
-func getFilesStatuses(config config.Platform) (FilesStatus, error) {
+func getFilesStatuses(conf Config) (FilesStatus, error) {
 	var filesStatus FilesStatus
 
-	filePath := config.ArchiveFilepath()
+	filePath := conf.Filepath
 	filesStatus.DoesSourceExist = doesFileExist(filePath)
 
 	return filesStatus, nil
 }
 
-func preparePlatformDirectory(config config.Platform) error {
-	directory := config.DirectoryPath()
+func preparePlatformDirectory(conf Config) error {
+	directory := conf.DirectoryPath
 
 	err := os.MkdirAll(directory, 0700)
 	return err

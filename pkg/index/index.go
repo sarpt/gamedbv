@@ -5,9 +5,17 @@ import (
 	"os"
 )
 
+// Config provides index information and settings
+type Config struct {
+	Filepath string
+	Variant  string
+	Name     string
+	DocType  string
+}
+
 // PrepareIndex handles creating index that will be used for searching purposes
-func PrepareIndex(creators map[string]Creator, conf PlatformConfig, games []GameSource) error {
-	indexPath := conf.IndexFilepath()
+func PrepareIndex(creators map[string]Creator, conf Config, games []GameSource) error {
+	indexPath := conf.Filepath
 	indexFile, err := os.Stat(indexPath)
 	if !os.IsNotExist(err) && err != nil {
 		return err
@@ -20,7 +28,7 @@ func PrepareIndex(creators map[string]Creator, conf PlatformConfig, games []Game
 		}
 	}
 
-	if creator, ok := creators[conf.IndexVariant()]; ok {
+	if creator, ok := creators[conf.Variant]; ok {
 		err = creator.CreateIndex(indexPath, games)
 	} else {
 		err = fmt.Errorf("Creator not found for the config")

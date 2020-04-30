@@ -4,13 +4,18 @@ import (
 	"os"
 	"path"
 
+	"github.com/sarpt/gamedbv/internal/api"
 	"github.com/sarpt/gamedbv/internal/config/json"
+	"github.com/sarpt/gamedbv/internal/dl"
+	"github.com/sarpt/gamedbv/internal/games"
+	"github.com/sarpt/gamedbv/internal/idx"
 	"github.com/sarpt/gamedbv/pkg/db"
+	"github.com/sarpt/gamedbv/pkg/index"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
 // App groups configuration properties of the whole GameDBV project
-// Todo: instead of implementing own types, App should act as an adapter for other configs from json models. Database is implemented, rest to follow
+// The app is used as an adapter for configurations required by all of the GameDBV packages and components
 type App struct {
 	directoryPath string
 	platforms     map[string]Platform
@@ -44,7 +49,7 @@ func NewApp() (App, error) {
 			name:    plat.Name,
 			dirPath: platformDirectory,
 			source: Source{
-				archiveFilename: path.Join(platformDirectory, plat.Source.ArchiveFilename),
+				archiveFilepath: path.Join(platformDirectory, plat.Source.ArchiveFilename),
 				filepath:        path.Join(platformDirectory, plat.Source.Filename),
 				filename:        plat.Source.Filename,
 				name:            plat.Name,
@@ -64,17 +69,72 @@ func NewApp() (App, error) {
 	return newApp, nil
 }
 
-// GetBaseDirectoryPath returns absolute path of GameDBV directory
-func (conf App) GetBaseDirectoryPath() string {
-	return conf.directoryPath
-}
-
-// Platform returns platform config
-func (conf App) Platform(variant platform.Variant) Platform {
+// platform returns platform config
+func (conf App) platform(variant platform.Variant) Platform {
 	return conf.platforms[variant.ID()]
 }
 
 // Database returns information neccessary to connect to persistence
 func (conf App) Database() db.Config {
 	return conf.database
+}
+
+// Idx returns confiuration for Idx component
+func (conf App) Idx(variant platform.Variant) idx.Config {
+	platformConfig := conf.platform(variant)
+
+	return idx.Config{
+		IndexFilepath:   platformConfig.index.path,
+		IndexVariant:    platformConfig.index.variant,
+		Name:            platformConfig.name,
+		DocType:         platformConfig.index.docType,
+		SourceFilename:  platformConfig.source.filename,
+		SourceFilepath:  platformConfig.source.filepath,
+		ArchiveFilepath: platformConfig.source.archiveFilepath,
+	}
+}
+
+// Games returns configuration for Games component
+func (conf App) Games() games.Config {
+	indexes := make(map[platform.Variant]index.Config)
+
+	for platID, plat := range conf.platforms {
+		variant, err := platform.Get(platID)
+		if err != nil {
+			continue
+		}
+
+		indexes[variant] = index.Config{
+			Filepath: plat.index.path,
+			Variant:  plat.index.variant,
+			Name:     plat.name,
+			DocType:  plat.index.docType,
+		}
+
+	}
+
+	return games.Config{
+		Database: conf.database,
+		Indexes:  indexes,
+	}
+}
+
+// API returns configuration for Api component
+func (conf App) API() api.Config {
+	return api.Config{
+		GamesConfig: conf.Games(),
+	}
+}
+
+// Dl returns configuration for Dl component
+func (conf App) Dl(variant platform.Variant) dl.Config {
+	platformConfig := conf.platform(variant)
+
+	return dl.Config{
+		DirectoryPath:   conf.directoryPath,
+		Filepath:        platformConfig.source.archiveFilepath,
+		ForceRedownload: platformConfig.source.forceDownload,
+		URL:             platformConfig.source.url,
+		PlatformName:    platformConfig.name,
+	}
 }

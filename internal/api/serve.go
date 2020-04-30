@@ -5,10 +5,15 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/sarpt/gamedbv/internal/config"
+	"github.com/sarpt/gamedbv/internal/games"
 )
 
-type handlerCreator func(config.App) http.HandlerFunc
+// Config instructs how API should behave and how it should access indexes and database
+type Config struct {
+	GamesConfig games.Config
+}
+
+type handlerCreator func(Config) http.HandlerFunc
 
 var handlersCreators = map[string]handlerCreator{
 	"/games":          getGamesHandler,
@@ -17,9 +22,9 @@ var handlersCreators = map[string]handlerCreator{
 	"/info/regions":   getRegionsHandler,
 }
 
-// Serve starts GameDBV server
-func Serve(appConf config.App) error {
-	router := initRouter(appConf)
+// Serve starts GameDBV API server
+func Serve(conf Config) error {
+	router := initRouter(conf)
 	srv := &http.Server{
 		Handler:      router,
 		Addr:         "127.0.0.1:3001",
@@ -30,13 +35,13 @@ func Serve(appConf config.App) error {
 	return srv.ListenAndServe()
 }
 
-func initRouter(appConf config.App) *mux.Router {
+func initRouter(conf Config) *mux.Router {
 	router := mux.NewRouter()
 	router.Use(corsMiddleware)
 	router.Use(jsonAPIMiddleware)
 
 	for path, handler := range handlersCreators {
-		router.HandleFunc(path, handler(appConf))
+		router.HandleFunc(path, handler(conf))
 	}
 
 	return router

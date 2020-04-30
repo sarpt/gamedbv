@@ -5,7 +5,7 @@ package config
 type Source struct {
 	name            string
 	archived        bool
-	archiveFilename string
+	archiveFilepath string
 	filepath        string
 	filename        string
 	format          string

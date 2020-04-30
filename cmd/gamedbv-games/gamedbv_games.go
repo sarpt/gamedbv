@@ -56,7 +56,7 @@ func main() {
 		Platforms: platforms,
 	}
 
-	games, err := games.Search(appConf, params)
+	games, err := games.Search(appConf.Games(), params)
 	if err != nil {
 		panic(err)
 	}

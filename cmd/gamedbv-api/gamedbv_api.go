@@ -11,7 +11,7 @@ func main() {
 		panic(err)
 	}
 
-	err = api.Serve(appConf)
+	err = api.Serve(appConf.API())
 	if err != nil {
 		panic(err)
 	}
