@@ -1,11 +1,11 @@
-package search
+package games
 
 import (
 	"github.com/sarpt/gamedbv/pkg/db"
 	"github.com/sarpt/gamedbv/pkg/db/queries"
 )
 
-func gamesDetailsFromDatabase(dbConf db.Config, params Parameters, serialNumbers []string) (queries.GamesResult, error) {
+func gamesDetailsFromDatabase(dbConf db.Config, params SearchParameters, serialNumbers []string) (queries.GamesResult, error) {
 	var gamesResult queries.GamesResult
 
 	database, err := db.OpenDatabase(dbConf)

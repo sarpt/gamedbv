@@ -1,4 +1,4 @@
-package serv
+package api
 
 type descriptionResponse struct {
 	Language languageResponse `json:"language"`

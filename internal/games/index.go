@@ -1,4 +1,4 @@
-package search
+package games
 
 import (
 	"github.com/sarpt/gamedbv/internal/config"
@@ -6,7 +6,7 @@ import (
 	"github.com/sarpt/gamedbv/pkg/index/bleve"
 )
 
-func getSearcher(appConf config.App, params Parameters) index.Searcher {
+func getSearcher(appConf config.App, params SearchParameters) index.Searcher {
 	var configs []index.PlatformConfig
 	for _, plat := range params.Platforms {
 		configs = append(configs, appConf.Platform(plat))
@@ -17,7 +17,7 @@ func getSearcher(appConf config.App, params Parameters) index.Searcher {
 	return bleveIndex
 }
 
-func resultsFromIndex(appConf config.App, params Parameters) (index.Result, error) {
+func resultsFromIndex(appConf config.App, params SearchParameters) (index.Result, error) {
 	searcher := getSearcher(appConf, params)
 	defer searcher.Close()
 
@@ -27,7 +27,7 @@ func resultsFromIndex(appConf config.App, params Parameters) (index.Result, erro
 	return res, err
 }
 
-func mapToSearcherParameters(params Parameters) index.SearchParameters {
+func mapToSearcherParameters(params SearchParameters) index.SearchParameters {
 	var platforms []string
 	for _, plat := range params.Platforms {
 		platforms = append(platforms, plat.ID())

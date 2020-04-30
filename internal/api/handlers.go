@@ -1,12 +1,12 @@
-package serv
+package api
 
 import (
 	"encoding/json"
 	"net/http"
 
 	"github.com/sarpt/gamedbv/internal/config"
+	"github.com/sarpt/gamedbv/internal/games"
 	"github.com/sarpt/gamedbv/internal/info"
-	"github.com/sarpt/gamedbv/internal/search"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
@@ -24,7 +24,7 @@ func getGamesHandler(appConf config.App) http.HandlerFunc {
 			return
 		}
 
-		params := search.Parameters{
+		params := games.SearchParameters{
 			Text:      getTextQuery(req),
 			Regions:   getRegionsQuery(req),
 			Platforms: platform.All(),
@@ -32,7 +32,7 @@ func getGamesHandler(appConf config.App) http.HandlerFunc {
 			PageLimit: pageLimit,
 		}
 
-		result, err := search.FindGames(appConf, params)
+		result, err := games.Search(appConf, params)
 		if err != nil {
 			http.Error(resp, err.Error(), http.StatusInternalServerError)
 			return

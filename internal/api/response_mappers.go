@@ -1,4 +1,4 @@
-package serv
+package api
 
 import (
 	"github.com/sarpt/gamedbv/pkg/db/models"

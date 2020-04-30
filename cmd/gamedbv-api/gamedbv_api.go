@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/sarpt/gamedbv/internal/api"
 	"github.com/sarpt/gamedbv/internal/config"
-	"github.com/sarpt/gamedbv/internal/serv"
 )
 
 func main() {
@@ -11,7 +11,7 @@ func main() {
 		panic(err)
 	}
 
-	err = serv.Serve(appConf)
+	err = api.Serve(appConf)
 	if err != nil {
 		panic(err)
 	}

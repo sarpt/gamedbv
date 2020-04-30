@@ -6,7 +6,7 @@ import (
 
 	"github.com/sarpt/gamedbv/internal/cli"
 	"github.com/sarpt/gamedbv/internal/config"
-	"github.com/sarpt/gamedbv/internal/search"
+	"github.com/sarpt/gamedbv/internal/games"
 	"github.com/sarpt/gamedbv/pkg/db/models"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
@@ -50,13 +50,13 @@ func main() {
 		platforms = platform.All()
 	}
 
-	params := search.Parameters{
+	params := games.SearchParameters{
 		Text:      *textFlag,
 		Regions:   regions,
 		Platforms: platforms,
 	}
 
-	games, err := search.FindGames(appConf, params)
+	games, err := games.Search(appConf, params)
 	if err != nil {
 		panic(err)
 	}
