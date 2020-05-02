@@ -10,7 +10,11 @@ import (
 
 // Config instructs how API should behave and how it should access indexes and database
 type Config struct {
-	GamesConfig games.Config
+	Address      string
+	Debug        bool
+	GamesConfig  games.Config
+	ReadTimeout  time.Duration
+	WriteTimeout time.Duration
 }
 
 type handlerCreator func(Config) http.HandlerFunc
@@ -28,9 +32,9 @@ func Serve(cfg Config) error {
 	router := initRouter(cfg)
 	srv := &http.Server{
 		Handler:      router,
-		Addr:         "127.0.0.1:3001",
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
+		Addr:         cfg.Address,
+		WriteTimeout: cfg.WriteTimeout,
+		ReadTimeout:  cfg.ReadTimeout,
 	}
 
 	return srv.ListenAndServe()

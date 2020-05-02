@@ -34,7 +34,7 @@ func (clientCmd *clientCmdMessage) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	} else if cmdValue.Cmd == nil {
-		return fmt.Errorf("command was not provided with the message")
+		return fmt.Errorf("message is not a command")
 	}
 
 	clientCmd.Cmd = *cmdValue.Cmd
@@ -60,7 +60,7 @@ func fillCommand(data []byte, clientCmd *clientCmdMessage) error {
 		return nil
 	}
 
-	return fmt.Errorf("command not recognized: %s", clientCmd.Cmd)
+	return fmt.Errorf("command '%s' not recognized", clientCmd.Cmd)
 }
 
 type statusMessage struct {

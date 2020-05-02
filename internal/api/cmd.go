@@ -21,7 +21,7 @@ var cmdHandlers = map[cmd]func(payload interface{}) error{
 func handleCmdMessage(msg clientCmdMessage) error {
 	handler, ok := cmdHandlers[msg.Cmd]
 	if !ok {
-		return fmt.Errorf("no handler for the command: %s", msg.Cmd)
+		return fmt.Errorf("no handler for the '%s' command", msg.Cmd)
 	}
 
 	err := handler(msg.Payload)

@@ -13,12 +13,6 @@ import (
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true // only when debug flag set
-	},
-}
-
 func getGamesHandler(cfg Config) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		page, err := getCurrentPageQuery(req)
@@ -129,6 +123,13 @@ func getRegionsHandler(cfg Config) http.HandlerFunc {
 }
 
 func getUpdatesHandler(cfg Config) http.HandlerFunc {
+	upgrader := websocket.Upgrader{}
+	if cfg.Debug {
+		upgrader.CheckOrigin = func(r *http.Request) bool {
+			return true
+		}
+	}
+
 	return func(res http.ResponseWriter, req *http.Request) {
 		conn, err := upgrader.Upgrade(res, req, nil)
 		if err != nil {

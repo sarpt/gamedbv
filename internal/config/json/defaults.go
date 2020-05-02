@@ -116,6 +116,12 @@ var DefaultConfigsPerPlatform = map[string]Platform{
 
 // DefaultConfig is used when no overrides are present
 var DefaultConfig App = App{
+	API: API{
+		Address:      "127.0.0.1:3001",
+		Debug:        false,
+		WriteTimeout: "15s",
+		ReadTimeout:  "15s",
+	},
 	Directory: "gamedbv",
 	Database: Database{
 		FileName: "/store.db",

@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path"
+	"time"
 
 	"github.com/sarpt/gamedbv/internal/api"
 	"github.com/sarpt/gamedbv/internal/config/json"
@@ -20,6 +21,7 @@ type App struct {
 	directoryPath string
 	platforms     map[string]Platform
 	database      db.Config
+	apiCfg        api.Config
 }
 
 // NewApp returns new config
@@ -33,7 +35,24 @@ func NewApp() (App, error) {
 	}
 
 	directoryPath := path.Join(userConfigDir, json.DefaultConfig.Directory)
+
+	apiReadTimeout, err := time.ParseDuration(json.DefaultConfig.API.ReadTimeout)
+	if err != nil {
+		return newApp, err
+	}
+
+	apiWriteTimeout, err := time.ParseDuration(json.DefaultConfig.API.WriteTimeout)
+	if err != nil {
+		return newApp, err
+	}
+
 	newApp = App{
+		apiCfg: api.Config{
+			Address:      json.DefaultConfig.API.Address,
+			Debug:        json.DefaultConfig.API.Debug,
+			ReadTimeout:  apiReadTimeout,
+			WriteTimeout: apiWriteTimeout,
+		},
 		directoryPath: directoryPath,
 		database: db.Config{
 			Variant:  json.DefaultConfig.Database.Variant,
@@ -122,7 +141,11 @@ func (cfg App) Games() games.Config {
 // API returns configuration for Api component
 func (cfg App) API() api.Config {
 	return api.Config{
-		GamesConfig: cfg.Games(),
+		GamesConfig:  cfg.Games(),
+		Debug:        cfg.apiCfg.Debug,
+		Address:      cfg.apiCfg.Address,
+		ReadTimeout:  cfg.apiCfg.ReadTimeout,
+		WriteTimeout: cfg.apiCfg.WriteTimeout,
 	}
 }
 
