@@ -28,7 +28,7 @@ func main() {
 
 	var platformsToDownload []platform.Variant
 
-	printer := cli.NewPrinter()
+	printer := cli.NewTextPrinter()
 	defer printer.Close()
 
 	if *allPlatformsFlag {

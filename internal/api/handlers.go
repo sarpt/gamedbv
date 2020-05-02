@@ -2,24 +2,34 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
+	"os"
 
+	"github.com/gorilla/websocket"
 	"github.com/sarpt/gamedbv/internal/games"
 	"github.com/sarpt/gamedbv/internal/info"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true // only when debug flag set
+	},
+}
+
 func getGamesHandler(cfg Config) http.HandlerFunc {
-	return func(resp http.ResponseWriter, req *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		page, err := getCurrentPageQuery(req)
 		if err != nil {
-			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		pageLimit, err := getPageLimitQuery(req)
 		if err != nil {
-			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -33,45 +43,45 @@ func getGamesHandler(cfg Config) http.HandlerFunc {
 
 		result, err := games.Search(cfg.GamesConfig, params)
 		if err != nil {
-			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		response := mapToGamesResponse(result)
 		out, err := json.Marshal(response)
 		if err != nil {
-			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		resp.Write(out)
+		res.Write(out)
 	}
 }
 
 func getLanguagesHandler(cfg Config) http.HandlerFunc {
-	return func(resp http.ResponseWriter, req *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		result, err := info.Languages(cfg.GamesConfig.Database)
 		if err != nil {
-			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		response := mapToLanguagesResponse(result)
 		out, err := json.Marshal(response)
 		if err != nil {
-			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		resp.Write(out)
+		res.Write(out)
 	}
 }
 
 func getPlatformsHandler(cfg Config) http.HandlerFunc {
-	return func(resp http.ResponseWriter, req *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		filterIndexed, err := getIndexedQuery(req)
 		if err != nil {
-			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -84,36 +94,98 @@ func getPlatformsHandler(cfg Config) http.HandlerFunc {
 
 		result, err := info.Platforms(cfg.GamesConfig.Database, params)
 		if err != nil {
-			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		response := mapToPlatformsResponse(result)
 		out, err := json.Marshal(response)
 		if err != nil {
-			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		resp.Write(out)
+		res.Write(out)
 	}
 }
 
 func getRegionsHandler(cfg Config) http.HandlerFunc {
-	return func(resp http.ResponseWriter, req *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		result, err := info.Regions(cfg.GamesConfig.Database)
 		if err != nil {
-			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		response := mapToRegionsResponse(result)
 		out, err := json.Marshal(response)
 		if err != nil {
-			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		resp.Write(out)
+		res.Write(out)
+	}
+}
+
+func getUpdatesHandler(cfg Config) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		conn, err := upgrader.Upgrade(res, req, nil)
+		if err != nil {
+			return
+		}
+
+		var done chan bool
+
+		go func() {
+			for {
+				cmdMsg := clientCmdMessage{}
+				err := conn.ReadJSON(&cmdMsg)
+				if err != nil {
+					var closeError *websocket.CloseError
+					if errors.As(err, &closeError) {
+						fmt.Printf("Connection was closed: %s\n", err)
+
+						break
+					}
+
+					status := statusMessage{
+						Status:  "error",
+						Message: err.Error(),
+					}
+					err = conn.WriteJSON(&status)
+					if err != nil {
+						fmt.Fprintf(os.Stderr, "err: %s\n", err) // other kind of logging?
+					}
+
+					continue
+				}
+
+				err = handleCmdMessage(cmdMsg)
+				if err != nil {
+					status := statusMessage{
+						Status:  "error",
+						Message: err.Error(),
+					}
+					err = conn.WriteJSON(&status)
+					if err != nil {
+						fmt.Fprintf(os.Stderr, "err: %s\n", err)
+					}
+				} else {
+					status := statusMessage{
+						Status:  "done",
+						Message: "Command finished",
+					}
+					err = conn.WriteJSON(&status)
+					if err != nil {
+						fmt.Fprintf(os.Stderr, "err: %s\n", err)
+					}
+				}
+			}
+
+			done <- true
+		}()
+
+		<-done
 	}
 }

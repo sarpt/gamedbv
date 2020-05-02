@@ -131,7 +131,7 @@ func (cfg App) Dl(variant platform.Variant) dl.Config {
 	platformConfig := cfg.platform(variant)
 
 	return dl.Config{
-		DirectoryPath:   cfg.directoryPath,
+		DirectoryPath:   platformConfig.dirPath,
 		Filepath:        platformConfig.source.archiveFilepath,
 		ForceRedownload: platformConfig.source.forceDownload,
 		URL:             platformConfig.source.url,
