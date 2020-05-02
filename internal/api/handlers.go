@@ -162,7 +162,8 @@ func getUpdatesHandler(cfg Config) http.HandlerFunc {
 					continue
 				}
 
-				err = handleCmdMessage(cmdMsg)
+				sw := newStatusWriter(conn)
+				err = handleCmdMessage(cmdMsg, sw)
 				if err != nil {
 					status := statusMessage{
 						Status:  "error",
