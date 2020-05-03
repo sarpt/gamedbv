@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"sync"
 )
 
 type cmd string
@@ -33,8 +34,29 @@ func handleStartCmd(payload interface{}, w io.Writer) error {
 		return fmt.Errorf("incorrect payload for start command")
 	}
 
-	plat := startPayload.Platforms[0] // handle more than one platform (parallel?)
-	cmd := exec.Command("./gamedbv-dl", "-platform", plat)
+	wg := sync.WaitGroup{}
+	for _, platform := range startPayload.Platforms {
+		wg.Add(1)
+
+		go func(platform string) {
+			defer wg.Done()
+
+			err := updatePlatform(platform, w)
+			if err != nil {
+				fmt.Fprintf(w, "Update for platform %s failed", platform) // tbd: error writer
+			}
+
+			fmt.Fprintf(w, "Update for platform %s finished", platform)
+		}(platform)
+	}
+
+	wg.Wait()
+
+	return nil
+}
+
+func updatePlatform(platform string, w io.Writer) error {
+	cmd := exec.Command("./gamedbv-dl", "-platform", platform)
 
 	out, err := cmd.StdoutPipe()
 	if err != nil {
@@ -68,9 +90,5 @@ func handleStartCmd(payload interface{}, w io.Writer) error {
 	}
 
 	err = cmd.Wait()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
