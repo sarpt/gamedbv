@@ -5,7 +5,6 @@ import (
 )
 
 const dlName = "gamedbv-dl"
-const platformFlag = "-platform"
 
 // Dl is used to execute dl component binary
 type Dl struct {
@@ -25,7 +24,7 @@ type DlArguments struct {
 	Platforms []string
 }
 
-// NewDl returns
+// NewDl returns Dl command that is ready to be executed
 func NewDl(cfg DlCfg, args DlArguments) Dl {
 	allArgs := []string{}
 	allArgs = append(allArgs, createPlatformArguments(args.Platforms)...)

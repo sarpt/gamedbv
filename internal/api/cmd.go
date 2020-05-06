@@ -57,14 +57,28 @@ func handleStartCmd(payload interface{}, w io.Writer) error {
 }
 
 func updatePlatform(platform string, w io.Writer) error {
-	cfg := cmds.DlCfg{
+	dlCfg := cmds.DlCfg{
 		Output:    w,
 		ErrOutput: w,
 	}
-
-	args := cmds.DlArguments{
+	dlArgs := cmds.DlArguments{
 		Platforms: []string{platform},
 	}
-	dlCmd := cmds.NewDl(cfg, args)
-	return dlCmd.Execute()
+	dlCmd := cmds.NewDl(dlCfg, dlArgs)
+
+	err := dlCmd.Execute()
+	if err != nil {
+		return err
+	}
+
+	idxCfg := cmds.IdxCfg{
+		Output:    w,
+		ErrOutput: w,
+	}
+	idxArgs := cmds.IdxArguments{
+		Platforms: []string{platform},
+	}
+	idxCmd := cmds.NewIdx(idxCfg, idxArgs)
+
+	return idxCmd.Execute()
 }
