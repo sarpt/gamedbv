@@ -3,8 +3,9 @@ package api
 import (
 	"fmt"
 	"io"
-	"os/exec"
 	"sync"
+
+	"github.com/sarpt/gamedbv/internal/cmds"
 )
 
 type cmd string
@@ -56,39 +57,14 @@ func handleStartCmd(payload interface{}, w io.Writer) error {
 }
 
 func updatePlatform(platform string, w io.Writer) error {
-	cmd := exec.Command("./gamedbv-dl", "-platform", platform)
-
-	out, err := cmd.StdoutPipe()
-	if err != nil {
-		return fmt.Errorf("could not open cmd stdout: %s", err)
+	cfg := cmds.DlCfg{
+		Output:    w,
+		ErrOutput: w,
 	}
 
-	outerr, err := cmd.StderrPipe()
-	if err != nil {
-		return fmt.Errorf("could not open cmd stderr: %s", err)
+	args := cmds.DlArguments{
+		Platforms: []string{platform},
 	}
-
-	go func() {
-		written, err := io.Copy(w, out)
-		if err != nil {
-			fmt.Printf("err: %s\n", err) // todo: some kind of better logging
-		}
-		fmt.Printf("written %d\n", written)
-	}()
-
-	go func() {
-		writtenerr, err := io.Copy(w, outerr)
-		if err != nil {
-			fmt.Printf("err: %s\n", err)
-		}
-		fmt.Printf("writtenerr %d\n", writtenerr)
-	}()
-
-	err = cmd.Start()
-	if err != nil {
-		return err
-	}
-
-	err = cmd.Wait()
-	return err
+	dlCmd := cmds.NewDl(cfg, args)
+	return dlCmd.Execute()
 }
