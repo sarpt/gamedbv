@@ -40,6 +40,12 @@ func (q *GamesQuery) FilterRegions(regions []string) *GamesQuery {
 	return q
 }
 
+// FilterPlatforms filters games by matching platforms uids, if not called games on all platforms are returned
+func (q *GamesQuery) FilterPlatforms(platforms []string) *GamesQuery {
+	q.handle = q.handle.Joins("left join platforms on platforms.id = games.platform_id").Where("platforms.uid IN (?)", platforms)
+	return q
+}
+
 // Limit sets the maximum amount of games being returned
 // It may exceed max limit set by the App config
 func (q *GamesQuery) Limit(limit int) *GamesQuery {

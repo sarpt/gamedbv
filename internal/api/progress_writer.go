@@ -6,19 +6,19 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type statusWriter struct {
+type progressWriter struct {
 	conn *websocket.Conn
 	mu   *sync.Mutex
 }
 
-func newStatusWriter(conn *websocket.Conn) statusWriter {
-	return statusWriter{
+func newProgressWriter(conn *websocket.Conn) progressWriter {
+	return progressWriter{
 		conn: conn,
 		mu:   &sync.Mutex{},
 	}
 }
 
-func (sw statusWriter) Write(p []byte) (int, error) {
+func (sw progressWriter) Write(p []byte) (int, error) {
 	sw.mu.Lock()
 	defer sw.mu.Unlock()
 

@@ -24,6 +24,16 @@ func gamesDetailsFromDatabase(dbCfg db.Config, params SearchParameters, serialNu
 		gamesQuery.FilterRegions(params.Regions)
 	}
 
+	if len(params.Platforms) > 0 {
+		var platformIds []string
+
+		for _, platVariant := range params.Platforms {
+			platformIds = append(platformIds, platVariant.ID())
+		}
+
+		gamesQuery.FilterPlatforms(platformIds)
+	}
+
 	gamesQuery.Page(params.Page)
 	gamesQuery.Limit(params.PageLimit)
 

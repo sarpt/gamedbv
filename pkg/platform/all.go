@@ -41,14 +41,3 @@ var variants = map[string]Variant{
 	N3ds.id:   N3ds,
 	Switch.id: Switch,
 }
-
-// All returns all possible variants of platform databases that could be downloaded
-func All() []Variant {
-	var allVariants []Variant
-
-	for _, variant := range variants {
-		allVariants = append(allVariants, variant)
-	}
-
-	return allVariants
-}

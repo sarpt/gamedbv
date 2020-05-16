@@ -10,7 +10,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/sarpt/gamedbv/internal/games"
 	"github.com/sarpt/gamedbv/internal/info"
-	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
 func getGamesHandler(cfg Config) http.HandlerFunc {
@@ -30,7 +29,7 @@ func getGamesHandler(cfg Config) http.HandlerFunc {
 		params := games.SearchParameters{
 			Text:      getTextQuery(req),
 			Regions:   getRegionsQuery(req),
-			Platforms: platform.All(),
+			Platforms: getPlatformVariants(req),
 			Page:      page,
 			PageLimit: pageLimit,
 		}
@@ -162,7 +161,7 @@ func getUpdatesHandler(cfg Config) http.HandlerFunc {
 					continue
 				}
 
-				sw := newStatusWriter(conn)
+				sw := newProgressWriter(conn)
 				err = handleCmdMessage(cmdMsg, sw)
 				if err != nil {
 					status := statusMessage{
