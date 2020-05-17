@@ -30,7 +30,7 @@ func NewGamesQuery(handle *gorm.DB, maxLimit int) *GamesQuery {
 
 // FilterUIDs filters games by matching UID (platform:serial_no), if not called all games are returned
 func (q *GamesQuery) FilterUIDs(serialNumbers []string) *GamesQuery {
-	q.handle = q.handle.Where("uid IN (?)", serialNumbers)
+	q.handle = q.handle.Where("games.uid IN (?)", serialNumbers)
 	return q
 }
 
