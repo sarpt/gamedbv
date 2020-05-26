@@ -144,7 +144,7 @@ func getUpdatesHandler(cfg Config) http.HandlerFunc {
 				if err != nil {
 					var closeError *websocket.CloseError
 					if errors.As(err, &closeError) {
-						fmt.Printf("Connection was closed: %s\n", err)
+						fmt.Fprintf(os.Stderr, "Connection was closed: %s\n", err)
 
 						break
 					}

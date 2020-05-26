@@ -31,7 +31,7 @@ func NewDl(cfg DlCfg, args DlArguments) Dl {
 
 	path := cfg.Path
 	if path == "" {
-		path = getPath(dlName)
+		path = getParentDirPath(dlName)
 	}
 
 	cmd := newCommand(dlName, path, allArgs, cfg.Output, cfg.ErrOutput)

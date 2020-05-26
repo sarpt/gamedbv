@@ -3,6 +3,7 @@ package cmds
 import (
 	"os"
 	"os/exec"
+	"path"
 )
 
 const (
@@ -19,10 +20,10 @@ func createPlatformArguments(platforms []string) []string {
 	return args
 }
 
-func getPath(name string) string {
+func getParentDirPath(name string) string {
 	found, err := exec.LookPath(name)
 	if err == nil {
-		return found
+		return path.Dir(found)
 	}
 
 	local, err := os.Getwd()

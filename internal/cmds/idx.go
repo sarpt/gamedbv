@@ -31,7 +31,7 @@ func NewIdx(cfg IdxCfg, args IdxArguments) Dl {
 
 	path := cfg.Path
 	if path == "" {
-		path = getPath(idxName)
+		path = getParentDirPath(idxName)
 	}
 
 	cmd := newCommand(idxName, path, allArgs, cfg.Output, cfg.ErrOutput)

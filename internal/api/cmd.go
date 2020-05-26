@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"io"
+	"os"
 	"sync"
 
 	"github.com/sarpt/gamedbv/internal/cmds"
@@ -44,7 +45,9 @@ func handleStartCmd(payload interface{}, w io.Writer) error {
 
 			err := updatePlatform(platform, w)
 			if err != nil {
-				fmt.Fprintf(w, "Update for platform %s failed", platform) // tbd: error writer
+				fmt.Fprintf(os.Stderr, "Update for platform %s failed: %v", platform, err) // tbd: tee writer
+				fmt.Fprintf(w, "Update for platform %s failed", platform)                  // tbd: error writer
+				return
 			}
 
 			fmt.Fprintf(w, "Update for platform %s finished", platform)
