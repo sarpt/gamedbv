@@ -8,15 +8,18 @@ import (
 	"github.com/sarpt/gamedbv/internal/cli"
 	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/internal/idx"
+	"github.com/sarpt/gamedbv/internal/progress"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
 var platformFlag *string
 var allPlatformsFlag *bool
+var jsonFlag *bool
 
 func init() {
 	platformFlag = flag.String("platform", "", "platform specifies which database console variant should be indexed")
 	allPlatformsFlag = flag.Bool("allPlatforms", false, "When specified as true, all possible console platforms databases will be indexed. When false, platform argument is mandatory")
+	jsonFlag = flag.Bool("json", false, "when specified as true, each line of output is presented as a json object")
 	flag.Parse()
 }
 
@@ -28,8 +31,12 @@ func main() {
 
 	var platformsToParse []platform.Variant
 
-	printer := cli.NewTextPrinter()
-	defer printer.Close()
+	var printer progress.Notifier
+	if *jsonFlag {
+		printer = cli.NewJSONPrinter()
+	} else {
+		printer = cli.NewTextPrinter()
+	}
 
 	if *allPlatformsFlag {
 		platformsToParse = append(platformsToParse, platform.All()...)

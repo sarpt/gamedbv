@@ -3,8 +3,8 @@ package dl
 import (
 	"os"
 
+	"github.com/sarpt/gamedbv/internal/progress"
 	"github.com/sarpt/gamedbv/pkg/platform"
-	"github.com/sarpt/gamedbv/pkg/progress"
 )
 
 // FilesStatus groups information about existence of specific platform's source files
@@ -30,7 +30,7 @@ func DownloadPlatformSource(cfg Config, variant platform.Variant, printer progre
 	}
 
 	if sourcesFilesStatuses.DoesSourceExist && !cfg.ForceRedownload {
-		printer.NextStatus(newArchiveFileAlreadyPresentStatus(variant.String()))
+		printer.NextStatus(newArchiveFileAlreadyPresentStatus(variant))
 		return
 	}
 
@@ -40,7 +40,7 @@ func DownloadPlatformSource(cfg Config, variant platform.Variant, printer progre
 		return
 	}
 
-	printer.NextStatus(newDownloadingInProgressStatus(cfg.PlatformName))
+	printer.NextStatus(newDownloadingInProgressStatus(variant))
 	err = downloadSourceFile(cfg)
 	if err != nil {
 		printer.NextError(err)

@@ -3,47 +3,60 @@ package idx
 import (
 	"fmt"
 
-	"github.com/sarpt/gamedbv/pkg/progress"
+	"github.com/sarpt/gamedbv/internal/progress"
+	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
-const process string = "idx"
+const (
+	process      string = "idx"
+	unzipStep    string = "unzip"
+	parseStep    string = "parse"
+	indexStep    string = "index"
+	populateStep string = "database-populate"
+	createStep   string = "database-create"
+	reuseStep    string = "database-reuse"
+)
 
-func newPlatformUnzipStatus(platform string) progress.Status {
+func newPlatformUnzipStatus(variant platform.Variant) progress.Status {
 	return progress.Status{
-		Process: process,
-		Step:    "unzip",
-		Message: fmt.Sprintf("Unzipping platform %s", platform),
+		Platform: variant.ID(),
+		Process:  process,
+		Step:     unzipStep,
+		Message:  fmt.Sprintf("Unzipping platform %s", variant.Name()),
 	}
 }
 
-func newPlatformParsingStatus(platform string) progress.Status {
+func newPlatformParsingStatus(variant platform.Variant) progress.Status {
 	return progress.Status{
-		Process: process,
-		Step:    "parse",
-		Message: fmt.Sprintf("Parsing platform %s", platform),
+		Platform: variant.ID(),
+		Process:  process,
+		Step:     parseStep,
+		Message:  fmt.Sprintf("Parsing platform %s", variant.Name()),
 	}
 }
 
-func newPlatformIndexingStatus(platform string) progress.Status {
+func newPlatformIndexingStatus(variant platform.Variant) progress.Status {
 	return progress.Status{
-		Process: process,
-		Step:    "index",
-		Message: fmt.Sprintf("Indexing platform %s", platform),
+		Platform: variant.ID(),
+		Process:  process,
+		Step:     indexStep,
+		Message:  fmt.Sprintf("Indexing platform %s", variant.Name()),
 	}
 }
 
-func newDatabasePopulateStatus(platform string) progress.Status {
+func newDatabasePopulateStatus(variant platform.Variant) progress.Status {
 	return progress.Status{
-		Process: process,
-		Step:    "database-populate",
-		Message: fmt.Sprintf("Populating database for platform %s", platform),
+		Platform: variant.ID(),
+		Process:  process,
+		Step:     populateStep,
+		Message:  fmt.Sprintf("Populating database for platform %s", variant.Name()),
 	}
 }
 
 func newDatabaseCreateStatus(path string) progress.Status {
 	return progress.Status{
 		Process: process,
-		Step:    "database-create",
+		Step:    createStep,
 		Message: fmt.Sprintf("Creating new database in %s", path),
 	}
 }
@@ -51,7 +64,7 @@ func newDatabaseCreateStatus(path string) progress.Status {
 func newDatabaseReuseStatus(path string) progress.Status {
 	return progress.Status{
 		Process: process,
-		Step:    "database-reuse",
+		Step:    reuseStep,
 		Message: fmt.Sprintf("Reusing database in %s", path),
 	}
 }

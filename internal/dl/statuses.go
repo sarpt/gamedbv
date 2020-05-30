@@ -3,23 +3,29 @@ package dl
 import (
 	"fmt"
 
-	"github.com/sarpt/gamedbv/pkg/progress"
+	"github.com/sarpt/gamedbv/internal/progress"
+	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
-const process string = "dl"
+const (
+	process string = "dl"
+	step    string = "archive-download"
+)
 
-func newArchiveFileAlreadyPresentStatus(platform string) progress.Status {
+func newArchiveFileAlreadyPresentStatus(variant platform.Variant) progress.Status {
 	return progress.Status{
-		Process: process,
-		Step:    "archive-download",
-		Message: fmt.Sprintf(archiveFileAlreadyPresent, platform),
+		Platform: variant.ID(),
+		Process:  process,
+		Step:     step,
+		Message:  fmt.Sprintf(archiveFileAlreadyPresent, variant.Name()),
 	}
 }
 
-func newDownloadingInProgressStatus(platform string) progress.Status {
+func newDownloadingInProgressStatus(variant platform.Variant) progress.Status {
 	return progress.Status{
-		Process: process,
-		Step:    "archive-download",
-		Message: fmt.Sprintf(downloadingInProgress, platform),
+		Platform: variant.ID(),
+		Process:  process,
+		Step:     step,
+		Message:  fmt.Sprintf(downloadingInProgress, variant.Name()),
 	}
 }

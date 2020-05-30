@@ -1,13 +1,13 @@
 package idx
 
 import (
+	"github.com/sarpt/gamedbv/internal/progress"
 	"github.com/sarpt/gamedbv/pkg/db"
 	"github.com/sarpt/gamedbv/pkg/gametdb"
 	"github.com/sarpt/gamedbv/pkg/index"
 	"github.com/sarpt/gamedbv/pkg/index/bleve"
 	"github.com/sarpt/gamedbv/pkg/parser"
 	"github.com/sarpt/gamedbv/pkg/platform"
-	"github.com/sarpt/gamedbv/pkg/progress"
 	"github.com/sarpt/gamedbv/pkg/zip"
 )
 
@@ -25,33 +25,31 @@ type Config struct {
 }
 
 // PreparePlatform unzips and parses source file, creates Index related to the platfrom and populates the database
-func PreparePlatform(cfg Config, platformVariant platform.Variant, printer progress.Notifier, database db.Database) {
-	platformName := platformVariant.String()
-
-	printer.NextStatus(newPlatformUnzipStatus(platformName))
+func PreparePlatform(cfg Config, variant platform.Variant, printer progress.Notifier, database db.Database) {
+	printer.NextStatus(newPlatformUnzipStatus(variant))
 	err := zip.UnzipPlatformSource(getZipConfig(cfg))
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
-	printer.NextStatus(newPlatformParsingStatus(platformName))
+	printer.NextStatus(newPlatformParsingStatus(variant))
 	gametdbModelProvider, err := parsePlatformSource(getParserConfig(cfg))
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
-	gametdbAdapter := NewGameTDBAdapter(platformVariant.ID(), gametdbModelProvider)
+	gametdbAdapter := NewGameTDBAdapter(variant.ID(), gametdbModelProvider)
 
-	printer.NextStatus(newPlatformIndexingStatus(platformName))
+	printer.NextStatus(newPlatformIndexingStatus(variant))
 	err = indexPlatform(getIndexConfig(cfg), gametdbAdapter)
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
-	printer.NextStatus(newDatabasePopulateStatus(platformName))
+	printer.NextStatus(newDatabasePopulateStatus(variant))
 	err = database.ProvidePlatformData(gametdbAdapter.PlatformProvider())
 	if err != nil {
 		printer.NextError(err)

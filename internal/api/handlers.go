@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/sarpt/gamedbv/internal/games"
 	"github.com/sarpt/gamedbv/internal/info"
+	"github.com/sarpt/gamedbv/internal/progress"
 )
 
 func getGamesHandler(cfg Config) http.HandlerFunc {
@@ -150,8 +151,10 @@ func getUpdatesHandler(cfg Config) http.HandlerFunc {
 					}
 
 					status := statusMessage{
-						Status:  "error",
-						Message: err.Error(),
+						State: errorState,
+						Status: progress.Status{
+							Message: err.Error(),
+						},
 					}
 					err = conn.WriteJSON(&status)
 					if err != nil {
@@ -165,8 +168,10 @@ func getUpdatesHandler(cfg Config) http.HandlerFunc {
 				err = handleCmdMessage(cmdMsg, sw)
 				if err != nil {
 					status := statusMessage{
-						Status:  "error",
-						Message: err.Error(),
+						State: errorState,
+						Status: progress.Status{
+							Message: err.Error(),
+						},
 					}
 					err = conn.WriteJSON(&status)
 					if err != nil {
@@ -174,8 +179,10 @@ func getUpdatesHandler(cfg Config) http.HandlerFunc {
 					}
 				} else {
 					status := statusMessage{
-						Status:  "done",
-						Message: "Command finished",
+						State: doneState,
+						Status: progress.Status{
+							Message: "Command finished",
+						},
 					}
 					err = conn.WriteJSON(&status)
 					if err != nil {

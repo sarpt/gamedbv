@@ -3,10 +3,10 @@ package idx
 import (
 	"os"
 
+	"github.com/sarpt/gamedbv/internal/progress"
 	"github.com/sarpt/gamedbv/pkg/db"
 	"github.com/sarpt/gamedbv/pkg/db/models"
 	"github.com/sarpt/gamedbv/pkg/platform"
-	"github.com/sarpt/gamedbv/pkg/progress"
 )
 
 // GetDatabase creates with initialization and opens (or just opens) the database pointed to by application config

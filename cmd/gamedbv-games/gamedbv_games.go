@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/sarpt/gamedbv/internal/cli"
 	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/internal/games"
 	"github.com/sarpt/gamedbv/pkg/db/models"
@@ -28,9 +27,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	printer := cli.NewTextPrinter()
-	defer printer.Close()
 
 	// todo: add possibility to pass more than one region
 	regions := []string{}

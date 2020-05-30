@@ -3,6 +3,14 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/sarpt/gamedbv/internal/progress"
+)
+
+const (
+	progressState string = "progress"
+	doneState     string = "done"
+	errorState    string = "error"
 )
 
 type cmdMessage struct {
@@ -64,6 +72,6 @@ func fillCommand(data []byte, clientCmd *clientCmdMessage) error {
 }
 
 type statusMessage struct {
-	Status  string `json:"status"`
-	Message string `json:"message"`
+	State string `json:"state"`
+	progress.Status
 }
