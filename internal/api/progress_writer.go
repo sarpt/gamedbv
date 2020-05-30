@@ -36,7 +36,7 @@ func (sw progressWriter) Write(payload []byte) (int, error) {
 		}
 	}
 
-	statusMessage := statusMessage{
+	statusMessage := operationStatus{
 		State:  progressState,
 		Status: status,
 	}

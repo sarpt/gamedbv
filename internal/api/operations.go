@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -9,31 +10,31 @@ import (
 	"github.com/sarpt/gamedbv/internal/cmds"
 )
 
-type cmd string
+type operation string
 
 const (
-	startCmd cmd = "start"
-	closeCmd cmd = "close"
+	startOp operation = "start"
+	closeOp operation = "close"
 )
 
-var cmdHandlers = map[cmd]func(payload interface{}, w io.Writer) error{
-	startCmd: handleStartCmd,
+var operationHandlers = map[operation]func(payload interface{}, w io.Writer) error{
+	startOp: handleStartOperation,
 }
 
-func handleCmdMessage(msg clientCmdMessage, w io.Writer) error {
-	handler, ok := cmdHandlers[msg.Cmd]
+func handleOperationMessage(msg clientOpertionMessage, w io.Writer) error {
+	handler, ok := operationHandlers[msg.Op]
 	if !ok {
-		return fmt.Errorf("no handler for the '%s' command", msg.Cmd)
+		return fmt.Errorf("no handler for the '%s' operation", msg.Op)
 	}
 
 	err := handler(msg.Payload, w)
 	return err
 }
 
-func handleStartCmd(payload interface{}, w io.Writer) error {
+func handleStartOperation(payload interface{}, w io.Writer) error {
 	startPayload, ok := payload.(startPayload)
 	if !ok || len(startPayload.Platforms) < 1 {
-		return fmt.Errorf("incorrect payload for start command")
+		return fmt.Errorf("incorrect payload for start operation")
 	}
 
 	wg := sync.WaitGroup{}
@@ -50,7 +51,13 @@ func handleStartCmd(payload interface{}, w io.Writer) error {
 				return
 			}
 
-			fmt.Fprintf(w, "Update for platform %s finished", platform)
+			status, err := json.Marshal(PlatformUpdateEndStatus(platform))
+			if err != nil {
+				fmt.Fprintf(w, "Error writing done status for platform %s", platform) // tbd: error writer
+				return
+			}
+
+			fmt.Fprintf(w, string(status))
 		}(platform)
 	}
 

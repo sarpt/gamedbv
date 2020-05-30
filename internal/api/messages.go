@@ -13,12 +13,12 @@ const (
 	errorState    string = "error"
 )
 
-type cmdMessage struct {
-	Cmd cmd `json:"cmd"`
+type operationMessage struct {
+	Op operation `json:"op"`
 }
 
-type clientCmdMessage struct {
-	cmdMessage
+type clientOpertionMessage struct {
+	operationMessage
 	Payload interface{}
 }
 
@@ -27,32 +27,32 @@ type startPayload struct {
 }
 
 type startCommand struct {
-	cmdMessage
+	operationMessage
 	startPayload
 }
 
 type closeCommand struct{}
 
-func (clientCmd *clientCmdMessage) UnmarshalJSON(data []byte) error {
-	cmdValue := struct {
-		Cmd *cmd `json:"cmd"`
+func (clientCmd *clientOpertionMessage) UnmarshalJSON(data []byte) error {
+	opValue := struct {
+		Cmd *operation `json:"op"`
 	}{}
 
-	err := json.Unmarshal(data, &cmdValue)
+	err := json.Unmarshal(data, &opValue)
 	if err != nil {
 		return err
-	} else if cmdValue.Cmd == nil {
-		return fmt.Errorf("message is not a command")
+	} else if opValue.Cmd == nil {
+		return fmt.Errorf("message is not a operation instruction")
 	}
 
-	clientCmd.Cmd = *cmdValue.Cmd
+	clientCmd.Op = *opValue.Cmd
 	err = fillCommand(data, clientCmd)
 
 	return err
 }
 
-func fillCommand(data []byte, clientCmd *clientCmdMessage) error {
-	if clientCmd.Cmd == startCmd {
+func fillCommand(data []byte, clientOp *clientOpertionMessage) error {
+	if clientOp.Op == startOp {
 		cmd := startCommand{}
 
 		err := json.Unmarshal(data, &cmd)
@@ -60,18 +60,18 @@ func fillCommand(data []byte, clientCmd *clientCmdMessage) error {
 			return err
 		}
 
-		clientCmd.Cmd = cmd.Cmd
-		clientCmd.Payload = startPayload{
+		clientOp.Op = cmd.Op
+		clientOp.Payload = startPayload{
 			Platforms: cmd.Platforms,
 		}
 
 		return nil
 	}
 
-	return fmt.Errorf("command '%s' not recognized", clientCmd.Cmd)
+	return fmt.Errorf("operation '%s' not recognized", clientOp.Op)
 }
 
-type statusMessage struct {
+type operationStatus struct {
 	State string `json:"state"`
 	progress.Status
 }

@@ -140,7 +140,7 @@ func getUpdatesHandler(cfg Config) http.HandlerFunc {
 
 		go func() {
 			for {
-				cmdMsg := clientCmdMessage{}
+				cmdMsg := clientOpertionMessage{}
 				err := conn.ReadJSON(&cmdMsg)
 				if err != nil {
 					var closeError *websocket.CloseError
@@ -150,7 +150,7 @@ func getUpdatesHandler(cfg Config) http.HandlerFunc {
 						break
 					}
 
-					status := statusMessage{
+					status := operationStatus{
 						State: errorState,
 						Status: progress.Status{
 							Message: err.Error(),
@@ -165,9 +165,9 @@ func getUpdatesHandler(cfg Config) http.HandlerFunc {
 				}
 
 				sw := newProgressWriter(conn)
-				err = handleCmdMessage(cmdMsg, sw)
+				err = handleOperationMessage(cmdMsg, sw)
 				if err != nil {
-					status := statusMessage{
+					status := operationStatus{
 						State: errorState,
 						Status: progress.Status{
 							Message: err.Error(),
@@ -178,7 +178,7 @@ func getUpdatesHandler(cfg Config) http.HandlerFunc {
 						fmt.Fprintf(os.Stderr, "err: %s\n", err)
 					}
 				} else {
-					status := statusMessage{
+					status := operationStatus{
 						State: doneState,
 						Status: progress.Status{
 							Message: "Command finished",
