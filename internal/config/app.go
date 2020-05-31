@@ -48,8 +48,10 @@ func NewApp() (App, error) {
 
 	newApp = App{
 		apiCfg: api.Config{
-			Address:      json.DefaultConfig.API.Address,
+			IPAddress:    json.DefaultConfig.API.IPAddress,
+			Port:         json.DefaultConfig.API.Port,
 			Debug:        json.DefaultConfig.API.Debug,
+			NetInterface: json.DefaultConfig.API.NetInterface,
 			ReadTimeout:  apiReadTimeout,
 			WriteTimeout: apiWriteTimeout,
 		},
@@ -140,13 +142,8 @@ func (cfg App) Games() games.Config {
 
 // API returns configuration for Api component
 func (cfg App) API() api.Config {
-	return api.Config{
-		GamesConfig:  cfg.Games(),
-		Debug:        cfg.apiCfg.Debug,
-		Address:      cfg.apiCfg.Address,
-		ReadTimeout:  cfg.apiCfg.ReadTimeout,
-		WriteTimeout: cfg.apiCfg.WriteTimeout,
-	}
+	cfg.apiCfg.GamesConfig = cfg.Games()
+	return cfg.apiCfg
 }
 
 // Dl returns configuration for Dl component

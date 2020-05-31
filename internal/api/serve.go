@@ -1,7 +1,11 @@
 package api
 
 import (
+	"fmt"
+	"io"
+	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -10,7 +14,9 @@ import (
 
 // Config instructs how API should behave and how it should access indexes and database
 type Config struct {
-	Address      string
+	IPAddress    string
+	Port         string
+	NetInterface string
 	Debug        bool
 	GamesConfig  games.Config
 	ReadTimeout  time.Duration
@@ -28,11 +34,15 @@ var handlersCreators = map[string]handlerCreator{
 }
 
 // Serve starts GameDBV API server
-func Serve(cfg Config) error {
+func Serve(cfg Config, w io.Writer) error {
 	router := initRouter(cfg)
+
+	address := addressForServe(cfg)
+	fmt.Fprintf(w, "API server address: %s\n", address)
+
 	srv := &http.Server{
 		Handler:      router,
-		Addr:         cfg.Address,
+		Addr:         address,
 		WriteTimeout: cfg.WriteTimeout,
 		ReadTimeout:  cfg.ReadTimeout,
 	}
@@ -50,4 +60,50 @@ func initRouter(cfg Config) *mux.Router {
 	}
 
 	return router
+}
+
+func addressForServe(cfg Config) string {
+	var ip string = cfg.IPAddress
+	port := cfg.Port
+
+	if cfg.NetInterface != "" {
+		foundIP, err := findIP(cfg.NetInterface)
+		if err == nil {
+			ip = foundIP
+		}
+	}
+
+	return strings.Join([]string{ip, port}, ":")
+}
+
+func findIP(interfaceName string) (string, error) {
+	netIf, err := net.InterfaceByName(interfaceName)
+	if err != nil {
+		return "", err
+	}
+
+	ifAddrs, err := netIf.Addrs()
+	if err != nil {
+		return "", err
+	}
+
+	for _, ifAddr := range ifAddrs {
+		var ip *net.IP
+		switch addr := ifAddr.(type) {
+		case *net.IPNet:
+			ip = &addr.IP
+		case *net.IPAddr:
+			ip = &addr.IP
+		default:
+			return "", err
+		}
+
+		if ip == nil || ip.IsLoopback() || ip.To4() == nil {
+			continue
+		}
+
+		return ip.String(), nil
+	}
+
+	return "", fmt.Errorf("no suitable ipv4 address found for %s interface", interfaceName)
 }

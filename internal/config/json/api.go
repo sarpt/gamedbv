@@ -2,7 +2,9 @@ package json
 
 // API specifies Api binary behavior
 type API struct {
-	Address      string
+	IPAddress    string
+	Port         string
+	NetInterface string
 	Debug        bool
 	ReadTimeout  string
 	WriteTimeout string
