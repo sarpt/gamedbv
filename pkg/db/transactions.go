@@ -106,6 +106,24 @@ func execInitPlatformsTransaction(db *gorm.DB, platforms []*models.Platform) err
 	return nil
 }
 
+func createGameRegionsTransaction(gameRegions []*models.GameRegion) transaction {
+	return func(db *gorm.DB) error {
+		return execGameRegionsTransaction(db, gameRegions)
+	}
+}
+
+func execGameRegionsTransaction(db *gorm.DB, gameRegions []*models.GameRegion) error {
+	for _, gameRegion := range gameRegions {
+		identity := models.GameRegion{GameID: gameRegion.Game.ID, RegionID: gameRegion.Region.ID}
+		db.FirstOrCreate(gameRegion, identity)
+		if db.Error != nil {
+			return db.Error
+		}
+	}
+
+	return nil
+}
+
 func createRegionsTransaction(regions []*models.Region) transaction {
 	return func(db *gorm.DB) error {
 		return execRegionsTransaction(db, regions)

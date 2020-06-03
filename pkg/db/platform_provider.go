@@ -8,5 +8,6 @@ type PlatformProvider struct {
 	Games        []*models.Game
 	Descriptions []*models.GameDescription
 	Languages    []*models.Language
+	GameRegions  []*models.GameRegion
 	Regions      []*models.Region
 }

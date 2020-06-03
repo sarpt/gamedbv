@@ -8,9 +8,9 @@ import (
 func mapToGamesResponse(result queries.GamesResult) gamesResponse {
 	games := []gameResponse{}
 
-	for _, item := range result.Games {
+	for _, game := range result.Games {
 		var descriptions []descriptionResponse
-		for _, desc := range item.Descriptions {
+		for _, desc := range game.Descriptions {
 			descriptions = append(descriptions, descriptionResponse{
 				Language: languageResponse{
 					Code: desc.Language.Code,
@@ -21,14 +21,19 @@ func mapToGamesResponse(result queries.GamesResult) gamesResponse {
 			})
 		}
 
+		var regionResponses []regionResponse
+		for _, gameRegion := range game.GameRegions {
+			regionResponses = append(regionResponses, regionResponse{
+				Code: gameRegion.Region.Code,
+			})
+		}
+
 		games = append(games, gameResponse{
-			UID:          item.UID,
-			SerialNumber: item.SerialNo,
-			Region: regionResponse{
-				Code: item.Region.Code,
-			},
+			UID:          game.UID,
+			SerialNumber: game.SerialNo,
+			Regions:      regionResponses,
 			Platform: platformResponse{
-				UID: item.Platform.UID,
+				UID: game.Platform.UID,
 			},
 			Descriptions: descriptions,
 		})

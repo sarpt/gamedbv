@@ -9,8 +9,7 @@ type Game struct {
 	gorm.Model
 	UID          string `gorm:"unique_index"`
 	SerialNo     string
-	Region       *Region
-	RegionID     uint
+	GameRegions  []*GameRegion
 	Languages    []*GameLanguage
 	Descriptions []*GameDescription
 	Developer    string

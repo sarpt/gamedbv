@@ -20,10 +20,6 @@ func gamesDetailsFromDatabase(dbCfg db.Config, params SearchParameters, serialNu
 		gamesQuery.FilterUIDs(serialNumbers)
 	}
 
-	if len(params.Regions) > 0 {
-		gamesQuery.FilterRegions(params.Regions)
-	}
-
 	if len(params.Platforms) > 0 {
 		var platformIds []string
 
@@ -32,6 +28,10 @@ func gamesDetailsFromDatabase(dbCfg db.Config, params SearchParameters, serialNu
 		}
 
 		gamesQuery.FilterPlatforms(platformIds)
+	}
+
+	if len(params.Regions) > 0 {
+		gamesQuery.FilterRegions(params.Regions)
 	}
 
 	gamesQuery.Page(params.Page)

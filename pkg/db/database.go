@@ -41,6 +41,7 @@ func NewDatabase(cfg Config, initialData InitialData) (Database, error) {
 		&models.Game{},
 		&models.GameLanguage{},
 		&models.GameDescription{},
+		&models.GameRegion{},
 		&models.Rom{},
 		&models.Rating{},
 		&models.Checksum{},
@@ -118,10 +119,11 @@ func (db Database) ExecuteTransactions(transactions []transaction) error {
 func (db Database) ProvidePlatformData(provider PlatformProvider) error {
 	transactions := []transaction{
 		createUpdatePlatformsTransaction([]*models.Platform{provider.Platform}),
-		createRegionsTransaction(provider.Regions),
 		createGamesTransaction(provider.Games),
 		createLanguagesTransaction(provider.Languages),
 		createDescriptionsTransaction(provider.Descriptions),
+		createGameRegionsTransaction(provider.GameRegions),
+		createRegionsTransaction(provider.Regions),
 	}
 
 	return db.ExecuteTransactions(transactions)

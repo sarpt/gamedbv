@@ -13,7 +13,7 @@ type regionResponse struct {
 type gameResponse struct {
 	UID          string                `json:"uid"`
 	SerialNumber string                `json:"serialNumber"`
-	Region       regionResponse        `json:"region"`
+	Regions      []regionResponse      `json:"regions"`
 	Platform     platformResponse      `json:"platform"`
 	Descriptions []descriptionResponse `json:"descriptions"`
 }

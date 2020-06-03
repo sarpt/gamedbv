@@ -2,6 +2,7 @@ package idx
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/sarpt/gamedbv/pkg/db"
 	"github.com/sarpt/gamedbv/pkg/db/models"
@@ -9,13 +10,18 @@ import (
 	"github.com/sarpt/gamedbv/pkg/index"
 )
 
-const unknownRegionCode string = "other"
+const (
+	unknownRegionCode string = "Other"
+	gameUIDSeparator  string = ":"
+	regionSeparator   string = ","
+)
 
 type gametdbModels struct {
 	platform     *models.Platform
 	games        map[string]*models.Game
 	descriptions []*models.GameDescription
 	languages    map[string]*models.Language
+	gameRegions  []*models.GameRegion
 	regions      map[string]*models.Region
 }
 
@@ -67,6 +73,10 @@ func (adapt GameTDBAdapter) descriptions() []*models.GameDescription {
 	return adapt.models.descriptions
 }
 
+func (adapt GameTDBAdapter) gameRegions() []*models.GameRegion {
+	return adapt.models.gameRegions
+}
+
 func (adapt GameTDBAdapter) regions() []*models.Region {
 	var regions []*models.Region
 	for _, region := range adapt.models.regions {
@@ -97,6 +107,7 @@ func (adapt GameTDBAdapter) PlatformProvider() db.PlatformProvider {
 		Games:        adapt.games(),
 		Descriptions: adapt.descriptions(),
 		Languages:    adapt.languages(),
+		GameRegions:  adapt.gameRegions(),
 		Regions:      adapt.regions(),
 	}
 }
@@ -110,7 +121,10 @@ func (adapt *GameTDBAdapter) addGameDbModel(source gametdb.Game) {
 		Platform:  adapt.models.platform,
 	}
 
-	adapt.addRegion(newGame, source)
+	regionCodes := parseSourceRegion(source)
+	for _, regionCode := range regionCodes {
+		adapt.addGameRegion(newGame, regionCode)
+	}
 
 	for _, desc := range source.Locales {
 		adapt.addDescription(newGame, desc)
@@ -119,31 +133,27 @@ func (adapt *GameTDBAdapter) addGameDbModel(source gametdb.Game) {
 	adapt.models.games[newGame.UID] = newGame
 }
 
-func (adapt *GameTDBAdapter) addRegion(game *models.Game, source gametdb.Game) {
-	regionCode := source.Region
-	if regionCode == "" {
-		regionCode = unknownRegionCode
+func parseSourceRegion(source gametdb.Game) []string {
+	var regionCodes []string = strings.Split(source.Region, regionSeparator)
+	if len(regionCodes) == 1 && regionCodes[0] == "" {
+		regionCodes = []string{unknownRegionCode}
 	}
 
-	region, ok := adapt.models.regions[regionCode]
-	if !ok {
-		region = &models.Region{
-			Code: regionCode,
-		}
-		adapt.models.regions[region.Code] = region
-	}
-
-	game.Region = region
+	return regionCodes
 }
 
-func (adapt *GameTDBAdapter) addLanguage(source gametdb.Locale) *models.Language {
-	newLanguage := &models.Language{
-		Code: source.Language,
-		Name: convertLanguageCodeToName(source.Language), // temp, at the moment name will be stored in the db but it should be moved as per-presentation basis (translated name vs self name)
+func (adapt *GameTDBAdapter) addGameRegion(game *models.Game, regionCode string) {
+	region, ok := adapt.models.regions[regionCode]
+	if !ok {
+		region = adapt.addRegion(game, regionCode)
 	}
-	adapt.models.languages[newLanguage.Code] = newLanguage
 
-	return newLanguage
+	gameRegion := &models.GameRegion{
+		Region: region,
+		Game:   game,
+	}
+
+	adapt.models.gameRegions = append(adapt.models.gameRegions, gameRegion)
 }
 
 func (adapt *GameTDBAdapter) addDescription(game *models.Game, source gametdb.Locale) {
@@ -162,6 +172,25 @@ func (adapt *GameTDBAdapter) addDescription(game *models.Game, source gametdb.Lo
 	adapt.models.descriptions = append(adapt.models.descriptions, description)
 }
 
+func (adapt *GameTDBAdapter) addRegion(game *models.Game, regionCode string) *models.Region {
+	region := &models.Region{
+		Code: regionCode,
+	}
+	adapt.models.regions[region.Code] = region
+
+	return region
+}
+
+func (adapt *GameTDBAdapter) addLanguage(source gametdb.Locale) *models.Language {
+	newLanguage := &models.Language{
+		Code: source.Language,
+		Name: convertLanguageCodeToName(source.Language), // temp, at the moment name will be stored in the db but it should be moved as per-presentation basis (translated name vs self name)
+	}
+	adapt.models.languages[newLanguage.Code] = newLanguage
+
+	return newLanguage
+}
+
 func (adapt *GameTDBAdapter) addGameSource(source gametdb.Game) {
 	var descriptions []index.Description
 	for _, locale := range source.Locales {
@@ -178,5 +207,5 @@ func (adapt *GameTDBAdapter) addGameSource(source gametdb.Game) {
 }
 
 func (adapt GameTDBAdapter) generateUID(source gametdb.Game) string {
-	return fmt.Sprintf("%s:%s", adapt.platformID, source.ID)
+	return fmt.Sprintf("%s%s%s", adapt.platformID, gameUIDSeparator, source.ID)
 }
