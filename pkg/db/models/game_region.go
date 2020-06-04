@@ -9,7 +9,7 @@ import (
 type GameRegion struct {
 	gorm.Model
 	Region   *Region
-	RegionID uint `gorm:"index:gameregion"`
+	RegionID uint
 	Game     *Game
 	GameID   uint `gorm:"index:gameregion"`
 }
