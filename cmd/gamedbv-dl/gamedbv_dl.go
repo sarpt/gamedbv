@@ -13,10 +13,10 @@ import (
 )
 
 var jsonFlag *bool
-var platformsFlag *cmds.MultipleFlag = &cmds.MultipleFlag{}
+var platformFlags *cmds.MultipleFlag = &cmds.MultipleFlag{}
 
 func init() {
-	flag.Var(platformsFlag, cmds.PlatformFlag, "platform specifies which console platform's database should be fetched")
+	flag.Var(platformFlags, cmds.PlatformFlag, "platform specifies which console platform's database should be fetched")
 	jsonFlag = flag.Bool(cmds.JSONFlag, false, "when specified as true, each line of output is presented as a json object")
 	flag.Parse()
 }
@@ -36,10 +36,10 @@ func main() {
 		printer = cli.NewTextPrinter()
 	}
 
-	if len(platformsFlag.Values()) == 0 {
+	if len(platformFlags.Values()) == 0 {
 		platformsToDownload = append(platformsToDownload, platform.All()...)
 	} else {
-		for _, val := range platformsFlag.Values() {
+		for _, val := range platformFlags.Values() {
 			variant, err := platform.Get(val)
 			if err != nil {
 				panic(err)

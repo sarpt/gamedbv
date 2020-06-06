@@ -14,8 +14,8 @@ import (
 )
 
 var textFlag *string
-var regionFlag *string
-var platformFlag *string
+var regionFlags *cmds.MultipleFlag = &cmds.MultipleFlag{}
+var platformFlags *cmds.MultipleFlag = &cmds.MultipleFlag{}
 var jsonFlag *bool
 var languageFlag *string
 var pageFlag *int
@@ -28,8 +28,8 @@ const (
 func init() {
 	textFlag = flag.String(cmds.TextFlag, "", "a text to be searched for in the index")
 	languageFlag = flag.String(cmds.LanguageFlag, defaultLanguageCode, "language code for which the description should be presented, 'EN' for english by default")
-	regionFlag = flag.String(cmds.RegionFlag, "", "a region of the game")
-	platformFlag = flag.String(cmds.PlatformFlag, "", "a platform for which the search should be executed")
+	flag.Var(regionFlags, cmds.RegionFlag, "a region of the game")
+	flag.Var(platformFlags, cmds.PlatformFlag, "a platform for which the search should be executed")
 	jsonFlag = flag.Bool(cmds.JSONFlag, false, "when specified as true, each line of output is presented as a json object")
 	pageFlag = flag.Int(cmds.PageFlag, 0, "when limit is set for paging, page specifies which page of results should be returned")
 	pageLimitFlag = flag.Int(cmds.PageLimitFlag, 0, "limit specifies maximum number of results that are allowed to be found and reported")
@@ -49,22 +49,20 @@ func main() {
 		panic(err)
 	}
 
-	// todo: add possibility to pass more than one region // will do that in the next commit
-	regions := []string{}
-	if *regionFlag != "" {
-		regions = append(regions, *regionFlag)
-	}
+	regions := regionFlags.Values()
 
 	var platforms []platform.Variant
-	if *platformFlag != "" {
-		variant, err := platform.Get(*platformFlag)
-		if err != nil {
-			panic(err)
-		}
-
-		platforms = append(platforms, variant)
-	} else {
+	if len(platformFlags.Values()) == 0 {
 		platforms = platform.All()
+	} else {
+		for _, val := range platformFlags.Values() {
+			variant, err := platform.Get(val)
+			if err != nil {
+				panic(err)
+			}
+
+			platforms = append(platforms, variant)
+		}
 	}
 
 	params := games.SearchParameters{
