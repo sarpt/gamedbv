@@ -17,6 +17,8 @@ type Game struct {
 	Platform     *Platform
 	PlatformID   uint
 	Roms         []*Rom
-	Date         string
+	Day          uint
+	Month        uint
+	Year         uint
 	Ratings      []*Rating
 }

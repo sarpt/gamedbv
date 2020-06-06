@@ -117,7 +117,9 @@ func (adapt *GameTDBAdapter) addGameDbModel(source gametdb.Game) {
 		UID:       adapt.generateUID(source),
 		SerialNo:  source.ID,
 		Developer: source.Developer,
-		Date:      fmt.Sprintf("%d-%d-%d", source.Date.Day, source.Date.Month, source.Date.Year), // this needs fixing too
+		Day:       source.Date.Day,
+		Month:     source.Date.Month,
+		Year:      source.Date.Year,
 		Platform:  adapt.models.platform,
 	}
 
