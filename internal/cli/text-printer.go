@@ -20,7 +20,14 @@ func NewTextPrinter() TextPrinter {
 
 // NextStatus should be used for regular messages from function execution
 func (printer TextPrinter) NextStatus(status progress.Status) {
-	fmt.Fprintf(os.Stdout, fmt.Sprintf("%s: %s\n", status.Step, status.Message))
+	var out string
+	if status.Step != "" {
+		out = fmt.Sprintf("%s: %s\n", status.Step, status.Message)
+	} else {
+		out = fmt.Sprintf("%s\n", status.Message)
+	}
+
+	fmt.Fprintf(os.Stdout, out)
 }
 
 // NextError should be used for error from which program cannot recover
