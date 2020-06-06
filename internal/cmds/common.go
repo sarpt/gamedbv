@@ -8,16 +8,33 @@ import (
 
 const (
 	defaultLocalPath = "."
+	longArgPrefix    = "--"
 )
 
-func createPlatformArguments(platforms []string) []string {
+func createPlatformsArguments(platforms []string) []string {
+	return createMultipleFlagArguments(PlatformFlag, platforms)
+}
+
+func createJSONArgument(isSet bool) []string {
+	if isSet {
+		return []string{longArgument(JSONFlag)}
+	}
+
+	return []string{}
+}
+
+func createMultipleFlagArguments(flagName string, values []string) []string {
 	args := []string{}
 
-	for _, platform := range platforms {
-		args = append(args, platformFlag, platform)
+	for _, val := range values {
+		args = append(args, longArgument(flagName), val)
 	}
 
 	return args
+}
+
+func longArgument(flagName string) string {
+	return longArgPrefix + flagName
 }
 
 func getParentDirPath(name string) string {

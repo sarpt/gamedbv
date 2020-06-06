@@ -26,8 +26,8 @@ type IdxArguments struct {
 
 // NewIdx returns
 func NewIdx(cfg IdxCfg, args IdxArguments) Dl {
-	allArgs := []string{jsonFlag}
-	allArgs = append(allArgs, createPlatformArguments(args.Platforms)...)
+	allArgs := createJSONArgument(true)
+	allArgs = append(allArgs, createPlatformsArguments(args.Platforms)...)
 
 	path := cfg.Path
 	if path == "" {

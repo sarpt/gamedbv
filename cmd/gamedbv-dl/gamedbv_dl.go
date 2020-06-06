@@ -2,24 +2,22 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"sync"
 
 	"github.com/sarpt/gamedbv/internal/cli"
+	"github.com/sarpt/gamedbv/internal/cmds"
 	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/internal/dl"
 	"github.com/sarpt/gamedbv/internal/progress"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
-var platformFlag *string
-var allPlatformsFlag *bool
 var jsonFlag *bool
+var platformsFlag *cmds.MultipleFlag = &cmds.MultipleFlag{}
 
 func init() {
-	platformFlag = flag.String("platform", "", "platform specifies which console platform's database should be fetched")
-	allPlatformsFlag = flag.Bool("allPlatforms", false, "When specified as true, all possible console platforms databases will be downloaded. When false, platform argument is mandatory. Takes precedence over --platfrom")
-	jsonFlag = flag.Bool("json", false, "when specified as true, each line of output is presented as a json object")
+	flag.Var(platformsFlag, cmds.PlatformFlag, "platform specifies which console platform's database should be fetched")
+	jsonFlag = flag.Bool(cmds.JSONFlag, false, "when specified as true, each line of output is presented as a json object")
 	flag.Parse()
 }
 
@@ -38,19 +36,17 @@ func main() {
 		printer = cli.NewTextPrinter()
 	}
 
-	if *allPlatformsFlag {
+	if len(platformsFlag.Values()) == 0 {
 		platformsToDownload = append(platformsToDownload, platform.All()...)
-	} else if *platformFlag != "" {
-		variant, err := platform.Get(*platformFlag)
-		if err != nil {
-			panic(err)
-		}
-
-		platformsToDownload = append(platformsToDownload, variant)
 	} else {
-		fmt.Println("neither --platform nor --allPlarforms specified. One of them is mandatory")
-		flag.PrintDefaults()
-		return
+		for _, val := range platformsFlag.Values() {
+			variant, err := platform.Get(val)
+			if err != nil {
+				panic(err)
+			}
+
+			platformsToDownload = append(platformsToDownload, variant)
+		}
 	}
 
 	var wg sync.WaitGroup

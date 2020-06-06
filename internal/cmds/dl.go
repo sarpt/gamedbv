@@ -26,8 +26,8 @@ type DlArguments struct {
 
 // NewDl returns Dl command that is ready to be executed
 func NewDl(cfg DlCfg, args DlArguments) Dl {
-	allArgs := []string{jsonFlag}
-	allArgs = append(allArgs, createPlatformArguments(args.Platforms)...)
+	allArgs := createJSONArgument(true)
+	allArgs = append(allArgs, createPlatformsArguments(args.Platforms)...)
 
 	path := cfg.Path
 	if path == "" {
