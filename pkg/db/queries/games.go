@@ -66,23 +66,24 @@ func (q *GamesQuery) Get() GamesResult {
 
 	var games []*models.Game
 
-	if q.limit > 0 {
-		q.handle = q.handle.Limit(q.limit)
+	var limit = q.limit
+	if limit < 0 {
+		limit = total
 	}
 
-	offset := getOffset(q.limit, q.page)
-	if offset > 0 {
-		q.handle = q.handle.Offset(offset)
-	}
+	neededOffsets := offsets(limit, q.maxLimit, q.page)
 
-	q.handle.Preload("GameRegions.Region").Preload("GameRegions").Preload("Descriptions.Language").Preload("Descriptions").Preload("Platform").Find(&games)
+	for page, offset := range neededOffsets {
+		var gamesForPage []*models.Game
+		pageLimit := limitForPage(page, len(neededOffsets), limit, q.maxLimit)
+
+		q.handle.Limit(pageLimit).Offset(offset).Preload("GameRegions.Region").Preload("GameRegions").Preload("Descriptions.Language").Preload("Descriptions").Preload("Platform").Find(&gamesForPage)
+
+		games = append(games, gamesForPage...)
+	}
 
 	return GamesResult{
 		Games: games,
 		Total: total,
 	}
-}
-
-func getOffset(limit int, page int) int {
-	return page * limit
 }
