@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
-	"strings"
+	"path/filepath"
 )
 
 type command struct {
@@ -16,12 +16,16 @@ type command struct {
 }
 
 func newCommand(name string, path string, args []string, out io.Writer, err io.Writer) command {
+	if path == "" {
+		path = getParentDirPath(name)
+	}
+
 	return command{
 		name: name,
 		args: args,
 		out:  out,
 		err:  err,
-		cmd:  exec.Command(strings.Join([]string{path, name}, "/"), args...),
+		cmd:  exec.Command(filepath.Join(path, name), args...),
 	}
 }
 

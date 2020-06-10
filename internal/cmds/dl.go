@@ -8,8 +8,7 @@ const dlName = "gamedbv-dl"
 
 // Dl is used to execute dl component binary
 type Dl struct {
-	command   command
-	platforms []string
+	command command
 }
 
 // DlCfg is used to control the behavior of command executing the Dl component binary
@@ -29,15 +28,9 @@ func NewDl(cfg DlCfg, args DlArguments) Dl {
 	allArgs := createJSONArgument(true)
 	allArgs = append(allArgs, createPlatformsArguments(args.Platforms)...)
 
-	path := cfg.Path
-	if path == "" {
-		path = getParentDirPath(dlName)
-	}
-
-	cmd := newCommand(dlName, path, allArgs, cfg.Output, cfg.ErrOutput)
+	cmd := newCommand(dlName, cfg.Path, allArgs, cfg.Output, cfg.ErrOutput)
 	return Dl{
-		command:   cmd,
-		platforms: args.Platforms,
+		command: cmd,
 	}
 }
 

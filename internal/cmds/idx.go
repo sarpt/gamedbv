@@ -8,8 +8,7 @@ const idxName = "gamedbv-idx"
 
 // Idx is used to execute dl component binary
 type Idx struct {
-	command   command
-	platforms []string
+	command command
 }
 
 // IdxCfg is used to control the behavior of command executing the Dl component binary
@@ -24,20 +23,14 @@ type IdxArguments struct {
 	Platforms []string
 }
 
-// NewIdx returns
-func NewIdx(cfg IdxCfg, args IdxArguments) Dl {
+// NewIdx returns new Idx cmd
+func NewIdx(cfg IdxCfg, args IdxArguments) Idx {
 	allArgs := createJSONArgument(true)
 	allArgs = append(allArgs, createPlatformsArguments(args.Platforms)...)
 
-	path := cfg.Path
-	if path == "" {
-		path = getParentDirPath(idxName)
-	}
-
-	cmd := newCommand(idxName, path, allArgs, cfg.Output, cfg.ErrOutput)
-	return Dl{
-		command:   cmd,
-		platforms: args.Platforms,
+	cmd := newCommand(idxName, cfg.Path, allArgs, cfg.Output, cfg.ErrOutput)
+	return Idx{
+		command: cmd,
 	}
 }
 
