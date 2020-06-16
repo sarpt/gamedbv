@@ -10,12 +10,10 @@ import (
 type command struct {
 	name string
 	args []string
-	out  io.Writer
-	err  io.Writer
 	cmd  *exec.Cmd
 }
 
-func newCommand(name string, path string, args []string, out io.Writer, err io.Writer) command {
+func newCommand(name string, path string, args []string) command {
 	if path == "" {
 		path = getParentDirPath(name)
 	}
@@ -23,13 +21,11 @@ func newCommand(name string, path string, args []string, out io.Writer, err io.W
 	return command{
 		name: name,
 		args: args,
-		out:  out,
-		err:  err,
 		cmd:  exec.Command(filepath.Join(path, name), args...),
 	}
 }
 
-func (c command) Start() error {
+func (c command) InitializeWriters(outWriter io.Writer, errWriter io.Writer) error {
 	stdout, err := c.cmd.StdoutPipe()
 	if err != nil {
 		return fmt.Errorf("could not open cmd stdout: %s", err)
@@ -41,7 +37,7 @@ func (c command) Start() error {
 	}
 
 	go func() {
-		written, err := io.Copy(c.out, stdout)
+		written, err := io.Copy(outWriter, stdout)
 		if err != nil {
 			fmt.Printf("err: %s\n", err) // todo: some kind of better logging
 		}
@@ -49,13 +45,17 @@ func (c command) Start() error {
 	}()
 
 	go func() {
-		writtenerr, err := io.Copy(c.err, stderr)
+		writtenerr, err := io.Copy(errWriter, stderr)
 		if err != nil {
 			fmt.Printf("err: %s\n", err)
 		}
 		fmt.Printf("writtenerr %d\n", writtenerr)
 	}()
 
+	return nil
+}
+
+func (c command) Start() error {
 	return c.cmd.Start()
 }
 
@@ -71,4 +71,8 @@ func (c command) Execute() error {
 
 	err = c.Wait()
 	return err
+}
+
+func (c command) Stdout() ([]byte, error) {
+	return c.cmd.Output()
 }

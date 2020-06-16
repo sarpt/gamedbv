@@ -27,7 +27,7 @@ const (
 
 func init() {
 	textFlag = flag.String(cmds.TextFlag, "", "a text to be searched for in the index")
-	languageFlag = flag.String(cmds.LanguageFlag, defaultLanguageCode, "language code for which the description should be presented, 'EN' for english by default")
+	languageFlag = flag.String(cmds.LanguageFlag, defaultLanguageCode, "language code for which the description should be presented, 'EN' for english by default. does not impact json output")
 	flag.Var(regionFlags, cmds.RegionFlag, "a region of the game")
 	flag.Var(platformFlags, cmds.PlatformFlag, "a platform for which the search should be executed")
 	jsonFlag = flag.Bool(cmds.JSONFlag, false, "when specified as true, each line of output is presented as a json object")
@@ -81,6 +81,7 @@ func main() {
 	var status progress.Status
 	if *jsonFlag {
 		status = progress.Status{
+			Step: cmds.GamesResultStep,
 			Data: result,
 		}
 	} else {

@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/gorilla/websocket"
-	"github.com/sarpt/gamedbv/internal/games"
+	"github.com/sarpt/gamedbv/internal/cmds"
 	"github.com/sarpt/gamedbv/internal/info"
 	"github.com/sarpt/gamedbv/internal/progress"
 )
@@ -27,15 +27,18 @@ func getGamesHandler(cfg Config) http.HandlerFunc {
 			return
 		}
 
-		params := games.SearchParameters{
+		gamesCfg := cmds.GamesCfg{}
+		gamesArgs := cmds.GamesArguments{
 			Text:      getTextQuery(req),
 			Regions:   getRegionsQuery(req),
-			Platforms: getPlatformVariants(req),
+			Platforms: getPlatformsQuery(req),
 			Page:      page,
 			PageLimit: pageLimit,
 		}
 
-		result, err := games.Search(cfg.GamesConfig, params)
+		gamesCmd := cmds.NewGames(gamesCfg, gamesArgs)
+
+		result, err := gamesCmd.Execute()
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -136,34 +139,32 @@ func getUpdatesHandler(cfg Config) http.HandlerFunc {
 			return
 		}
 
-		var done chan bool
+		for {
+			cmdMsg := clientOpertionMessage{}
+			err := conn.ReadJSON(&cmdMsg)
+			if err != nil {
+				var closeError *websocket.CloseError
+				if errors.As(err, &closeError) {
+					fmt.Fprintf(os.Stderr, "Connection was closed: %s\n", err)
 
-		go func() {
-			for {
-				cmdMsg := clientOpertionMessage{}
-				err := conn.ReadJSON(&cmdMsg)
-				if err != nil {
-					var closeError *websocket.CloseError
-					if errors.As(err, &closeError) {
-						fmt.Fprintf(os.Stderr, "Connection was closed: %s\n", err)
-
-						break
-					}
-
-					status := operationStatus{
-						State: errorState,
-						Status: progress.Status{
-							Message: err.Error(),
-						},
-					}
-					err = conn.WriteJSON(&status)
-					if err != nil {
-						fmt.Fprintf(os.Stderr, "err: %s\n", err) // other kind of logging?
-					}
-
-					continue
+					break
 				}
 
+				status := operationStatus{
+					State: errorState,
+					Status: progress.Status{
+						Message: err.Error(),
+					},
+				}
+				err = conn.WriteJSON(&status)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "err: %s\n", err) // other kind of logging?
+				}
+
+				continue
+			}
+
+			go func() {
 				sw := newProgressWriter(conn)
 				err = handleOperationMessage(cmdMsg, sw)
 				if err != nil {
@@ -189,11 +190,7 @@ func getUpdatesHandler(cfg Config) http.HandlerFunc {
 						fmt.Fprintf(os.Stderr, "err: %s\n", err)
 					}
 				}
-			}
-
-			done <- true
-		}()
-
-		<-done
+			}()
+		}
 	}
 }

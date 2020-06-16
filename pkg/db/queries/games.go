@@ -67,7 +67,7 @@ func (q *GamesQuery) Get() GamesResult {
 	var games []*models.Game
 
 	var limit = q.limit
-	if limit < 0 {
+	if limit <= 0 {
 		limit = total
 	}
 

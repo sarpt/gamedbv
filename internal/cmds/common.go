@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strconv"
 )
 
 const (
@@ -13,6 +14,22 @@ const (
 
 func createPlatformsArguments(platforms []string) []string {
 	return createMultipleFlagArguments(PlatformFlag, platforms)
+}
+
+func createTextArgument(text string) []string {
+	return createSingleFlagArgument(TextFlag, text)
+}
+
+func createPageArgument(page int) []string {
+	return createSingleFlagArgument(PageFlag, strconv.Itoa(page))
+}
+
+func createLimitArgument(limit int) []string {
+	return createSingleFlagArgument(PageLimitFlag, strconv.Itoa(limit))
+}
+
+func createRegionsArguments(regions []string) []string {
+	return createMultipleFlagArguments(RegionFlag, regions)
 }
 
 func createJSONArgument(isSet bool) []string {
@@ -27,10 +44,14 @@ func createMultipleFlagArguments(flagName string, values []string) []string {
 	args := []string{}
 
 	for _, val := range values {
-		args = append(args, longArgument(flagName), val)
+		args = append(args, createSingleFlagArgument(flagName, val)...)
 	}
 
 	return args
+}
+
+func createSingleFlagArgument(flagName string, value string) []string {
+	return []string{longArgument(flagName), value}
 }
 
 func longArgument(flagName string) string {

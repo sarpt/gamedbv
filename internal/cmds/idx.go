@@ -8,7 +8,9 @@ const idxName = "gamedbv-idx"
 
 // Idx is used to execute dl component binary
 type Idx struct {
-	command command
+	command   command
+	output    io.Writer
+	errOutput io.Writer
 }
 
 // IdxCfg is used to control the behavior of command executing the Dl component binary
@@ -28,13 +30,20 @@ func NewIdx(cfg IdxCfg, args IdxArguments) Idx {
 	allArgs := createJSONArgument(true)
 	allArgs = append(allArgs, createPlatformsArguments(args.Platforms)...)
 
-	cmd := newCommand(idxName, cfg.Path, allArgs, cfg.Output, cfg.ErrOutput)
+	cmd := newCommand(idxName, cfg.Path, allArgs)
 	return Idx{
-		command: cmd,
+		command:   cmd,
+		output:    cfg.Output,
+		errOutput: cfg.ErrOutput,
 	}
 }
 
 // Execute runs the command and waits for it to finish
 func (idx Idx) Execute() error {
+	err := idx.command.InitializeWriters(idx.output, idx.errOutput)
+	if err != nil {
+		return err
+	}
+
 	return idx.command.Execute()
 }
