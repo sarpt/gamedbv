@@ -4,18 +4,21 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/sarpt/goutils/pkg/listflag"
+
 	"github.com/sarpt/gamedbv/internal/cli"
 	"github.com/sarpt/gamedbv/internal/cmds"
 	"github.com/sarpt/gamedbv/internal/config"
 	"github.com/sarpt/gamedbv/internal/games"
 	"github.com/sarpt/gamedbv/internal/progress"
 	"github.com/sarpt/gamedbv/pkg/db/models"
+	"github.com/sarpt/gamedbv/pkg/db/queries"
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
 var textFlag *string
-var regionFlags *cmds.MultipleFlag = &cmds.MultipleFlag{}
-var platformFlags *cmds.MultipleFlag = &cmds.MultipleFlag{}
+var regionFlags *listflag.StringList
+var platformFlags *listflag.StringList
 var jsonFlag *bool
 var languageFlag *string
 var pageFlag *int
@@ -26,6 +29,9 @@ const (
 )
 
 func init() {
+	regionFlags = listflag.NewStringList([]string{})
+	platformFlags = listflag.NewStringList([]string{})
+
 	textFlag = flag.String(cmds.TextFlag, "", "a text to be searched for in the index")
 	languageFlag = flag.String(cmds.LanguageFlag, defaultLanguageCode, "language code for which the description should be presented, 'EN' for english by default. does not impact json output")
 	flag.Var(regionFlags, cmds.RegionFlag, "a region of the game")
@@ -78,28 +84,31 @@ func main() {
 		panic(err)
 	}
 
-	var status progress.Status
-	if *jsonFlag {
-		status = progress.Status{
-			Step: cmds.GamesResultStep,
-			Data: result,
-		}
-	} else {
-		out := prepareOutput(result.Games, *languageFlag)
-		status = progress.Status{
-			Message: out,
-		}
-	}
+	status := prepareResultStatus(result)
 	printer.NextStatus(status)
 }
 
-func prepareOutput(games []*models.Game, languageCode string) string {
+func prepareResultStatus(result queries.GamesResult) progress.Status {
+	if *jsonFlag {
+		return progress.Status{
+			Step: cmds.GamesResultStep,
+			Data: result,
+		}
+	}
+
+	out := prepareTextOutput(result.Games)
+	return progress.Status{
+		Message: out,
+	}
+}
+
+func prepareTextOutput(games []*models.Game) string {
 	var out string
 
 	for _, game := range games {
 		out = out + fmt.Sprintf("===\n[%s]", game.SerialNo)
 		for _, description := range game.Descriptions {
-			if description.Language.Code == languageCode {
+			if description.Language.Code == *languageFlag {
 				out = out + fmt.Sprintf(" %s\nSynopsis: %s", description.Title, description.Synopsis)
 			}
 		}

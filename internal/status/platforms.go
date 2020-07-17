@@ -1,4 +1,4 @@
-package info
+package status
 
 import (
 	"github.com/sarpt/gamedbv/pkg/db"

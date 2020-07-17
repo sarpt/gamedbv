@@ -4,6 +4,8 @@ import (
 	"flag"
 	"sync"
 
+	"github.com/sarpt/goutils/pkg/listflag"
+
 	"github.com/sarpt/gamedbv/internal/cli"
 	"github.com/sarpt/gamedbv/internal/cmds"
 	"github.com/sarpt/gamedbv/internal/config"
@@ -13,9 +15,11 @@ import (
 )
 
 var jsonFlag *bool
-var platformFlags *cmds.MultipleFlag = &cmds.MultipleFlag{}
+var platformFlags *listflag.StringList
 
 func init() {
+	platformFlags = listflag.NewStringList([]string{})
+
 	flag.Var(platformFlags, cmds.PlatformFlag, "platform specifies which console platform's database should be fetched")
 	jsonFlag = flag.Bool(cmds.JSONFlag, false, "when specified as true, each line of output is presented as a json object")
 	flag.Parse()

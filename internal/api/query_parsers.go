@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/sarpt/gamedbv/internal/info"
+	"github.com/sarpt/gamedbv/internal/status"
 )
 
 const (
@@ -61,20 +61,20 @@ func getUIDQuery(r *http.Request) string {
 	return r.URL.Query().Get(uidQuery)
 }
 
-func getIndexedQuery(r *http.Request) (info.FilterIndexing, error) {
+func getIndexedQuery(r *http.Request) (status.FilterIndexing, error) {
 	indexed := r.URL.Query().Get(indexedQuery)
 	if indexed == "" {
-		return info.AllPlatforms, nil
+		return status.AllPlatforms, nil
 	}
 
 	onlyIndexed, err := strconv.ParseBool(indexed)
 	if err != nil {
-		return info.AllPlatforms, nil
+		return status.AllPlatforms, nil
 	}
 
 	if onlyIndexed {
-		return info.WithIndex, nil
+		return status.WithIndex, nil
 	}
 
-	return info.WithoutIndex, nil
+	return status.WithoutIndex, nil
 }

@@ -9,8 +9,8 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/sarpt/gamedbv/internal/cmds"
-	"github.com/sarpt/gamedbv/internal/info"
 	"github.com/sarpt/gamedbv/internal/progress"
+	"github.com/sarpt/gamedbv/internal/status"
 )
 
 func getGamesHandler(cfg Config) http.HandlerFunc {
@@ -57,7 +57,7 @@ func getGamesHandler(cfg Config) http.HandlerFunc {
 
 func getLanguagesHandler(cfg Config) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		result, err := info.Languages(cfg.GamesConfig.Database)
+		result, err := status.Languages(cfg.GamesConfig.Database)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -84,12 +84,12 @@ func getPlatformsHandler(cfg Config) http.HandlerFunc {
 
 		uid := getUIDQuery(req)
 
-		params := info.PlatformsParameters{
+		params := status.PlatformsParameters{
 			Indexed: filterIndexed,
 			UID:     uid,
 		}
 
-		result, err := info.Platforms(cfg.GamesConfig.Database, params)
+		result, err := status.Platforms(cfg.GamesConfig.Database, params)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
@@ -108,7 +108,7 @@ func getPlatformsHandler(cfg Config) http.HandlerFunc {
 
 func getRegionsHandler(cfg Config) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		result, err := info.Regions(cfg.GamesConfig.Database)
+		result, err := status.Regions(cfg.GamesConfig.Database)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

@@ -4,6 +4,9 @@ const (
 	// PlatformFlag is used to specify console platforms
 	PlatformFlag = "platform"
 
+	// ListFlag is used by status to decide what type of listing should be shown
+	ListFlag = "list"
+
 	// JSONFlag is used to specify whether json output should be used
 	JSONFlag = "json"
 
