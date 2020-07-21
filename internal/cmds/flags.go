@@ -4,6 +4,12 @@ const (
 	// PlatformFlag is used to specify console platforms
 	PlatformFlag = "platform"
 
+	// IndexingFlag specifies whether platform is indexed for searching
+	IndexingFlag = "indexing"
+
+	// UIDFlag represents a unique identifier
+	UIDFlag = "uid"
+
 	// ListFlag is used by status to decide what type of listing should be shown
 	ListFlag = "list"
 
@@ -30,4 +36,7 @@ const (
 
 	// InterfaceFlag is used to specify network interface used for binary to listen on
 	InterfaceFlag = "interface"
+
+	// GRPCFlag is used to specify that binary should run in gRPC server mode
+	GRPCFlag = "grpc"
 )

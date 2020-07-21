@@ -1,13 +1,16 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/sarpt/gamedbv/internal/cmds"
+	"github.com/sarpt/gamedbv/pkg/rpc/dl"
 )
 
 type operation string
@@ -17,12 +20,16 @@ const (
 	closeOp operation = "close"
 )
 
-var operationHandlers = map[operation]func(payload interface{}, w io.Writer) error{
-	startOp: handleStartOperation,
+type operationHandler = func(interface{}, io.Writer) error
+
+func (s *Server) getOperationHandlers() map[operation]operationHandler {
+	return map[operation]operationHandler{
+		startOp: s.handleStartOperation,
+	}
 }
 
-func handleOperationMessage(msg clientOpertionMessage, w io.Writer) error {
-	handler, ok := operationHandlers[msg.Op]
+func (s *Server) handleOperationMessage(msg clientOpertionMessage, w io.Writer) error {
+	handler, ok := s.operationHandlers[msg.Op]
 	if !ok {
 		return fmt.Errorf("no handler for the '%s' operation", msg.Op)
 	}
@@ -31,7 +38,7 @@ func handleOperationMessage(msg clientOpertionMessage, w io.Writer) error {
 	return err
 }
 
-func handleStartOperation(payload interface{}, w io.Writer) error {
+func (s *Server) handleStartOperation(payload interface{}, w io.Writer) error {
 	startPayload, ok := payload.(startPayload)
 	if !ok || len(startPayload.Platforms) < 1 {
 		return fmt.Errorf("incorrect payload for start operation")
@@ -44,7 +51,7 @@ func handleStartOperation(payload interface{}, w io.Writer) error {
 		go func(platform string) {
 			defer wg.Done()
 
-			err := updatePlatform(platform, w)
+			err := s.updatePlatform(platform, w)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Update for platform %s failed: %v", platform, err) // tbd: tee writer
 				fmt.Fprintf(w, "Update for platform %s failed", platform)                  // tbd: error writer
@@ -66,19 +73,31 @@ func handleStartOperation(payload interface{}, w io.Writer) error {
 	return nil
 }
 
-func updatePlatform(platform string, w io.Writer) error {
-	dlCfg := cmds.DlCfg{
-		Output:    w,
-		ErrOutput: w,
-	}
-	dlArgs := cmds.DlArguments{
+func (s Server) updatePlatform(platform string, w io.Writer) error {
+	dlReq := dl.PlatformsDownloadReq{
 		Platforms: []string{platform},
 	}
-	dlCmd := cmds.NewDl(dlCfg, dlArgs)
 
-	err := dlCmd.Execute()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+	stream, err := s.dlServiceClient.DownloadPlatforms(ctx, &dlReq)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not download platforms through grpc: %w", err)
+	}
+	for {
+		platDlStatus, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("error while receiving response through grpc: %w", err)
+		}
+		res, err := json.Marshal(&platDlStatus)
+		if err != nil {
+			return fmt.Errorf("could not marshall grpc json response for writer: %w", err)
+		}
+
+		w.Write(res)
 	}
 
 	idxCfg := cmds.IdxCfg{

@@ -28,7 +28,8 @@ func main() {
 	apiCfg.Debug = *debugFlag
 	apiCfg.NetInterface = *interfaceFlag
 
-	err = api.Serve(apiCfg, os.Stdout)
+	server := api.NewServer(apiCfg)
+	err = server.Serve(os.Stdout)
 	if err != nil {
 		panic(err)
 	}

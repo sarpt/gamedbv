@@ -10,6 +10,7 @@ require (
 	github.com/facebookgo/ensure v0.0.0-20200202191622-63f1cf65ac4c // indirect
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/facebookgo/subset v0.0.0-20200203212716-c811ad88dec4 // indirect
+	github.com/golang/protobuf v1.4.2
 	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/websocket v1.4.2
 	github.com/jinzhu/gorm v1.9.14
@@ -19,4 +20,6 @@ require (
 	github.com/sarpt/goutils v0.0.3
 	github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c // indirect
 	golang.org/x/text v0.3.3
+	google.golang.org/grpc v1.30.0
+	google.golang.org/protobuf v1.23.0
 )

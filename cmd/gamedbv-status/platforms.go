@@ -5,10 +5,15 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/sarpt/gamedbv/internal/cmds"
 	"github.com/sarpt/gamedbv/internal/progress"
 	"github.com/sarpt/gamedbv/internal/status"
 	"github.com/sarpt/gamedbv/pkg/db"
 	"github.com/sarpt/gamedbv/pkg/db/models"
+)
+
+const (
+	platformsFlagSet = "platforms"
 )
 
 func handlePlatforms(dbCfg db.Config) (progress.Status, error) {
@@ -16,9 +21,9 @@ func handlePlatforms(dbCfg db.Config) (progress.Status, error) {
 	var uidFlag *string
 	var resultStatus progress.Status = progress.Status{}
 
-	flagSet := flag.NewFlagSet("platforms", flag.PanicOnError)
-	indexingFlag = flagSet.String("indexing", string(status.AllPlatforms), "possible values: all, with, without")
-	uidFlag = flagSet.String("uid", "", "when uid is specified, only platform matching the uid will be returned")
+	flagSet := flag.NewFlagSet(platformsFlagSet, flag.PanicOnError)
+	indexingFlag = flagSet.String(cmds.IndexingFlag, string(status.AllPlatforms), "possible values: all, with, without")
+	uidFlag = flagSet.String(cmds.UIDFlag, "", "when uid is specified, only platform matching the uid will be returned")
 	flagSet.Parse(os.Args)
 
 	var indexed status.FilterIndexing

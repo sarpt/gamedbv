@@ -10,6 +10,9 @@ import (
 const (
 	process string = "dl"
 	step    string = "archive-download"
+
+	archiveFileAlreadyPresent = "%s database will not be downloaded since its already present"
+	downloadingInProgress     = "Downloading platform database variant of %s"
 )
 
 func newArchiveFileAlreadyPresentStatus(variant platform.Variant) progress.Status {

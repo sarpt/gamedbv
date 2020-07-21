@@ -21,8 +21,8 @@ type Config struct {
 	PlatformName    string
 }
 
-// DownloadPlatformSource downloads neccessary source files related to provided platform
-func DownloadPlatformSource(cfg Config, variant platform.Variant, printer progress.Notifier) {
+// PlatformSource downloads neccessary source files related to provided platform
+func PlatformSource(cfg Config, variant platform.Variant, printer progress.Notifier) {
 	sourcesFilesStatuses, err := getFilesStatuses(cfg)
 	if err != nil {
 		printer.NextError(err)
