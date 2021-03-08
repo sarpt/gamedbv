@@ -62,7 +62,7 @@ func serveGRPC(appCfg config.App) error {
 	address := fmt.Sprintf("%s:%s", defaultIP, defaultPort)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
-		return fmt.Errorf("failed to listen: %v", err)
+		return fmt.Errorf("failed to listen: %v", err) // TODO: logger
 	}
 
 	var opts []grpc.ServerOption

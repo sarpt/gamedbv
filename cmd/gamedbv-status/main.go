@@ -44,11 +44,11 @@ func main() {
 	var status progress.Status
 	switch *listFlag {
 	case platformsStatus:
-		status, err = handlePlatforms(appCfg.Database())
+		status, err = handlePlatforms(appCfg.Database)
 	case regionsStatus:
-		status, err = handleRegions(appCfg.Database())
+		status, err = handleRegions(appCfg.Database)
 	case languagesStatus:
-		status, err = handleLanguages(appCfg.Database())
+		status, err = handleLanguages(appCfg.Database)
 	default:
 		flag.PrintDefaults()
 		return

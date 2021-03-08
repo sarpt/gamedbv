@@ -68,7 +68,7 @@ func (s *Server) Serve(out io.Writer) error {
 	router := s.initRouter()
 
 	address := s.addressForServe()
-	fmt.Fprintf(out, "API server address: %s\n", address)
+	fmt.Fprintf(out, "API server address: %s\n", address) // TODO: implement logger instead of Fprintf in the wild..
 
 	srv := &http.Server{
 		Handler:      router,

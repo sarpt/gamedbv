@@ -54,7 +54,7 @@ func main() {
 		}
 	}
 
-	database, err := idx.GetDatabase(appCfg.Database(), printer)
+	database, err := idx.GetDatabase(appCfg.Database, printer)
 	defer database.Close()
 
 	if err != nil {

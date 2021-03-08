@@ -1,0 +1,126 @@
+{
+	"API": {
+		"IPAddress": "127.0.0.1",
+		"Port": "3001",
+		"NetInterface": "",
+		"Debug": false,
+		"WriteTimeout": "15s",
+		"ReadTimeout": "15s"
+	},
+	"Database": {
+		"Filename": "/store.db",
+		"Variant": "sqlite3",
+		"MaxLimit": 999
+	},
+	"Directory": ".gamedbv",
+  "Platforms": {
+    "wii": {
+      "Directory": "wii",
+      "Name": "wii",
+      "Index": {
+        "Directory": "wii_bleve",
+        "DocType": "gametdb/game",
+        "Variant": "bleve"
+      },
+      "Source": {
+        "Archived": true,
+        "ArchiveFilename": "wiidb.zip",
+        "Filename": "wiitdb.xml",
+        "ForceDownload": false,
+        "Format": "xml",
+        "Name": "GameTDB",
+        "URL": "https://www.gametdb.com/wiitdb.zip"
+      }
+    },
+    "ps3": {
+      "Directory": "ps3",
+      "Name": "ps3",
+      "Index": {
+        "Directory": "ps3_bleve",
+        "DocType": "gametdb/game",
+        "Variant": "bleve"
+      },
+      "Source": {
+        "Name": "GameTDB",
+        "URL": "https://www.gametdb.com/ps3tdb.zip",
+        "Filename": "ps3tdb.xml",
+        "ForceDownload": false,
+        "Format": "xml",
+        "Archived": true,
+        "ArchiveFilename": "ps3db.zip"
+      }
+    },
+    "wiiu": {
+      "Directory": "wiiu",
+      "Name": "wiiu",
+      "Index": {
+        "Directory": "wiiu_bleve",
+        "DocType": "gametdb/game",
+        "Variant": "bleve"
+      },
+      "Source": {
+        "Archived": true,
+        "ArchiveFilename": "wiiu.zip",
+        "Filename": "wiiutdb.xml",
+        "ForceDownload": false,
+        "Format": "xml",
+        "Name": "GameTDB",
+        "URL": "https://www.gametdb.com/wiiutdb.zip"
+      }
+    },
+    "nds": {
+      "Directory": "nds",
+      "Name": "nds",
+      "Index": {
+        "Directory": "nds_bleve",
+        "DocType": "gametdb/game",
+        "Variant": "bleve"
+      },
+      "Source": {
+        "Archived": true,
+        "ArchiveFilename": "nds.zip",
+        "Filename": "dstdb.xml",
+        "ForceDownload": false,
+        "Format": "xml",
+        "Name": "GameTDB",
+        "URL": "https://www.gametdb.com/dstdb.zip"
+      }
+    },
+    "n3ds": {
+      "Directory": "3ds",
+      "Name": "n3ds",
+      "Index": {
+        "Directory": "3ds_bleve",
+        "DocType": "gametdb/game",
+        "Variant": "bleve"
+      },
+      "Source": {
+        "Archived": true,
+        "ArchiveFilename": "3ds.zip",
+        "Filename": "3dstdb.xml",
+        "ForceDownload": false,
+        "Format": "xml",
+        "Name": "GameTDB",
+        "URL": "https://www.gametdb.com/3dstdb.zip"
+      }
+    },
+    "switch": {
+      "Directory": "switch",
+      "Name": "switch",
+      "Index": {
+        "Directory": "switch_bleve",
+        "DocType": "gametdb/game",
+        "Variant": "bleve"
+      },
+      "Source": {
+        "ArchiveFilename": "switch.zip",
+        "Filename": "switchtdb.xml",
+        "Name": "GameTDB",
+        "Archived": true,
+        "ForceDownload": false,
+        "Format": "xml",
+        "URL": "https://www.gametdb.com/switchtdb.zip"
+      }
+    }
+  }
+}

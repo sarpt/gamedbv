@@ -79,7 +79,7 @@ func main() {
 		PageLimit: *pageLimitFlag,
 	}
 
-	result, err := games.Search(appCfg.Games(), params)
+	result, err := games.Search(appCfg.Games, params)
 	if err != nil {
 		panic(err)
 	}

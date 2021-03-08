@@ -24,7 +24,7 @@ func main() {
 		panic(err)
 	}
 
-	apiCfg := appCfg.API()
+	apiCfg := appCfg.API
 	apiCfg.Debug = *debugFlag
 	apiCfg.NetInterface = *interfaceFlag
 

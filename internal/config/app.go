@@ -15,146 +15,129 @@ import (
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
-// App groups configuration properties of the whole GameDBV project
-// The app is used as an adapter for configurations required by all of the GameDBV packages and components
+// App groups configuration properties of the whole GameDBV project.
 type App struct {
-	directoryPath string
-	platforms     map[string]Platform
-	database      db.Config
-	apiCfg        api.Config
+	Directory string
+	API       api.Config
+	Games     games.Config
+	Database  db.Config
+	platforms map[string]json.Platform
 }
 
-// NewApp returns new config
-// At the moment, it only copies the defaults - reading from environment/overrides to be provided
+// NewApp returns new config.
+// At the moment it only reads from the default embedded at compile-time.
 func NewApp() (App, error) {
-	var newApp App
+	newApp := &App{}
 
-	userConfigDir, err := os.UserConfigDir()
+	userDir, err := os.UserHomeDir()
 	if err != nil {
-		return newApp, err
+		return *newApp, err
 	}
 
-	directoryPath := path.Join(userConfigDir, json.DefaultConfig.Directory)
-
-	apiReadTimeout, err := time.ParseDuration(json.DefaultConfig.API.ReadTimeout)
+	defaultApp, err := json.DefaultApp()
 	if err != nil {
-		return newApp, err
+		return *newApp, err
 	}
 
-	apiWriteTimeout, err := time.ParseDuration(json.DefaultConfig.API.WriteTimeout)
-	if err != nil {
-		return newApp, err
-	}
+	newApp.platforms = defaultApp.Platforms
+	newApp.Directory = path.Join(userDir, defaultApp.Directory)
 
-	newApp = App{
-		apiCfg: api.Config{
-			IPAddress:    json.DefaultConfig.API.IPAddress,
-			Port:         json.DefaultConfig.API.Port,
-			Debug:        json.DefaultConfig.API.Debug,
-			NetInterface: json.DefaultConfig.API.NetInterface,
-			ReadTimeout:  apiReadTimeout,
-			WriteTimeout: apiWriteTimeout,
-		},
-		directoryPath: directoryPath,
-		database: db.Config{
-			Variant:  json.DefaultConfig.Database.Variant,
-			Path:     path.Join(directoryPath, json.DefaultConfig.Database.FileName),
-			MaxLimit: json.DefaultConfig.Database.MaxLimit,
-		},
-	}
+	newApp.createDatabaseConfig(defaultApp)
+	newApp.createGamesConfig(defaultApp)
 
-	newApp.platforms = make(map[string]Platform)
-	for variant, plat := range json.DefaultConfigsPerPlatform {
-		platformDirectory := path.Join(directoryPath, plat.Directory)
-		newApp.platforms[variant] = Platform{
-			name:    plat.Name,
-			dirPath: platformDirectory,
-			source: Source{
-				archiveFilepath: path.Join(platformDirectory, plat.Source.ArchiveFilename),
-				filepath:        path.Join(platformDirectory, plat.Source.Filename),
-				filename:        plat.Source.Filename,
-				name:            plat.Name,
-				archived:        plat.Source.Archived,
-				format:          plat.Source.Format,
-				forceDownload:   plat.Source.ForceDownload,
-				url:             plat.Source.URL,
-			},
-			index: Index{
-				path:    path.Join(platformDirectory, plat.Index.Directory),
-				variant: plat.Index.Variant,
-				docType: plat.Index.DocType,
-			},
-		}
-	}
+	err = newApp.createAPIConfig(defaultApp)
 
-	return newApp, nil
+	return *newApp, err
 }
 
-// platform returns platform config
-func (cfg App) platform(variant platform.Variant) Platform {
+// Dl returns configuration for Dl component.
+func (cfg App) Dl(variant platform.Variant) dl.Config {
+	platformConfig := cfg.platform(variant)
+	platformDirectoryPath := path.Join(cfg.Directory, platformConfig.Directory)
+
+	return dl.Config{
+		DirectoryPath:   platformDirectoryPath,
+		Filepath:        path.Join(platformDirectoryPath, platformConfig.Source.ArchiveFilename),
+		ForceRedownload: platformConfig.Source.ForceDownload,
+		URL:             platformConfig.Source.URL,
+		PlatformName:    platformConfig.Name,
+	}
+}
+
+// Idx returns confiuration for Idx component.
+func (cfg App) Idx(variant platform.Variant) idx.Config {
+	platformConfig := cfg.platform(variant)
+	platformDirectoryPath := path.Join(cfg.Directory, platformConfig.Directory)
+
+	return idx.Config{
+		IndexFilepath:   path.Join(platformDirectoryPath, platformConfig.Index.Directory),
+		IndexVariant:    platformConfig.Index.Variant,
+		Name:            platformConfig.Name,
+		DocType:         platformConfig.Index.DocType,
+		SourceFilename:  platformConfig.Source.Filename,
+		SourceFilepath:  path.Join(platformDirectoryPath, platformConfig.Source.Filename),
+		ArchiveFilepath: path.Join(platformDirectoryPath, platformConfig.Source.ArchiveFilename),
+	}
+}
+
+// platform returns platform config.
+func (cfg App) platform(variant platform.Variant) json.Platform {
 	return cfg.platforms[variant.ID()]
 }
 
-// Database returns information neccessary to connect to persistence
-func (cfg App) Database() db.Config {
-	return cfg.database
-}
-
-// Idx returns confiuration for Idx component
-func (cfg App) Idx(variant platform.Variant) idx.Config {
-	platformConfig := cfg.platform(variant)
-
-	return idx.Config{
-		IndexFilepath:   platformConfig.index.path,
-		IndexVariant:    platformConfig.index.variant,
-		Name:            platformConfig.name,
-		DocType:         platformConfig.index.docType,
-		SourceFilename:  platformConfig.source.filename,
-		SourceFilepath:  platformConfig.source.filepath,
-		ArchiveFilepath: platformConfig.source.archiveFilepath,
+func (cfg *App) createDatabaseConfig(jsonApp json.App) {
+	cfg.Database = db.Config{
+		MaxLimit: jsonApp.Database.MaxLimit,
+		Path:     path.Join(cfg.Directory, jsonApp.Database.Filename),
+		Variant:  jsonApp.Database.Variant,
 	}
 }
 
-// Games returns configuration for Games component
-func (cfg App) Games() games.Config {
+func (cfg *App) createGamesConfig(jsonApp json.App) {
 	indexes := make(map[platform.Variant]index.Config)
 
-	for platID, plat := range cfg.platforms {
+	for platID, platformConfig := range jsonApp.Platforms {
 		variant, err := platform.Get(platID)
 		if err != nil {
 			continue
 		}
 
+		platformDirectoryPath := path.Join(cfg.Directory, platformConfig.Directory)
 		indexes[variant] = index.Config{
-			Filepath: plat.index.path,
-			Variant:  plat.index.variant,
-			Name:     plat.name,
-			DocType:  plat.index.docType,
+			Filepath: path.Join(platformDirectoryPath, platformConfig.Index.Directory),
+			Variant:  platformConfig.Index.Variant,
+			Name:     platformConfig.Name,
+			DocType:  platformConfig.Index.DocType,
 		}
 
 	}
 
-	return games.Config{
-		Database: cfg.database,
+	cfg.Games = games.Config{
+		Database: cfg.Database,
 		Indexes:  indexes,
 	}
 }
 
-// API returns configuration for Api component
-func (cfg App) API() api.Config {
-	cfg.apiCfg.GamesConfig = cfg.Games()
-	return cfg.apiCfg
-}
-
-// Dl returns configuration for Dl component
-func (cfg App) Dl(variant platform.Variant) dl.Config {
-	platformConfig := cfg.platform(variant)
-
-	return dl.Config{
-		DirectoryPath:   platformConfig.dirPath,
-		Filepath:        platformConfig.source.archiveFilepath,
-		ForceRedownload: platformConfig.source.forceDownload,
-		URL:             platformConfig.source.url,
-		PlatformName:    platformConfig.name,
+func (cfg *App) createAPIConfig(jsonApp json.App) error {
+	apiReadTimeout, err := time.ParseDuration(jsonApp.API.ReadTimeout)
+	if err != nil {
+		return err
 	}
+
+	apiWriteTimeout, err := time.ParseDuration(jsonApp.API.WriteTimeout)
+	if err != nil {
+		return err
+	}
+
+	cfg.API = api.Config{
+		Debug:        jsonApp.API.Debug,
+		GamesConfig:  cfg.Games,
+		IPAddress:    jsonApp.API.IPAddress,
+		NetInterface: jsonApp.API.NetInterface,
+		Port:         jsonApp.API.Port,
+		ReadTimeout:  apiReadTimeout,
+		WriteTimeout: apiWriteTimeout,
+	}
+
+	return nil
 }
