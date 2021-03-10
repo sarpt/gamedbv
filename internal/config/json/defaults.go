@@ -7,12 +7,12 @@ import (
 )
 
 //go:embed "default-config.json"
-var defaultAppPayload []byte
+var defaultPayload []byte
 
-// DefaultApp returns embedded in a binary during compile-time a default config as a App instance.
-func DefaultApp() (App, error) {
-	defaultApp := App{}
+// Default returns embedded in a binary during compile-time default config as a Project instance.
+func Default() (Project, error) {
+	defaultApp := Project{}
 
-	err := json.Unmarshal(defaultAppPayload, &defaultApp)
+	err := json.Unmarshal(defaultPayload, &defaultApp)
 	return defaultApp, err
 }

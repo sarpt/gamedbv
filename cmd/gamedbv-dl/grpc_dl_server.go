@@ -13,12 +13,12 @@ import (
 // GRPCDlServer implements server side of Dl service
 type GRPCDlServer struct {
 	pb.UnimplementedDlServer
-	appCfg config.App
+	projectCfg config.Project
 }
 
-func newGRPCDlServer(appCfg config.App) *GRPCDlServer {
+func newGRPCDlServer(projectCfg config.Project) *GRPCDlServer {
 	return &GRPCDlServer{
-		appCfg: appCfg,
+		projectCfg: projectCfg,
 	}
 }
 
@@ -32,7 +32,7 @@ func (s *GRPCDlServer) DownloadPlatforms(req *pb.PlatformsDownloadReq, stream pb
 	notifier := newGRPCNotifier(stream)
 
 	var wg sync.WaitGroup
-	downloadPlatformSources(&wg, s.appCfg, platforms, notifier)
+	downloadPlatformSources(&wg, s.projectCfg, platforms, notifier)
 	wg.Wait()
 
 	return nil

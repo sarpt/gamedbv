@@ -8,7 +8,7 @@
 		"ReadTimeout": "15s"
 	},
 	"Database": {
-		"Filename": "/store.db",
+		"Filename": "store.db",
 		"Variant": "sqlite3",
 		"MaxLimit": 999
 	},

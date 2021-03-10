@@ -27,7 +27,7 @@ func init() {
 }
 
 func main() {
-	appCfg, err := config.NewApp()
+	projectCfg, err := config.Create()
 	if err != nil {
 		panic(err)
 	}
@@ -54,7 +54,7 @@ func main() {
 		}
 	}
 
-	database, err := idx.GetDatabase(appCfg.Database, printer)
+	database, err := idx.GetDatabase(projectCfg.Database, printer)
 	defer database.Close()
 
 	if err != nil {
@@ -68,7 +68,7 @@ func main() {
 
 		go func(platform platform.Variant) {
 			defer wg.Done()
-			idx.PreparePlatform(appCfg.Idx(platform), platform, printer, database)
+			idx.PreparePlatform(projectCfg.Idx(platform), platform, printer, database)
 		}(platformToParse)
 	}
 

@@ -50,7 +50,7 @@ func main() {
 		printer = cli.NewTextPrinter()
 	}
 
-	appCfg, err := config.NewApp()
+	projectCfg, err := config.Create()
 	if err != nil {
 		panic(err)
 	}
@@ -79,7 +79,7 @@ func main() {
 		PageLimit: *pageLimitFlag,
 	}
 
-	result, err := games.Search(appCfg.Games, params)
+	result, err := games.Search(projectCfg.Games, params)
 	if err != nil {
 		panic(err)
 	}

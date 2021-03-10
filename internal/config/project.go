@@ -7,6 +7,7 @@ import (
 
 	"github.com/sarpt/gamedbv/internal/api"
 	"github.com/sarpt/gamedbv/internal/config/json"
+	jsonConfig "github.com/sarpt/gamedbv/internal/config/json"
 	"github.com/sarpt/gamedbv/internal/dl"
 	"github.com/sarpt/gamedbv/internal/games"
 	"github.com/sarpt/gamedbv/internal/idx"
@@ -15,43 +16,57 @@ import (
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
-// App groups configuration properties of the whole GameDBV project.
-type App struct {
+// Project groups configuration properties of the whole GameDBV project.
+type Project struct {
 	Directory string
 	API       api.Config
 	Games     games.Config
 	Database  db.Config
-	platforms map[string]json.Platform
+	platforms map[string]jsonConfig.Platform
 }
 
-// NewApp returns new config.
-// At the moment it only reads from the default embedded at compile-time.
-func NewApp() (App, error) {
-	newApp := &App{}
+// Create returns GameDBV project config.
+// In-case the override for config does not exist in user's config directory, the function saves the bundled during compile-time default.
+// Otherwise the function tries to read user provided one, without any manipulation to it.
+func Create() (Project, error) {
+	newApp := &Project{}
 
-	userDir, err := os.UserHomeDir()
+	userHomeDir, err := os.UserHomeDir()
 	if err != nil {
 		return *newApp, err
 	}
 
-	defaultApp, err := json.DefaultApp()
-	if err != nil {
-		return *newApp, err
+	var jsonProject json.Project
+	if userConfigExists() {
+		jsonProject, err = readUserConfig()
+		if err != nil {
+			return *newApp, err
+		}
+	} else {
+		jsonProject, err = jsonConfig.Default()
+		if err != nil {
+			return *newApp, err
+		}
+
+		err = writeUserConfig(jsonProject)
+		if err != nil {
+			return *newApp, err
+		}
 	}
 
-	newApp.platforms = defaultApp.Platforms
-	newApp.Directory = path.Join(userDir, defaultApp.Directory)
+	newApp.platforms = jsonProject.Platforms
+	newApp.Directory = path.Join(userHomeDir, jsonProject.Directory)
 
-	newApp.createDatabaseConfig(defaultApp)
-	newApp.createGamesConfig(defaultApp)
+	newApp.createDatabaseConfig(jsonProject)
+	newApp.createGamesConfig(jsonProject)
 
-	err = newApp.createAPIConfig(defaultApp)
+	err = newApp.createAPIConfig(jsonProject)
 
 	return *newApp, err
 }
 
 // Dl returns configuration for Dl component.
-func (cfg App) Dl(variant platform.Variant) dl.Config {
+func (cfg Project) Dl(variant platform.Variant) dl.Config {
 	platformConfig := cfg.platform(variant)
 	platformDirectoryPath := path.Join(cfg.Directory, platformConfig.Directory)
 
@@ -65,7 +80,7 @@ func (cfg App) Dl(variant platform.Variant) dl.Config {
 }
 
 // Idx returns confiuration for Idx component.
-func (cfg App) Idx(variant platform.Variant) idx.Config {
+func (cfg Project) Idx(variant platform.Variant) idx.Config {
 	platformConfig := cfg.platform(variant)
 	platformDirectoryPath := path.Join(cfg.Directory, platformConfig.Directory)
 
@@ -81,11 +96,11 @@ func (cfg App) Idx(variant platform.Variant) idx.Config {
 }
 
 // platform returns platform config.
-func (cfg App) platform(variant platform.Variant) json.Platform {
+func (cfg Project) platform(variant platform.Variant) jsonConfig.Platform {
 	return cfg.platforms[variant.ID()]
 }
 
-func (cfg *App) createDatabaseConfig(jsonApp json.App) {
+func (cfg *Project) createDatabaseConfig(jsonApp jsonConfig.Project) {
 	cfg.Database = db.Config{
 		MaxLimit: jsonApp.Database.MaxLimit,
 		Path:     path.Join(cfg.Directory, jsonApp.Database.Filename),
@@ -93,7 +108,7 @@ func (cfg *App) createDatabaseConfig(jsonApp json.App) {
 	}
 }
 
-func (cfg *App) createGamesConfig(jsonApp json.App) {
+func (cfg *Project) createGamesConfig(jsonApp jsonConfig.Project) {
 	indexes := make(map[platform.Variant]index.Config)
 
 	for platID, platformConfig := range jsonApp.Platforms {
@@ -118,7 +133,7 @@ func (cfg *App) createGamesConfig(jsonApp json.App) {
 	}
 }
 
-func (cfg *App) createAPIConfig(jsonApp json.App) error {
+func (cfg *Project) createAPIConfig(jsonApp jsonConfig.Project) error {
 	apiReadTimeout, err := time.ParseDuration(jsonApp.API.ReadTimeout)
 	if err != nil {
 		return err

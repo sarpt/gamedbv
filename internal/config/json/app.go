@@ -1,7 +1,7 @@
 package json
 
-// App groups configuration properties of the whole GameDBV project
-type App struct {
+// Project groups configuration properties of the whole GameDBV project.
+type Project struct {
 	API       API                 `json:"API"`
 	Database  Database            `json:"Database"`
 	Directory string              `json:"Directory"`

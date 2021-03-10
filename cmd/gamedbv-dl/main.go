@@ -37,7 +37,7 @@ func init() {
 }
 
 func main() {
-	appCfg, err := config.NewApp()
+	projectCfg, err := config.Create()
 	if err != nil {
 		panic(err)
 	}
@@ -48,9 +48,9 @@ func main() {
 	}
 
 	if *grpcFlag {
-		err = serveGRPC(appCfg)
+		err = serveGRPC(projectCfg)
 	} else {
-		executeOnce(appCfg, platformsToDownload)
+		executeOnce(projectCfg, platformsToDownload)
 	}
 
 	if err != nil {
@@ -58,7 +58,7 @@ func main() {
 	}
 }
 
-func serveGRPC(appCfg config.App) error {
+func serveGRPC(appCfg config.Project) error {
 	address := fmt.Sprintf("%s:%s", defaultIP, defaultPort)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
@@ -73,7 +73,7 @@ func serveGRPC(appCfg config.App) error {
 	return nil
 }
 
-func executeOnce(appCfg config.App, platforms []platform.Variant) {
+func executeOnce(appCfg config.Project, platforms []platform.Variant) {
 	var printer progress.Notifier
 	if *jsonFlag {
 		printer = cli.NewJSONPrinter()
@@ -86,7 +86,7 @@ func executeOnce(appCfg config.App, platforms []platform.Variant) {
 	wg.Wait()
 }
 
-func downloadPlatformSources(wg *sync.WaitGroup, appCfg config.App, platforms []platform.Variant, notifier progress.Notifier) {
+func downloadPlatformSources(wg *sync.WaitGroup, appCfg config.Project, platforms []platform.Variant, notifier progress.Notifier) {
 	for _, platformToDownload := range platforms {
 		wg.Add(1)
 

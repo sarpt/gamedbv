@@ -19,12 +19,12 @@ func init() {
 }
 
 func main() {
-	appCfg, err := config.NewApp()
+	projectCfg, err := config.Create()
 	if err != nil {
 		panic(err)
 	}
 
-	apiCfg := appCfg.API
+	apiCfg := projectCfg.API
 	apiCfg.Debug = *debugFlag
 	apiCfg.NetInterface = *interfaceFlag
 
