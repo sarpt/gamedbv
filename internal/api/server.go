@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -24,16 +25,17 @@ const (
 
 // Config instructs how API should behave and how it should access indexes and database
 type Config struct {
-	IPAddress    string
-	Port         string
-	NetInterface string
-	Debug        bool
-	GamesConfig  games.Config
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
+	Debug          bool
+	DlRPCAddress   string
+	DlRPCPort      string
+	GamesConfig    games.Config
+	IPAddress      string
+	NetInterface   string
+	Port           string
+	ReadTimeout    time.Duration
+	RPCDialTimeout time.Duration
+	WriteTimeout   time.Duration
 }
-
-type handlerCreator func() http.HandlerFunc
 
 // Server represents API server instance
 type Server struct {
@@ -55,15 +57,11 @@ func NewServer(cfg Config) *Server {
 
 // Serve starts GameDBV API server
 func (s *Server) Serve(out io.Writer) error {
-	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithBlock(), grpc.WithInsecure())
-	conn, err := grpc.Dial("localhost:3004", opts...) // this needs to be changed; need to add timeout for dial, some kind of config reading for dl-service process, maybe starting own process from api
+	closeDialConn, err := s.dialDlGrpc()
 	if err != nil {
-		return fmt.Errorf("fail to dial: %v", err)
+		return fmt.Errorf("could not dial Dl RPC: %w", err)
 	}
-
-	defer conn.Close()
-	s.dlServiceClient = pb.NewDlClient(conn)
+	defer closeDialConn()
 
 	router := s.initRouter()
 
@@ -78,6 +76,24 @@ func (s *Server) Serve(out io.Writer) error {
 	}
 
 	return srv.ListenAndServe()
+}
+
+func (s *Server) dialDlGrpc() (func() error, error) {
+	var opts []grpc.DialOption
+	opts = append(opts, grpc.WithBlock(), grpc.WithInsecure())
+
+	timeoutContext, cancel := context.WithTimeout(context.Background(), s.cfg.RPCDialTimeout)
+	defer cancel()
+
+	dlcRPCTarget := fmt.Sprintf("%s:%s", s.cfg.DlRPCAddress, s.cfg.DlRPCPort)
+	conn, err := grpc.DialContext(timeoutContext, dlcRPCTarget, opts...) // this needs to be changed; maybe starting own process from api
+	if err != nil {
+		return nil, fmt.Errorf("grpc dial failure: %w", err)
+	}
+
+	s.dlServiceClient = pb.NewDlClient(conn)
+
+	return conn.Close, nil
 }
 
 func (s Server) initRouter() *mux.Router {

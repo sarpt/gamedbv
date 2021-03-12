@@ -134,24 +134,32 @@ func (cfg *Project) createGamesConfig(jsonApp jsonConfig.Project) {
 }
 
 func (cfg *Project) createAPIConfig(jsonApp jsonConfig.Project) error {
-	apiReadTimeout, err := time.ParseDuration(jsonApp.API.ReadTimeout)
+	readTimeout, err := time.ParseDuration(jsonApp.API.ReadTimeout)
 	if err != nil {
 		return err
 	}
 
-	apiWriteTimeout, err := time.ParseDuration(jsonApp.API.WriteTimeout)
+	writeTimeout, err := time.ParseDuration(jsonApp.API.WriteTimeout)
+	if err != nil {
+		return err
+	}
+
+	rpcDialTimeout, err := time.ParseDuration(jsonApp.API.RPCDialTimeout)
 	if err != nil {
 		return err
 	}
 
 	cfg.API = api.Config{
-		Debug:        jsonApp.API.Debug,
-		GamesConfig:  cfg.Games,
-		IPAddress:    jsonApp.API.IPAddress,
-		NetInterface: jsonApp.API.NetInterface,
-		Port:         jsonApp.API.Port,
-		ReadTimeout:  apiReadTimeout,
-		WriteTimeout: apiWriteTimeout,
+		Debug:          jsonApp.API.Debug,
+		DlRPCAddress:   jsonApp.API.DlRPCAddress,
+		DlRPCPort:      jsonApp.API.DlRPCPort,
+		GamesConfig:    cfg.Games,
+		IPAddress:      jsonApp.API.IPAddress,
+		NetInterface:   jsonApp.API.NetInterface,
+		Port:           jsonApp.API.Port,
+		ReadTimeout:    readTimeout,
+		RPCDialTimeout: rpcDialTimeout,
+		WriteTimeout:   writeTimeout,
 	}
 
 	return nil

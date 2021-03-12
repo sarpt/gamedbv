@@ -1,11 +1,14 @@
 {
 	"API": {
-		"IPAddress": "127.0.0.1",
-		"Port": "3001",
-		"NetInterface": "",
 		"Debug": false,
-		"WriteTimeout": "15s",
-		"ReadTimeout": "15s"
+    "DlRPCAddress": "localhost",
+    "DlRPCPort": "3004",
+		"IPAddress": "127.0.0.1",
+		"NetInterface": "",
+		"Port": "3001",
+		"ReadTimeout": "15s",
+    "RPCDialTimeout": "15s",
+		"WriteTimeout": "15s"
 	},
 	"Database": {
 		"Filename": "store.db",
