@@ -20,6 +20,25 @@ func Get(id string) (Variant, error) {
 	return variant, nil
 }
 
+func ByNames(names []string) ([]Variant, error) {
+	var platforms []Variant
+
+	if len(names) == 0 {
+		platforms = append(platforms, All()...)
+	} else {
+		for _, val := range names {
+			variant, err := Get(val)
+			if err != nil {
+				return platforms, err
+			}
+
+			platforms = append(platforms, variant)
+		}
+	}
+
+	return platforms, nil
+}
+
 // ID returns platform variant id, should be unique per platform
 func (variant Variant) ID() string {
 	return variant.id

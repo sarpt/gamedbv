@@ -46,11 +46,8 @@ func userConfigExists() bool {
 	}
 
 	_, err = os.Stat(filepath)
-	if os.IsNotExist(err) {
-		return false
-	}
 
-	return true
+	return !os.IsNotExist(err)
 }
 
 func writeUserConfig(project jsonConfig.Project) error {

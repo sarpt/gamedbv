@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/sarpt/gamedbv/internal/api"
-	"github.com/sarpt/gamedbv/internal/config/json"
 	jsonConfig "github.com/sarpt/gamedbv/internal/config/json"
 	"github.com/sarpt/gamedbv/internal/dl"
 	"github.com/sarpt/gamedbv/internal/games"
@@ -20,8 +19,9 @@ import (
 type Project struct {
 	Directory string
 	API       api.Config
-	Games     games.Config
 	Database  db.Config
+	Dl        dl.Config
+	Games     games.Config
 	platforms map[string]jsonConfig.Platform
 }
 
@@ -36,7 +36,7 @@ func Create() (Project, error) {
 		return *newApp, err
 	}
 
-	var jsonProject json.Project
+	var jsonProject jsonConfig.Project
 	if userConfigExists() {
 		jsonProject, err = readUserConfig()
 		if err != nil {
@@ -57,6 +57,7 @@ func Create() (Project, error) {
 	newApp.platforms = jsonProject.Platforms
 	newApp.Directory = path.Join(userHomeDir, jsonProject.Directory)
 
+	newApp.createDl(jsonProject)
 	newApp.createDatabaseConfig(jsonProject)
 	newApp.createGamesConfig(jsonProject)
 
@@ -65,17 +66,31 @@ func Create() (Project, error) {
 	return *newApp, err
 }
 
-// Dl returns configuration for Dl component.
-func (cfg Project) Dl(variant platform.Variant) dl.Config {
-	platformConfig := cfg.platform(variant)
-	platformDirectoryPath := path.Join(cfg.Directory, platformConfig.Directory)
+func (cfg *Project) createDl(jsonApp jsonConfig.Project) {
+	sources := map[platform.Variant]dl.SourceConfig{}
 
-	return dl.Config{
-		DirectoryPath:   platformDirectoryPath,
-		Filepath:        path.Join(platformDirectoryPath, platformConfig.Source.ArchiveFilename),
-		ForceRedownload: platformConfig.Source.ForceDownload,
-		URL:             platformConfig.Source.URL,
-		PlatformName:    platformConfig.Name,
+	for platformName := range jsonApp.Platforms {
+		variant, err := platform.Get(platformName)
+		if err != nil {
+			continue // TODO: report from createDl function and handle
+		}
+
+		platformConfig := cfg.platform(variant)
+		platformDirectoryPath := path.Join(cfg.Directory, platformConfig.Directory)
+
+		sources[variant] = dl.SourceConfig{
+			DirectoryPath:   platformDirectoryPath,
+			Filepath:        path.Join(platformDirectoryPath, platformConfig.Source.ArchiveFilename),
+			ForceRedownload: platformConfig.Source.ForceDownload,
+			URL:             platformConfig.Source.URL,
+			PlatformName:    platformConfig.Name,
+		}
+	}
+
+	cfg.Dl = dl.Config{
+		Sources: sources,
+		Address: jsonApp.API.DlRPCAddress,
+		Port:    jsonApp.API.DlRPCPort,
 	}
 }
 

@@ -17,16 +17,13 @@ func crateFileGetRequest(url string) (*http.Request, error) {
 	return req, nil
 }
 
-func doesFileExist(filePath string) bool {
+func fileExists(filePath string) bool {
 	_, err := os.Stat(filePath)
-	if err != nil {
-		return false
-	}
 
-	return true
+	return !os.IsNotExist(err)
 }
 
-func downloadFile(url string, outputFile *os.File) error {
+func getFile(url string, outputFile *os.File) error {
 	fileGetRequest, err := crateFileGetRequest(url)
 	if err != nil {
 		return err

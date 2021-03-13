@@ -2,12 +2,10 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"net"
+	"os"
 	"sync"
 
 	"github.com/sarpt/goutils/pkg/listflag"
-	"google.golang.org/grpc"
 
 	"github.com/sarpt/gamedbv/internal/cli"
 	"github.com/sarpt/gamedbv/internal/cmds"
@@ -15,17 +13,11 @@ import (
 	"github.com/sarpt/gamedbv/internal/dl"
 	"github.com/sarpt/gamedbv/internal/progress"
 	"github.com/sarpt/gamedbv/pkg/platform"
-	pb "github.com/sarpt/gamedbv/pkg/rpc/dl"
 )
 
 var jsonFlag *bool
 var platformFlags *listflag.StringList
 var grpcFlag *bool
-
-const (
-	defaultIP   = "localhost"
-	defaultPort = "3004"
-)
 
 func init() {
 	platformFlags = listflag.NewStringList([]string{})
@@ -42,76 +34,39 @@ func main() {
 		panic(err)
 	}
 
-	platformsToDownload, err := platformVariants(platformFlags.Values())
+	platformsToDownload, err := platform.ByNames(platformFlags.Values())
 	if err != nil {
 		panic(err)
 	}
+
+	cfg := projectCfg.Dl
+	cfg.ErrWriter = os.Stderr
+	cfg.OutWriter = os.Stdout
+	server := dl.NewServer(cfg)
 
 	if *grpcFlag {
-		err = serveGRPC(projectCfg)
+		err = server.ServeGRPC()
 	} else {
-		executeOnce(projectCfg, platformsToDownload)
+		var printer progress.Notifier
+		if *jsonFlag {
+			printer = cli.NewJSONPrinter()
+		} else {
+			printer = cli.NewTextPrinter()
+		}
+
+		var wg sync.WaitGroup
+		for _, platformToDownload := range platformsToDownload {
+			wg.Add(1)
+
+			go func(platform platform.Variant) {
+				defer wg.Done()
+				server.DownloadPlatformSource(platform, printer)
+			}(platformToDownload)
+		}
+		wg.Wait()
 	}
 
 	if err != nil {
 		panic(err)
 	}
-}
-
-func serveGRPC(appCfg config.Project) error {
-	address := fmt.Sprintf("%s:%s", defaultIP, defaultPort)
-	lis, err := net.Listen("tcp", address)
-	if err != nil {
-		return fmt.Errorf("failed to listen: %v", err) // TODO: logger
-	}
-
-	var opts []grpc.ServerOption
-	grpcServer := grpc.NewServer(opts...)
-	pb.RegisterDlServer(grpcServer, newGRPCDlServer(appCfg))
-	grpcServer.Serve(lis)
-
-	return nil
-}
-
-func executeOnce(appCfg config.Project, platforms []platform.Variant) {
-	var printer progress.Notifier
-	if *jsonFlag {
-		printer = cli.NewJSONPrinter()
-	} else {
-		printer = cli.NewTextPrinter()
-	}
-
-	var wg sync.WaitGroup
-	downloadPlatformSources(&wg, appCfg, platforms, printer)
-	wg.Wait()
-}
-
-func downloadPlatformSources(wg *sync.WaitGroup, appCfg config.Project, platforms []platform.Variant, notifier progress.Notifier) {
-	for _, platformToDownload := range platforms {
-		wg.Add(1)
-
-		go func(platform platform.Variant) {
-			defer wg.Done()
-			dl.PlatformSource(appCfg.Dl(platform), platform, notifier)
-		}(platformToDownload)
-	}
-}
-
-func platformVariants(platforms []string) ([]platform.Variant, error) {
-	var platformsToDownload []platform.Variant
-
-	if len(platforms) == 0 {
-		platformsToDownload = append(platformsToDownload, platform.All()...)
-	} else {
-		for _, val := range platforms {
-			variant, err := platform.Get(val)
-			if err != nil {
-				return platformsToDownload, err
-			}
-
-			platformsToDownload = append(platformsToDownload, variant)
-		}
-	}
-
-	return platformsToDownload, nil
 }
