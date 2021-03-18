@@ -17,11 +17,12 @@ import (
 
 // Project groups configuration properties of the whole GameDBV project.
 type Project struct {
+	Database  db.Config
 	Directory string
 	API       api.Config
-	Database  db.Config
 	Dl        dl.Config
 	Games     games.Config
+	Idx       idx.Config
 	platforms map[string]jsonConfig.Platform
 }
 
@@ -56,9 +57,14 @@ func Create() (Project, error) {
 
 	newApp.platforms = jsonProject.Platforms
 	newApp.Directory = path.Join(userHomeDir, jsonProject.Directory)
+	newApp.Database = db.Config{
+		MaxLimit: jsonProject.Database.MaxLimit,
+		Path:     path.Join(jsonProject.Directory, jsonProject.Database.Filename),
+		Variant:  jsonProject.Database.Variant,
+	}
 
 	newApp.createDl(jsonProject)
-	newApp.createDatabaseConfig(jsonProject)
+	newApp.createIdx(jsonProject)
 	newApp.createGamesConfig(jsonProject)
 
 	err = newApp.createAPIConfig(jsonProject)
@@ -94,33 +100,39 @@ func (cfg *Project) createDl(jsonApp jsonConfig.Project) {
 	}
 }
 
-// Idx returns confiuration for Idx component.
-func (cfg Project) Idx(variant platform.Variant) idx.Config {
-	platformConfig := cfg.platform(variant)
-	platformDirectoryPath := path.Join(cfg.Directory, platformConfig.Directory)
+func (cfg *Project) createIdx(jsonApp jsonConfig.Project) {
+	indexes := map[platform.Variant]idx.IndexConfig{}
 
-	return idx.Config{
-		IndexFilepath:   path.Join(platformDirectoryPath, platformConfig.Index.Directory),
-		IndexVariant:    platformConfig.Index.Variant,
-		Name:            platformConfig.Name,
-		DocType:         platformConfig.Index.DocType,
-		SourceFilename:  platformConfig.Source.Filename,
-		SourceFilepath:  path.Join(platformDirectoryPath, platformConfig.Source.Filename),
-		ArchiveFilepath: path.Join(platformDirectoryPath, platformConfig.Source.ArchiveFilename),
+	for platformName := range jsonApp.Platforms {
+		variant, err := platform.Get(platformName)
+		if err != nil {
+			continue // TODO: report from createIdx function and handle
+		}
+
+		platformConfig := cfg.platform(variant)
+		platformDirectoryPath := path.Join(cfg.Directory, platformConfig.Directory)
+
+		indexes[variant] = idx.IndexConfig{
+			IndexFilepath:   path.Join(platformDirectoryPath, platformConfig.Index.Directory),
+			IndexVariant:    platformConfig.Index.Variant,
+			Name:            platformConfig.Name,
+			DocType:         platformConfig.Index.DocType,
+			SourceFilename:  platformConfig.Source.Filename,
+			SourceFilepath:  path.Join(platformDirectoryPath, platformConfig.Source.Filename),
+			ArchiveFilepath: path.Join(platformDirectoryPath, platformConfig.Source.ArchiveFilename),
+		}
+	}
+
+	cfg.Idx = idx.Config{
+		Address: jsonApp.API.IdxRPCAddress,
+		Port:    jsonApp.API.IdxRPCAddress,
+		Indexes: indexes,
 	}
 }
 
 // platform returns platform config.
 func (cfg Project) platform(variant platform.Variant) jsonConfig.Platform {
 	return cfg.platforms[variant.ID()]
-}
-
-func (cfg *Project) createDatabaseConfig(jsonApp jsonConfig.Project) {
-	cfg.Database = db.Config{
-		MaxLimit: jsonApp.Database.MaxLimit,
-		Path:     path.Join(cfg.Directory, jsonApp.Database.Filename),
-		Variant:  jsonApp.Database.Variant,
-	}
 }
 
 func (cfg *Project) createGamesConfig(jsonApp jsonConfig.Project) {

@@ -11,10 +11,8 @@ import (
 	"github.com/sarpt/gamedbv/pkg/zip"
 )
 
-const bleveCreator string = "bleve"
-
-// Config instructs how unziping, parsing and indexing should be performed
-type Config struct {
+// IndexConfig instructs how unziping, parsing and indexing should be performed
+type IndexConfig struct {
 	IndexFilepath   string
 	IndexVariant    string
 	Name            string
@@ -24,17 +22,20 @@ type Config struct {
 	SourceFilename  string
 }
 
-// PreparePlatform unzips and parses source file, creates Index related to the platfrom and populates the database
-func PreparePlatform(cfg Config, variant platform.Variant, printer progress.Notifier, database db.Database) {
+const bleveCreator string = "bleve"
+
+// PreparePlatform unzips and parses source file, creates Index related to the platfrom and populates the database.
+func (s *Server) PreparePlatform(variant platform.Variant, printer progress.Notifier, database db.Database) {
+	cfg := s.cfg.Indexes[variant]
 	printer.NextStatus(newPlatformUnzipStatus(variant))
-	err := zip.UnzipPlatformSource(getZipConfig(cfg))
+	err := zip.UnzipPlatformSource(mapToZipConfig(cfg))
 	if err != nil {
 		printer.NextError(err)
 		return
 	}
 
 	printer.NextStatus(newPlatformParsingStatus(variant))
-	gametdbModelProvider, err := parsePlatformSource(getParserConfig(cfg))
+	gametdbModelProvider, err := parsePlatformSource(mapToParser(cfg))
 	if err != nil {
 		printer.NextError(err)
 		return
@@ -43,7 +44,7 @@ func PreparePlatform(cfg Config, variant platform.Variant, printer progress.Noti
 	gametdbAdapter := NewGameTDBAdapter(variant.ID(), gametdbModelProvider)
 
 	printer.NextStatus(newPlatformIndexingStatus(variant))
-	err = indexPlatform(getIndexConfig(cfg), gametdbAdapter)
+	err = indexPlatform(mapToIndexConfig(cfg), gametdbAdapter)
 	if err != nil {
 		printer.NextError(err)
 		return
@@ -71,7 +72,7 @@ func indexPlatform(platformConfig index.Config, gametdbAdapter GameTDBAdapter) e
 	return index.PrepareIndex(creators, platformConfig, gametdbAdapter.GameSources())
 }
 
-func getZipConfig(cfg Config) zip.Config {
+func mapToZipConfig(cfg IndexConfig) zip.Config {
 	return zip.Config{
 		ArchiveFilepath: cfg.ArchiveFilepath,
 		SourceFilename:  cfg.SourceFilename,
@@ -80,13 +81,13 @@ func getZipConfig(cfg Config) zip.Config {
 	}
 }
 
-func getParserConfig(cfg Config) parser.Config {
+func mapToParser(cfg IndexConfig) parser.Config {
 	return parser.Config{
 		Filepath: cfg.SourceFilepath,
 	}
 }
 
-func getIndexConfig(cfg Config) index.Config {
+func mapToIndexConfig(cfg IndexConfig) index.Config {
 	return index.Config{
 		Filepath: cfg.IndexFilepath,
 		Variant:  cfg.IndexVariant,

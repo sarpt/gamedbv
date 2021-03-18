@@ -36,7 +36,7 @@ func main() {
 		printer = cli.NewTextPrinter()
 	}
 
-	projectCfg, err := config.Create()
+	cfg, err := config.Create()
 	if err != nil {
 		panic(err)
 	}
@@ -44,11 +44,11 @@ func main() {
 	var status progress.Status
 	switch *listFlag {
 	case platformsStatus:
-		status, err = handlePlatforms(projectCfg.Database)
+		status, err = handlePlatforms(cfg.Database)
 	case regionsStatus:
-		status, err = handleRegions(projectCfg.Database)
+		status, err = handleRegions(cfg.Database)
 	case languagesStatus:
-		status, err = handleLanguages(projectCfg.Database)
+		status, err = handleLanguages(cfg.Database)
 	default:
 		flag.PrintDefaults()
 		return

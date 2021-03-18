@@ -14,6 +14,6 @@ require (
 	github.com/sarpt/goutils v0.0.3
 	github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c // indirect
 	golang.org/x/text v0.3.3
-	google.golang.org/grpc v1.30.0
-	google.golang.org/protobuf v1.23.0
+	google.golang.org/grpc v1.36.0
+	google.golang.org/protobuf v1.25.0
 )

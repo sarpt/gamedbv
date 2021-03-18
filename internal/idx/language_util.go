@@ -11,7 +11,7 @@ import (
 type incorrectCodeHandler = func(code string) (string, error)
 
 var (
-	errNotGameTDBIncorrectCode error                  = errors.New("Not GameTDB Code Error")
+	errNotGameTDBIncorrectCode error                  = errors.New("not GameTDB Code Error")
 	incorrectCodeHandlers      []incorrectCodeHandler = []incorrectCodeHandler{
 		gametdbIncorrectBCP47CodeHandler,
 	}

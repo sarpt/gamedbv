@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"sync"
 
 	"github.com/sarpt/goutils/pkg/listflag"
@@ -54,13 +55,18 @@ func main() {
 		}
 	}
 
-	database, err := idx.GetDatabase(projectCfg.Database, printer)
-	defer database.Close()
+	cfg := projectCfg.Idx
+	cfg.ErrWriter = os.Stderr
+	cfg.OutWriter = os.Stdout
+	server := idx.NewServer(cfg)
 
+	database, err := idx.Database(projectCfg.Database, printer)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+
+	defer database.Close()
 
 	var wg sync.WaitGroup
 	for _, platformToParse := range platformsToParse {
@@ -68,7 +74,7 @@ func main() {
 
 		go func(platform platform.Variant) {
 			defer wg.Done()
-			idx.PreparePlatform(projectCfg.Idx(platform), platform, printer, database)
+			server.PreparePlatform(platform, printer, database)
 		}(platformToParse)
 	}
 

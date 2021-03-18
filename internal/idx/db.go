@@ -9,8 +9,8 @@ import (
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
-// GetDatabase creates with initialization and opens (or just opens) the database pointed to by application config
-func GetDatabase(cfg db.Config, printer progress.Notifier) (db.Database, error) {
+// Database creates with initialization and opens (or just opens) the database pointed to by application config.
+func Database(cfg db.Config, printer progress.Notifier) (db.Database, error) {
 	var database db.Database
 
 	databasePath := cfg.Path
