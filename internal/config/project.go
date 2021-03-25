@@ -55,11 +55,12 @@ func Create() (Project, error) {
 		}
 	}
 
+	directory := path.Join(userHomeDir, jsonProject.Directory)
 	newApp.platforms = jsonProject.Platforms
-	newApp.Directory = path.Join(userHomeDir, jsonProject.Directory)
+	newApp.Directory = directory
 	newApp.Database = db.Config{
 		MaxLimit: jsonProject.Database.MaxLimit,
-		Path:     path.Join(jsonProject.Directory, jsonProject.Database.Filename),
+		Path:     path.Join(directory, jsonProject.Database.Filename),
 		Variant:  jsonProject.Database.Variant,
 	}
 
@@ -72,10 +73,10 @@ func Create() (Project, error) {
 	return *newApp, err
 }
 
-func (cfg *Project) createDl(jsonApp jsonConfig.Project) {
+func (cfg *Project) createDl(jsonProject jsonConfig.Project) {
 	sources := map[platform.Variant]dl.SourceConfig{}
 
-	for platformName := range jsonApp.Platforms {
+	for platformName := range jsonProject.Platforms {
 		variant, err := platform.Get(platformName)
 		if err != nil {
 			continue // TODO: report from createDl function and handle
@@ -95,15 +96,15 @@ func (cfg *Project) createDl(jsonApp jsonConfig.Project) {
 
 	cfg.Dl = dl.Config{
 		Sources: sources,
-		Address: jsonApp.API.DlRPCAddress,
-		Port:    jsonApp.API.DlRPCPort,
+		Address: jsonProject.API.DlRPCAddress,
+		Port:    jsonProject.API.DlRPCPort,
 	}
 }
 
-func (cfg *Project) createIdx(jsonApp jsonConfig.Project) {
+func (cfg *Project) createIdx(jsonProject jsonConfig.Project) {
 	indexes := map[platform.Variant]idx.IndexConfig{}
 
-	for platformName := range jsonApp.Platforms {
+	for platformName := range jsonProject.Platforms {
 		variant, err := platform.Get(platformName)
 		if err != nil {
 			continue // TODO: report from createIdx function and handle
@@ -124,9 +125,12 @@ func (cfg *Project) createIdx(jsonApp jsonConfig.Project) {
 	}
 
 	cfg.Idx = idx.Config{
-		Address: jsonApp.API.IdxRPCAddress,
-		Port:    jsonApp.API.IdxRPCAddress,
-		Indexes: indexes,
+		Address:    jsonProject.API.IdxRPCAddress,
+		DbMaxLimit: jsonProject.Database.MaxLimit,
+		DbPath:     path.Join(cfg.Directory, jsonProject.Database.Filename),
+		DbVariant:  jsonProject.Database.Variant,
+		Port:       jsonProject.API.IdxRPCPort,
+		Indexes:    indexes,
 	}
 }
 
@@ -180,6 +184,8 @@ func (cfg *Project) createAPIConfig(jsonApp jsonConfig.Project) error {
 		Debug:          jsonApp.API.Debug,
 		DlRPCAddress:   jsonApp.API.DlRPCAddress,
 		DlRPCPort:      jsonApp.API.DlRPCPort,
+		IdxRPCAddress:  jsonApp.API.IdxRPCAddress,
+		IdxRPCPort:     jsonApp.API.IdxRPCPort,
 		GamesConfig:    cfg.Games,
 		IPAddress:      jsonApp.API.IPAddress,
 		NetInterface:   jsonApp.API.NetInterface,

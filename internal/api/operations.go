@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sarpt/gamedbv/internal/cmds"
 	"github.com/sarpt/gamedbv/pkg/rpc/dl"
+	"github.com/sarpt/gamedbv/pkg/rpc/idx"
 )
 
 type operation string
@@ -78,36 +78,61 @@ func (s Server) updatePlatform(platform string, w io.Writer) error {
 		Platforms: []string{platform},
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
-	defer cancel()
-	stream, err := s.dlServiceClient.DownloadPlatforms(ctx, &dlReq)
+	dlCtx, dlCancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer dlCancel()
+
+	dlStream, err := s.dlServiceClient.DownloadPlatforms(dlCtx, &dlReq)
 	if err != nil {
 		return fmt.Errorf("could not download platforms through grpc: %w", err)
 	}
+
 	for {
-		platDlStatus, err := stream.Recv()
+		platDlStatus, err := dlStream.Recv()
 		if err == io.EOF {
 			break
 		}
+
 		if err != nil {
 			return fmt.Errorf("error while receiving response through grpc: %w", err)
 		}
+
 		res, err := json.Marshal(&platDlStatus)
 		if err != nil {
-			return fmt.Errorf("could not marshall grpc json response for writer: %w", err)
+			return fmt.Errorf("could not marshal grpc json response for writer: %w", err)
 		}
 
 		w.Write(res)
 	}
 
-	idxCfg := cmds.IdxCfg{
-		Output:    w,
-		ErrOutput: w,
-	}
-	idxArgs := cmds.IdxArguments{
+	idxReq := idx.PreparePlatformsReq{
 		Platforms: []string{platform},
 	}
-	idxCmd := cmds.NewIdx(idxCfg, idxArgs)
 
-	return idxCmd.Execute()
+	idxCtx, idxCancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer idxCancel()
+
+	stream, err := s.idxServiceClient.PreparePlatforms(idxCtx, &idxReq)
+	if err != nil {
+		return fmt.Errorf("could not prepare platforms through grpc: %w", err)
+	}
+
+	for {
+		idxPlatStatus, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			return fmt.Errorf("error while receiving response through grpc: %w", err)
+		}
+
+		res, err := json.Marshal(&idxPlatStatus)
+		if err != nil {
+			return fmt.Errorf("could not marshal grpc json response for writer: %w", err)
+		}
+
+		w.Write(res)
+	}
+
+	return nil
 }

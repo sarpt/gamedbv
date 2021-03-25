@@ -1,4 +1,4 @@
-package dl
+package idx
 
 import (
 	"log"
@@ -7,34 +7,34 @@ import (
 
 	"github.com/sarpt/gamedbv/internal/progress"
 	"github.com/sarpt/gamedbv/pkg/platform"
-	pb "github.com/sarpt/gamedbv/pkg/rpc/dl"
+	pb "github.com/sarpt/gamedbv/pkg/rpc/idx"
 )
 
 type gRPCConfig struct {
-	downloadPlatform func(platform.Variant, progress.Notifier) error
-	errLog           *log.Logger
-	outLog           *log.Logger
+	preparePlatform func(platform.Variant, progress.Notifier) error
+	errLog          *log.Logger
+	outLog          *log.Logger
 }
 
 // gRPCServer provides mechanisms to use Dl service both through RPC and by commands.
 type gRPCServer struct {
-	pb.UnimplementedDlServer
-	downloadPlatform func(platform.Variant, progress.Notifier) error
-	errLog           *log.Logger
-	outLog           *log.Logger
+	pb.UnimplementedIdxServer
+	preparePlatform func(platform.Variant, progress.Notifier) error
+	errLog          *log.Logger
+	outLog          *log.Logger
 }
 
 func newGRPCServer(cfg gRPCConfig) *gRPCServer {
 	return &gRPCServer{
-		downloadPlatform: cfg.downloadPlatform,
-		errLog:           cfg.errLog,
-		outLog:           cfg.outLog,
+		preparePlatform: cfg.preparePlatform,
+		errLog:          cfg.errLog,
+		outLog:          cfg.outLog,
 	}
 }
 
 // DownloadPlatforms handles gRPC request to download one or multiple platforms.
-func (s *gRPCServer) DownloadPlatforms(req *pb.PlatformsDownloadReq, stream pb.Dl_DownloadPlatformsServer) error {
-	s.outLog.Printf("incoming gRPC request for DownloadPlatforms: %s\n", strings.Join(req.GetPlatforms(), ", "))
+func (s *gRPCServer) PreparePlatforms(req *pb.PreparePlatformsReq, stream pb.Idx_PreparePlatformsServer) error {
+	s.outLog.Printf("incoming gRPC request for PreparePlatforms: %s\n", strings.Join(req.GetPlatforms(), ", "))
 
 	platforms, err := platform.ByNames(req.GetPlatforms())
 	if err != nil {
@@ -54,7 +54,10 @@ func (s *gRPCServer) DownloadPlatforms(req *pb.PlatformsDownloadReq, stream pb.D
 
 		go func(platform platform.Variant) {
 			defer wg.Done()
-			s.downloadPlatform(platform, notifier)
+			err = s.preparePlatform(platform, notifier)
+			if err != nil {
+				s.errLog.Printf("could not prepare platform: %v", err)
+			}
 		}(platformToDownload)
 	}
 	wg.Wait()

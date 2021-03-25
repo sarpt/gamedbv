@@ -13,6 +13,14 @@ import (
 	"github.com/sarpt/gamedbv/internal/status"
 )
 
+const (
+	gamesEndpoint     = "/games"
+	languagesEndpoint = "/info/languages"
+	platformsEndpoint = "/info/platforms"
+	regionsEndpoint   = "/info/regions"
+	updatesEndpoint   = "/updates"
+)
+
 func (s *Server) getRouteHandlers() map[string]http.HandlerFunc {
 	return map[string]http.HandlerFunc{
 		gamesEndpoint:     s.getGamesHandler,

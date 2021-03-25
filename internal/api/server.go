@@ -1,9 +1,9 @@
 package api
 
 import (
-	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -11,16 +11,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sarpt/gamedbv/internal/games"
 	"github.com/sarpt/gamedbv/internal/server"
-	pb "github.com/sarpt/gamedbv/pkg/rpc/dl"
-	"google.golang.org/grpc"
+	pbDl "github.com/sarpt/gamedbv/pkg/rpc/dl"
+	pbIdx "github.com/sarpt/gamedbv/pkg/rpc/idx"
 )
 
 const (
-	gamesEndpoint     = "/games"
-	languagesEndpoint = "/info/languages"
-	platformsEndpoint = "/info/platforms"
-	regionsEndpoint   = "/info/regions"
-	updatesEndpoint   = "/updates"
+	loggerPrefox = "api.Server#"
 )
 
 // Config instructs how API should behave and how it should access indexes and database
@@ -28,9 +24,13 @@ type Config struct {
 	Debug          bool
 	DlRPCAddress   string
 	DlRPCPort      string
+	ErrWriter      io.Writer
 	GamesConfig    games.Config
+	IdxRPCAddress  string
+	IdxRPCPort     string
 	IPAddress      string
 	NetInterface   string
+	OutWriter      io.Writer
 	Port           string
 	ReadTimeout    time.Duration
 	RPCDialTimeout time.Duration
@@ -40,33 +40,38 @@ type Config struct {
 // Server represents API server instance
 type Server struct {
 	cfg               Config
-	routeHandlers     map[string]http.HandlerFunc
+	dlServiceClient   pbDl.DlClient
+	errLog            *log.Logger
+	idxServiceClient  pbIdx.IdxClient
 	operationHandlers map[operation]operationHandler
-	dlServiceClient   pb.DlClient
+	outLog            *log.Logger
+	routeHandlers     map[string]http.HandlerFunc
 }
 
-// NewServer returns new API server instance
+// NewServer returns new API server instance.
 func NewServer(cfg Config) *Server {
 	server := Server{
-		cfg: cfg,
+		cfg:    cfg,
+		errLog: log.New(cfg.ErrWriter, loggerPrefox, log.LstdFlags),
+		outLog: log.New(cfg.OutWriter, loggerPrefox, log.LstdFlags),
 	}
 	server.routeHandlers = server.getRouteHandlers()
 	server.operationHandlers = server.getOperationHandlers()
 	return &server
 }
 
-// Serve starts GameDBV API server
+// Serve starts GameDBV API server.
 func (s *Server) Serve(out io.Writer) error {
-	closeDialConn, err := s.dialDlGrpc()
+	closeGrpcConnections, err := s.dialGrpcServices()
 	if err != nil {
-		return fmt.Errorf("could not dial Dl RPC: %w", err)
+		return fmt.Errorf("could not dial GRPC services: %w", err)
 	}
-	defer closeDialConn()
+	defer closeGrpcConnections()
 
 	router := s.initRouter()
 
 	address := s.addressForServe()
-	fmt.Fprintf(out, "API server address: %s\n", address) // TODO: implement logger instead of Fprintf in the wild..
+	s.outLog.Printf("API server address: %s\n", address)
 
 	srv := &http.Server{
 		Handler:      router,
@@ -76,24 +81,6 @@ func (s *Server) Serve(out io.Writer) error {
 	}
 
 	return srv.ListenAndServe()
-}
-
-func (s *Server) dialDlGrpc() (func() error, error) {
-	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithBlock(), grpc.WithInsecure())
-
-	timeoutContext, cancel := context.WithTimeout(context.Background(), s.cfg.RPCDialTimeout)
-	defer cancel()
-
-	dlcRPCTarget := fmt.Sprintf("%s:%s", s.cfg.DlRPCAddress, s.cfg.DlRPCPort)
-	conn, err := grpc.DialContext(timeoutContext, dlcRPCTarget, opts...) // this needs to be changed; maybe starting own process from api
-	if err != nil {
-		return nil, fmt.Errorf("grpc dial failure: %w", err)
-	}
-
-	s.dlServiceClient = pb.NewDlClient(conn)
-
-	return conn.Close, nil
 }
 
 func (s Server) initRouter() *mux.Router {

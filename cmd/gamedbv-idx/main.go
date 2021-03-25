@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"sync"
 
@@ -16,6 +15,7 @@ import (
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
+var grpcFlag *bool
 var jsonFlag *bool
 var platformFlags *listflag.StringList
 
@@ -24,6 +24,7 @@ func init() {
 
 	flag.Var(platformFlags, cmds.PlatformFlag, "platform specifies which console platform's database should be fetched")
 	jsonFlag = flag.Bool(cmds.JSONFlag, false, "when specified as true, each line of output is presented as a json object")
+	grpcFlag = flag.Bool(cmds.GRPCFlag, false, "when specified as true, the program launches in server mode, accepting gRPC requests and responding with streams of download process statuses")
 	flag.Parse()
 }
 
@@ -33,50 +34,55 @@ func main() {
 		panic(err)
 	}
 
-	var platformsToParse []platform.Variant
-
-	var printer progress.Notifier
-	if *jsonFlag {
-		printer = cli.NewJSONPrinter()
-	} else {
-		printer = cli.NewTextPrinter()
-	}
-
-	if len(platformFlags.Values()) == 0 {
-		platformsToParse = append(platformsToParse, platform.All()...)
-	} else {
-		for _, val := range platformFlags.Values() {
-			variant, err := platform.Get(val)
-			if err != nil {
-				panic(err)
-			}
-
-			platformsToParse = append(platformsToParse, variant)
-		}
-	}
-
 	cfg := projectCfg.Idx
 	cfg.ErrWriter = os.Stderr
 	cfg.OutWriter = os.Stdout
 	server := idx.NewServer(cfg)
 
-	database, err := idx.Database(projectCfg.Database, printer)
+	err = server.OpenDatabase()
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 
-	defer database.Close()
+	if *grpcFlag {
+		err = server.ServeGRPC()
+	} else {
+		var platformsToParse []platform.Variant
 
-	var wg sync.WaitGroup
-	for _, platformToParse := range platformsToParse {
-		wg.Add(1)
+		var printer progress.Notifier
+		if *jsonFlag {
+			printer = cli.NewJSONPrinter()
+		} else {
+			printer = cli.NewTextPrinter()
+		}
 
-		go func(platform platform.Variant) {
-			defer wg.Done()
-			server.PreparePlatform(platform, printer, database)
-		}(platformToParse)
+		if len(platformFlags.Values()) == 0 {
+			platformsToParse = append(platformsToParse, platform.All()...)
+		} else {
+			for _, val := range platformFlags.Values() {
+				variant, err := platform.Get(val)
+				if err != nil {
+					panic(err)
+				}
+
+				platformsToParse = append(platformsToParse, variant)
+			}
+		}
+
+		var wg sync.WaitGroup
+		for _, platformToParse := range platformsToParse {
+			wg.Add(1)
+
+			go func(platform platform.Variant) {
+				defer wg.Done()
+				server.PreparePlatform(platform, printer)
+			}(platformToParse)
+		}
+
+		wg.Wait()
 	}
 
-	wg.Wait()
+	if err != nil {
+		panic(err)
+	}
 }

@@ -3,6 +3,8 @@
 		"Debug": false,
     "DlRPCAddress": "localhost",
     "DlRPCPort": "3004",
+    "IdxRPCAddress": "localhost",
+    "IdxRPCPort": "3005",
 		"IPAddress": "127.0.0.1",
 		"NetInterface": "",
 		"Port": "3001",

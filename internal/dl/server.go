@@ -55,30 +55,31 @@ func NewServer(cfg Config) *Server {
 
 // DownloadPlatformSource downloads neccessary source files related to provided platform.
 // Progress of the process is being reported on the printer.
-func (s *Server) DownloadPlatformSource(variant platform.Variant, printer progress.Notifier) {
+func (s *Server) DownloadPlatformSource(variant platform.Variant, notifier progress.Notifier) error {
 	sourceCfg := s.cfg.Sources[variant]
 	sourcesFilesStatuses, err := getFilesStatuses(sourceCfg)
 	if err != nil {
-		printer.NextError(err)
-		return
+		notifier.NextError(err)
+		return err
 	}
 
 	if sourcesFilesStatuses.SourceExists && !sourceCfg.ForceRedownload {
-		printer.NextStatus(newArchiveFileAlreadyPresentStatus(variant))
-		return
+		notifier.NextStatus(newArchiveFileAlreadyPresentStatus(variant))
+		return err
 	}
 
 	err = preparePlatformDirectory(sourceCfg)
 	if err != nil {
-		printer.NextError(err)
-		return
+		notifier.NextError(err)
+		return err
 	}
 
-	printer.NextStatus(newDownloadingInProgressStatus(variant))
+	notifier.NextStatus(newDownloadingInProgressStatus(variant))
 	err = downloadSourceFile(sourceCfg)
 	if err != nil {
-		printer.NextError(err)
+		notifier.NextError(err)
 	}
+	return err
 }
 
 func (s *Server) ServeGRPC() error {

@@ -1,8 +1,9 @@
 package idx
 
 import (
+	"errors"
+
 	"github.com/sarpt/gamedbv/internal/progress"
-	"github.com/sarpt/gamedbv/pkg/db"
 	"github.com/sarpt/gamedbv/pkg/gametdb"
 	"github.com/sarpt/gamedbv/pkg/index"
 	"github.com/sarpt/gamedbv/pkg/index/bleve"
@@ -24,37 +25,47 @@ type IndexConfig struct {
 
 const bleveCreator string = "bleve"
 
+var (
+	ErrDatabaseNotOpen = errors.New("database not open")
+)
+
 // PreparePlatform unzips and parses source file, creates Index related to the platfrom and populates the database.
-func (s *Server) PreparePlatform(variant platform.Variant, printer progress.Notifier, database db.Database) {
+func (s *Server) PreparePlatform(variant platform.Variant, notifier progress.Notifier) error {
 	cfg := s.cfg.Indexes[variant]
-	printer.NextStatus(newPlatformUnzipStatus(variant))
+	notifier.NextStatus(newPlatformUnzipStatus(variant))
 	err := zip.UnzipPlatformSource(mapToZipConfig(cfg))
 	if err != nil {
-		printer.NextError(err)
-		return
+		notifier.NextError(err)
+		return err
 	}
 
-	printer.NextStatus(newPlatformParsingStatus(variant))
+	notifier.NextStatus(newPlatformParsingStatus(variant))
 	gametdbModelProvider, err := parsePlatformSource(mapToParser(cfg))
 	if err != nil {
-		printer.NextError(err)
-		return
+		notifier.NextError(err)
+		return err
 	}
 
 	gametdbAdapter := NewGameTDBAdapter(variant.ID(), gametdbModelProvider)
 
-	printer.NextStatus(newPlatformIndexingStatus(variant))
+	notifier.NextStatus(newPlatformIndexingStatus(variant))
 	err = indexPlatform(mapToIndexConfig(cfg), gametdbAdapter)
 	if err != nil {
-		printer.NextError(err)
-		return
+		notifier.NextError(err)
+		return err
 	}
 
-	printer.NextStatus(newDatabasePopulateStatus(variant))
-	err = database.ProvidePlatformData(gametdbAdapter.PlatformProvider())
-	if err != nil {
-		printer.NextError(err)
+	if s.db == nil {
+		notifier.NextError(ErrDatabaseNotOpen)
+		return ErrDatabaseNotOpen
 	}
+
+	notifier.NextStatus(newDatabasePopulateStatus(variant))
+	err = s.db.ProvidePlatformData(gametdbAdapter.PlatformProvider())
+	if err != nil {
+		notifier.NextError(err)
+	}
+	return err
 }
 
 func parsePlatformSource(cfg parser.Config) (gametdb.ModelProvider, error) {

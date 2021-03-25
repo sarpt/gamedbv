@@ -24,11 +24,14 @@ func main() {
 		panic(err)
 	}
 
-	apiCfg := projectCfg.API
-	apiCfg.Debug = *debugFlag
-	apiCfg.NetInterface = *interfaceFlag
+	cfg := projectCfg.API
+	cfg.Debug = *debugFlag
+	cfg.NetInterface = *interfaceFlag
+	cfg.ErrWriter = os.Stderr
+	cfg.OutWriter = os.Stdout
 
-	server := api.NewServer(apiCfg)
+	server := api.NewServer(cfg)
+
 	err = server.Serve(os.Stdout)
 	if err != nil {
 		panic(err)

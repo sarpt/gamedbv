@@ -15,9 +15,9 @@ import (
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
+var grpcFlag *bool
 var jsonFlag *bool
 var platformFlags *listflag.StringList
-var grpcFlag *bool
 
 func init() {
 	platformFlags = listflag.NewStringList([]string{})
