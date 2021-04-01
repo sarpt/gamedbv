@@ -17,6 +17,7 @@ import (
 
 var grpcFlag *bool
 var jsonFlag *bool
+var initDb *bool
 var platformFlags *listflag.StringList
 
 func init() {
@@ -25,13 +26,14 @@ func init() {
 	flag.Var(platformFlags, cmds.PlatformFlag, "platform specifies which console platform's database should be fetched")
 	jsonFlag = flag.Bool(cmds.JSONFlag, false, "when specified as true, each line of output is presented as a json object")
 	grpcFlag = flag.Bool(cmds.GRPCFlag, false, "when specified as true, the program launches in server mode, accepting gRPC requests and responding with streams of download process statuses")
+	initDb = flag.Bool(cmds.InitDb, false, "when specified as true, initialization of database is forced, even if the database already exists")
 	flag.Parse()
 }
 
 func main() {
-	projectCfg, err := config.Create()
-	if err != nil {
-		panic(err)
+	projectCfg, dbOpenErr := config.Create()
+	if dbOpenErr != nil {
+		panic(dbOpenErr)
 	}
 
 	cfg := projectCfg.Idx
@@ -39,14 +41,15 @@ func main() {
 	cfg.OutWriter = os.Stdout
 	server := idx.NewServer(cfg)
 
-	err = server.OpenDatabase()
-	if err != nil {
-		panic(err)
+	dbOpenErr = server.OpenDatabase()
+	if dbOpenErr != nil {
+		panic(dbOpenErr)
 	}
 
 	if *grpcFlag {
-		err = server.ServeGRPC()
+		dbOpenErr = server.ServeGRPC()
 	} else {
+
 		var platformsToParse []platform.Variant
 
 		var printer progress.Notifier
@@ -82,7 +85,7 @@ func main() {
 		wg.Wait()
 	}
 
-	if err != nil {
-		panic(err)
+	if dbOpenErr != nil {
+		panic(dbOpenErr)
 	}
 }

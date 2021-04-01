@@ -4,6 +4,18 @@ option go_package = "github.com/sarpt/gamedbv/pkg/rpc/idx";
 
 service Idx {
   rpc PreparePlatforms(PreparePlatformsReq) returns (stream PreparePlatformsStatus) {}
+  rpc InitializeDatabase(InitializeDatabaseReq) returns (stream InitializeDatabaseStatus) {}
+}
+
+message InitializeDatabaseReq {
+  bool force = 1;
+  string path = 2;
+  string variant = 3;
+}
+
+message InitializeDatabaseStatus {
+  string step = 1;
+  string message = 2;
 }
 
 message PreparePlatformsReq {

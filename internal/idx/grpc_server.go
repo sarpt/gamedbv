@@ -19,9 +19,10 @@ type gRPCConfig struct {
 // gRPCServer provides mechanisms to use Dl service both through RPC and by commands.
 type gRPCServer struct {
 	pb.UnimplementedIdxServer
-	preparePlatform func(platform.Variant, progress.Notifier) error
-	errLog          *log.Logger
-	outLog          *log.Logger
+	preparePlatform    func(platform.Variant, progress.Notifier) error
+	initializeDatabase func(string, string, bool, progress.Notifier) error
+	errLog             *log.Logger
+	outLog             *log.Logger
 }
 
 func newGRPCServer(cfg gRPCConfig) *gRPCServer {
@@ -30,6 +31,23 @@ func newGRPCServer(cfg gRPCConfig) *gRPCServer {
 		errLog:          cfg.errLog,
 		outLog:          cfg.outLog,
 	}
+}
+
+func (s *gRPCServer) InitializeDatabase(req *pb.InitializeDatabaseReq, stream pb.Idx_InitializeDatabaseServer) error {
+	s.outLog.Printf("incoming gRPC request for InitializeDatabase with variant '%s' in path '%s' and with force set to %t\n", req.GetVariant(), req.GetPath(), req.GetForce())
+
+	notifier := initializeDatabaseNotifier{
+		errLog: s.errLog,
+		stream: stream,
+		outLog: s.outLog,
+	}
+
+	err := s.initializeDatabase(req.GetPath(), req.GetVariant(), req.GetForce(), notifier)
+	if err != nil {
+		s.errLog.Printf("could not initialize database: %v", err)
+	}
+
+	return err
 }
 
 // DownloadPlatforms handles gRPC request to download one or multiple platforms.
@@ -41,12 +59,11 @@ func (s *gRPCServer) PreparePlatforms(req *pb.PreparePlatformsReq, stream pb.Idx
 		return err
 	}
 
-	nCfg := gRPCNotifierConfig{
+	notifier := preparePlatformNotifier{
 		errLog: s.errLog,
 		stream: stream,
 		outLog: s.outLog,
 	}
-	notifier := newGRPCNotifier(nCfg)
 
 	var wg sync.WaitGroup
 	for _, platformToDownload := range platforms {
@@ -54,7 +71,7 @@ func (s *gRPCServer) PreparePlatforms(req *pb.PreparePlatformsReq, stream pb.Idx
 
 		go func(platform platform.Variant) {
 			defer wg.Done()
-			err = s.preparePlatform(platform, notifier)
+			err = s.preparePlatform(platform, notifier) // aggregate errors
 			if err != nil {
 				s.errLog.Printf("could not prepare platform: %v", err)
 			}

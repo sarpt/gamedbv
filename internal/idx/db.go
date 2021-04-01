@@ -1,6 +1,7 @@
 package idx
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -9,34 +10,52 @@ import (
 	"github.com/sarpt/gamedbv/pkg/platform"
 )
 
-// OpenDatabase creates with initialization and opens (or just opens) the database pointed to by application config.
-// TODO: This should be split between opening and creating - the code should be aware of not opened database,
-// but the server should be possible to be operational for GRPC to initialize/recreate database on command.
-func (s *Server) OpenDatabase() error {
-	var database db.Database
+var (
+	ErrDbNoAccess         = errors.New("database could not be accessed")
+	ErrDbNotExist         = errors.New("database does not exist")
+	ErrDbNotOpen          = errors.New("database could not be opened")
+	ErrInitDbAlreadyExist = errors.New("database already exists - the initialization was not forced")
+)
 
-	databasePath := s.cfg.DbPath
-	_, err := os.Stat(databasePath)
+type InitializeDbConfig struct {
+	path    string
+	variant string
+	force   bool
+}
+
+func (s *Server) InitializeDatabase(cfg InitializeDbConfig) error {
+	var dbPath = cfg.path
+	if dbPath == "" {
+		dbPath = s.cfg.DbPath
+	}
+
+	var dbVariant = cfg.variant
+	if dbVariant == "" {
+		dbVariant = s.cfg.DbVariant
+	}
+
+	_, err := os.Stat(dbPath)
 	if err != nil && !os.IsNotExist(err) {
 		return err
 	}
 
-	dbConfig := db.Config{
-		Path:     s.cfg.DbPath,
-		Variant:  s.cfg.DbVariant,
-		MaxLimit: s.cfg.DbMaxLimit,
+	if err == nil && !cfg.force {
+		return ErrInitDbAlreadyExist
 	}
 
-	if os.IsNotExist(err) {
-		// TODO: do nothing, OpenDatabase should only open. Following in the next commit.
-		initalData := getInitialData()
-		database, err = db.NewDatabase(dbConfig, initalData)
-	} else {
-		database, err = db.OpenDatabase(dbConfig)
+	if err == nil {
+		if rmErr := os.Remove(dbPath); rmErr != nil {
+			return fmt.Errorf("removal of database file in path '%s' for reinitialization unsuccessful: %v", dbPath, rmErr)
+		}
 	}
 
+	s.cfg.DbPath = dbPath
+	s.cfg.DbVariant = dbVariant
+
+	initalData := initialData()
+	database, err := db.NewDatabase(s.dbConfig(), initalData)
 	if err != nil {
-		return fmt.Errorf("could not open the database in path %s: %v", s.cfg.DbPath, err)
+		return fmt.Errorf("could not create the '%s' database in path '%s': %v", dbVariant, dbPath, err)
 	}
 
 	s.db = &database
@@ -44,7 +63,32 @@ func (s *Server) OpenDatabase() error {
 	return nil
 }
 
-func getInitialData() db.InitialData {
+// OpenDatabase opens the database pointed to by application config.
+func (s *Server) OpenDatabase() error {
+	var database db.Database
+
+	databasePath := s.cfg.DbPath
+	_, err := os.Stat(databasePath)
+	if err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("%w - could not access db in path %s: %v", ErrDbNoAccess, databasePath, err)
+	}
+
+	if err != nil && os.IsNotExist(err) {
+		return ErrDbNotExist
+	}
+
+	database, err = db.OpenDatabase(s.dbConfig())
+	if err != nil {
+		s.outLog.Printf("could not open the database in path %s: %v", s.cfg.DbPath, err)
+		return ErrDbNotOpen
+	}
+
+	s.db = &database
+
+	return nil
+}
+
+func initialData() db.InitialData {
 	var platforms []*models.Platform
 
 	allPlatformVariants := platform.All()
@@ -57,5 +101,13 @@ func getInitialData() db.InitialData {
 
 	return db.InitialData{
 		Platforms: platforms,
+	}
+}
+
+func (s *Server) dbConfig() db.Config {
+	return db.Config{
+		Path:     s.cfg.DbPath,
+		Variant:  s.cfg.DbVariant,
+		MaxLimit: s.cfg.DbMaxLimit,
 	}
 }

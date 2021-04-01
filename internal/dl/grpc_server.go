@@ -41,12 +41,11 @@ func (s *gRPCServer) DownloadPlatforms(req *pb.PlatformsDownloadReq, stream pb.D
 		return err
 	}
 
-	nCfg := gRPCNotifierConfig{
+	notifier := gRPCNotifier{
 		errLog: s.errLog,
 		stream: stream,
 		outLog: s.outLog,
 	}
-	notifier := newGRPCNotifier(nCfg)
 
 	var wg sync.WaitGroup
 	for _, platformToDownload := range platforms {

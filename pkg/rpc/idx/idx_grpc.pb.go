@@ -19,6 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type IdxClient interface {
 	PreparePlatforms(ctx context.Context, in *PreparePlatformsReq, opts ...grpc.CallOption) (Idx_PreparePlatformsClient, error)
+	InitializeDatabase(ctx context.Context, in *InitializeDatabaseReq, opts ...grpc.CallOption) (Idx_InitializeDatabaseClient, error)
 }
 
 type idxClient struct {
@@ -61,11 +62,44 @@ func (x *idxPreparePlatformsClient) Recv() (*PreparePlatformsStatus, error) {
 	return m, nil
 }
 
+func (c *idxClient) InitializeDatabase(ctx context.Context, in *InitializeDatabaseReq, opts ...grpc.CallOption) (Idx_InitializeDatabaseClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Idx_ServiceDesc.Streams[1], "/Idx/InitializeDatabase", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &idxInitializeDatabaseClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Idx_InitializeDatabaseClient interface {
+	Recv() (*InitializeDatabaseStatus, error)
+	grpc.ClientStream
+}
+
+type idxInitializeDatabaseClient struct {
+	grpc.ClientStream
+}
+
+func (x *idxInitializeDatabaseClient) Recv() (*InitializeDatabaseStatus, error) {
+	m := new(InitializeDatabaseStatus)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // IdxServer is the server API for Idx service.
 // All implementations must embed UnimplementedIdxServer
 // for forward compatibility
 type IdxServer interface {
 	PreparePlatforms(*PreparePlatformsReq, Idx_PreparePlatformsServer) error
+	InitializeDatabase(*InitializeDatabaseReq, Idx_InitializeDatabaseServer) error
 	mustEmbedUnimplementedIdxServer()
 }
 
@@ -75,6 +109,9 @@ type UnimplementedIdxServer struct {
 
 func (UnimplementedIdxServer) PreparePlatforms(*PreparePlatformsReq, Idx_PreparePlatformsServer) error {
 	return status.Errorf(codes.Unimplemented, "method PreparePlatforms not implemented")
+}
+func (UnimplementedIdxServer) InitializeDatabase(*InitializeDatabaseReq, Idx_InitializeDatabaseServer) error {
+	return status.Errorf(codes.Unimplemented, "method InitializeDatabase not implemented")
 }
 func (UnimplementedIdxServer) mustEmbedUnimplementedIdxServer() {}
 
@@ -110,6 +147,27 @@ func (x *idxPreparePlatformsServer) Send(m *PreparePlatformsStatus) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Idx_InitializeDatabase_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(InitializeDatabaseReq)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(IdxServer).InitializeDatabase(m, &idxInitializeDatabaseServer{stream})
+}
+
+type Idx_InitializeDatabaseServer interface {
+	Send(*InitializeDatabaseStatus) error
+	grpc.ServerStream
+}
+
+type idxInitializeDatabaseServer struct {
+	grpc.ServerStream
+}
+
+func (x *idxInitializeDatabaseServer) Send(m *InitializeDatabaseStatus) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Idx_ServiceDesc is the grpc.ServiceDesc for Idx service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -121,6 +179,11 @@ var Idx_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "PreparePlatforms",
 			Handler:       _Idx_PreparePlatforms_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "InitializeDatabase",
+			Handler:       _Idx_InitializeDatabase_Handler,
 			ServerStreams: true,
 		},
 	},
