@@ -192,6 +192,7 @@ func (cfg *Project) createAPIConfig(jsonApp jsonConfig.Project) error {
 		Port:           jsonApp.API.Port,
 		ReadTimeout:    readTimeout,
 		RPCDialTimeout: rpcDialTimeout,
+		StartServices:  jsonApp.API.StartServices,
 		WriteTimeout:   writeTimeout,
 	}
 

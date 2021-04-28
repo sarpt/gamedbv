@@ -34,6 +34,7 @@ type Config struct {
 	Port           string
 	ReadTimeout    time.Duration
 	RPCDialTimeout time.Duration
+	StartServices  bool
 	WriteTimeout   time.Duration
 }
 
@@ -46,6 +47,7 @@ type Server struct {
 	operationHandlers map[operation]operationHandler
 	outLog            *log.Logger
 	routeHandlers     map[string]http.HandlerFunc
+	rpcConnClosers    []func() error
 }
 
 // NewServer returns new API server instance.
@@ -62,11 +64,11 @@ func NewServer(cfg Config) *Server {
 
 // Serve starts GameDBV API server.
 func (s *Server) Serve(out io.Writer) error {
-	closeGrpcConnections, err := s.dialGrpcServices()
+	err := s.dialGRPCServices()
 	if err != nil {
 		return fmt.Errorf("could not dial GRPC services: %w", err)
 	}
-	defer closeGrpcConnections()
+	defer s.closeRPCConnections()
 
 	router := s.initRouter()
 

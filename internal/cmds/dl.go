@@ -8,7 +8,7 @@ const dlName = "gamedbv-dl"
 
 // Dl is used to execute dl component binary
 type Dl struct {
-	command   command
+	command
 	output    io.Writer
 	errOutput io.Writer
 }
@@ -23,11 +23,13 @@ type DlCfg struct {
 // DlArguments is used to provide arguments for command executing the Dl component binary
 type DlArguments struct {
 	Platforms []string
+	GRPC      bool
 }
 
 // NewDl returns Dl command that is ready to be executed
 func NewDl(cfg DlCfg, args DlArguments) Dl {
 	allArgs := createJSONArgument(true)
+	allArgs = append(allArgs, createGRPCFlag(args.GRPC)...)
 	allArgs = append(allArgs, createPlatformsArguments(args.Platforms)...)
 
 	cmd := newCommand(dlName, cfg.Path, allArgs)

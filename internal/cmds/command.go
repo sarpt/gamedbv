@@ -7,6 +7,13 @@ import (
 	"path/filepath"
 )
 
+type Cmd interface {
+	Execute() error
+	Start() error
+	Wait() error
+	Stdout() ([]byte, error)
+}
+
 type command struct {
 	name string
 	args []string

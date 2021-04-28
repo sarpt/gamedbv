@@ -12,6 +12,14 @@ const (
 	longArgPrefix    = "--"
 )
 
+func createGRPCFlag(isSet bool) []string {
+	if isSet {
+		return []string{longArgument(GRPCFlag)}
+	}
+
+	return []string{}
+}
+
 func createPlatformsArguments(platforms []string) []string {
 	return createMultipleFlagArguments(PlatformFlag, platforms)
 }

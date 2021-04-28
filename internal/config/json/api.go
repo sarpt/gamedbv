@@ -12,5 +12,6 @@ type API struct {
 	IdxRPCPort     string `json:"IdxRPCPort"`
 	ReadTimeout    string `json:"ReadTimeout"`
 	RPCDialTimeout string `json:"RPCDialTimeout"`
+	StartServices  bool   `json:"StartServices"`
 	WriteTimeout   string `json:"WriteTimeout"`
 }
