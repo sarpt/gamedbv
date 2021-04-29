@@ -11,8 +11,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sarpt/gamedbv/internal/games"
 	"github.com/sarpt/gamedbv/internal/server"
-	pbDl "github.com/sarpt/gamedbv/pkg/rpc/dl"
-	pbIdx "github.com/sarpt/gamedbv/pkg/rpc/idx"
 )
 
 const (
@@ -41,24 +39,26 @@ type Config struct {
 // Server represents API server instance
 type Server struct {
 	cfg               Config
-	dlServiceClient   pbDl.DlClient
+	dlService         *DlService
 	errLog            *log.Logger
-	idxServiceClient  pbIdx.IdxClient
+	idxService        *IdxService
 	operationHandlers map[operation]operationHandler
 	outLog            *log.Logger
 	routeHandlers     map[string]http.HandlerFunc
-	rpcConnClosers    []func() error
 }
 
 // NewServer returns new API server instance.
 func NewServer(cfg Config) *Server {
 	server := Server{
-		cfg:    cfg,
-		errLog: log.New(cfg.ErrWriter, loggerPrefox, log.LstdFlags),
-		outLog: log.New(cfg.OutWriter, loggerPrefox, log.LstdFlags),
+		cfg:        cfg,
+		dlService:  NewDlService(cfg),
+		errLog:     log.New(cfg.ErrWriter, loggerPrefox, log.LstdFlags),
+		idxService: NewIdxService(cfg),
+		outLog:     log.New(cfg.OutWriter, loggerPrefox, log.LstdFlags),
 	}
 	server.routeHandlers = server.getRouteHandlers()
 	server.operationHandlers = server.getOperationHandlers()
+
 	return &server
 }
 
@@ -68,7 +68,7 @@ func (s *Server) Serve(out io.Writer) error {
 	if err != nil {
 		return fmt.Errorf("could not dial GRPC services: %w", err)
 	}
-	defer s.closeRPCConnections()
+	defer s.closeGRPCConnections()
 
 	router := s.initRouter()
 

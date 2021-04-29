@@ -4,126 +4,77 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"time"
 
-	"github.com/sarpt/gamedbv/internal/cmds"
-	pbDl "github.com/sarpt/gamedbv/pkg/rpc/dl"
-	pbIdx "github.com/sarpt/gamedbv/pkg/rpc/idx"
 	"google.golang.org/grpc"
 )
 
-type service struct {
-	address     string
-	cmd         cmds.Cmd
-	connHandler func(*grpc.ClientConn)
-	timeout     time.Duration
-}
+func (s *Server) closeGRPCConnections() error {
+	err := s.dlService.Close()
+	if err != nil {
+		s.errLog.Printf("could not close Dl service: %v", err)
 
-func (s *Server) closeRPCConnections() error {
-	for _, closer := range s.rpcConnClosers {
-		_ = closer()
+		return err
 	}
+
+	s.idxService.Close()
+	if err != nil {
+		s.errLog.Printf("could not close Idx service: %v", err)
+
+		return err
+	}
+
+	s.outLog.Printf("GRPC connections closed")
 
 	return nil
 }
 
 func (s *Server) dialGRPCServices() error {
 	wg := &sync.WaitGroup{}
-	s.rpcConnClosers = [](func() error){}
-	mtx := &sync.Mutex{}
 
-	// TODO: services below should be stored and initialized on a Server instance.
-	// Server instance should manage lifetime/watch the services it constructs/listens to.
-	dlCfg := cmds.DlCfg{}
-	dlArgs := cmds.DlArguments{
-		GRPC: true,
-	}
-	dlCmd := cmds.NewDl(dlCfg, dlArgs)
-	dlService := service{
-		address:     dlRPCAddress(s.cfg),
-		cmd:         dlCmd,
-		connHandler: s.dlConnectionHandler,
-		timeout:     s.cfg.RPCDialTimeout,
-	}
 	wg.Add(1)
-	go s.estabilishRPC(dlService, mtx, wg)
+	go s.estabilishGRPC(s.dlService, wg) // TODO: establishGRPC returns error that is ignored here. Implement proper error propagation (through channel?)
 
-	idxCfg := cmds.IdxCfg{}
-	idxArgs := cmds.IdxArguments{
-		GRPC: true,
-	}
-	idxCmd := cmds.NewIdx(idxCfg, idxArgs)
-	idxService := service{
-		address:     idxRPCAddress(s.cfg),
-		cmd:         idxCmd,
-		connHandler: s.idxConnectionHandler,
-		timeout:     s.cfg.RPCDialTimeout,
-	}
 	wg.Add(1)
-	go s.estabilishRPC(idxService, mtx, wg)
+	go s.estabilishGRPC(s.idxService, wg)
 
 	wg.Wait()
 
 	return nil
 }
 
-func (s *Server) dlConnectionHandler(conn *grpc.ClientConn) {
-	s.dlServiceClient = pbDl.NewDlClient(conn)
-}
-
-func (s *Server) estabilishRPC(srvc service, mtx *sync.Mutex, wg *sync.WaitGroup) error {
+func (s *Server) estabilishGRPC(srvc Service, wg *sync.WaitGroup) error {
 	defer wg.Done()
 
 	if s.cfg.StartServices {
-		err := s.startService(srvc)
+		err := srvc.Start()
 		if err != nil {
-			return fmt.Errorf("could not start RPC service at %s: %w", srvc.address, err)
+			return fmt.Errorf("could not start GRPC service at %s: %w", srvc.Address(), err)
 		}
 	}
+	s.outLog.Printf("started GRPC service at %s", srvc.Address())
 
-	dlConnCloser, err := dialGrpc(srvc)
+	err := dialGrpc(srvc)
 	if err != nil {
-		return fmt.Errorf("could not dial RPC at %s: %w", srvc.address, err)
+		return fmt.Errorf("could not dial GRPC at %s: %w", srvc.Address(), err)
 	}
-
-	mtx.Lock()
-	defer mtx.Unlock()
-
-	s.rpcConnClosers = append(s.rpcConnClosers, dlConnCloser)
+	s.outLog.Printf("connected to GRPC service at %s", srvc.Address())
 
 	return nil
 }
 
-func (s *Server) idxConnectionHandler(conn *grpc.ClientConn) {
-	s.idxServiceClient = pbIdx.NewIdxClient(conn)
-}
-
-func (s *Server) startService(srvc service) error {
-	err := srvc.cmd.Start()
-	return err
-}
-
-func dialGrpc(srvc service) (func() error, error) {
+func dialGrpc(srvc Service) error {
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithBlock(), grpc.WithInsecure())
 
-	timeoutContext, cancel := context.WithTimeout(context.Background(), srvc.timeout)
+	timeoutContext, cancel := context.WithTimeout(context.Background(), srvc.Timeout())
 	defer cancel()
 
-	conn, err := grpc.DialContext(timeoutContext, srvc.address, opts...)
+	conn, err := grpc.DialContext(timeoutContext, srvc.Address(), opts...)
 	if err != nil {
-		return nil, fmt.Errorf("grpc dial failure: %w", err)
+		return fmt.Errorf("GRPC dial failure: %w", err)
 	}
 
-	srvc.connHandler(conn)
+	srvc.SetClient(conn)
 
-	return conn.Close, nil
-}
-
-func dlRPCAddress(cfg Config) string {
-	return fmt.Sprintf("%s:%s", cfg.IdxRPCAddress, cfg.IdxRPCPort)
-}
-
-func idxRPCAddress(cfg Config) string {
-	return fmt.Sprintf("%s:%s", cfg.IdxRPCAddress, cfg.IdxRPCPort)
+	return nil
 }

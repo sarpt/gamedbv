@@ -81,7 +81,7 @@ func (s Server) updatePlatform(platform string, w io.Writer) error {
 	dlCtx, dlCancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer dlCancel()
 
-	dlStream, err := s.dlServiceClient.DownloadPlatforms(dlCtx, &dlReq)
+	dlStream, err := s.dlService.DownloadPlatforms(dlCtx, &dlReq)
 	if err != nil {
 		return fmt.Errorf("could not download platforms through grpc: %w", err)
 	}
@@ -111,7 +111,7 @@ func (s Server) updatePlatform(platform string, w io.Writer) error {
 	idxCtx, idxCancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer idxCancel()
 
-	stream, err := s.idxServiceClient.PreparePlatforms(idxCtx, &idxReq)
+	stream, err := s.idxService.PreparePlatforms(idxCtx, &idxReq)
 	if err != nil {
 		return fmt.Errorf("could not prepare platforms through grpc: %w", err)
 	}
